@@ -1,0 +1,23 @@
+{
+    "name": "hiraku/prestissimo",
+    "description": "composer speed-up",
+    "type": "composer-plugin",
+    "authors": [
+        {
+            "name": "Hiraku NAKANO",
+            "email": "hiraku@tojiru.net"
+        }
+    ],
+    "license": "MIT",
+    "require": {
+        "composer-plugin-api": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "hiraku\\Prestissimo": "src/"
+        }
+    },
+    "extra": {
+        "class": "hiraku\\Prestissimo\\Plugin"
+    }
+}
