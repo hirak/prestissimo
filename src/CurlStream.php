@@ -1,6 +1,6 @@
 <?php
 
-namespace hiraku\Prestissimo;
+namespace Hirak\Prestissimo;
 
 class CurlStream
 {

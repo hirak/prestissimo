@@ -10,7 +10,7 @@
  * file that was distributed with this source code.
  */
 
-namespace hiraku\Prestissimo;
+namespace Hirak\Prestissimo;
 
 use Composer\Composer;
 use Composer\Config;

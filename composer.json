@@ -1,5 +1,5 @@
 {
-    "name": "hiraku/prestissimo",
+    "name": "hirak/prestissimo",
     "description": "composer speed-up",
     "type": "composer-plugin",
     "authors": [
@@ -14,10 +14,10 @@
     },
     "autoload": {
         "psr-4": {
-            "hiraku\\Prestissimo": "src/"
+            "Hirak\\Prestissimo": "src/"
         }
     },
     "extra": {
-        "class": "hiraku\\Prestissimo\\Plugin"
+        "class": "Hirak\\Prestissimo\\Plugin"
     }
 }

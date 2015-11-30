@@ -1,5 +1,5 @@
 <?php
-namespace hiraku\Prestissimo;
+namespace Hirak\Prestissimo;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
@@ -19,14 +19,16 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     {
         $this->composer = $composer;
         $this->io = $io;
-        if (in_array('http', stream_get_wrappers())) {
+
+        $wrappers = stream_get_wrappers();
+        if (in_array('http', $wrappers)) {
             stream_wrapper_unregister('http');
         }
-        if (in_array('https', stream_get_wrappers())) {
+        if (in_array('https', $wrappers)) {
             stream_wrapper_unregister('https');
         }
-        stream_wrapper_register('http', 'hiraku\Prestissimo\CurlStream');
-        stream_wrapper_register('https', 'hiraku\Prestissimo\CurlStream');
+        stream_wrapper_register('http', 'Hirak\Prestissimo\CurlStream');
+        stream_wrapper_register('https', 'Hirak\Prestissimo\CurlStream');
     }
 
     /**
