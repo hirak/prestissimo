@@ -14,7 +14,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Hirak\\Prestissimo": "src/"
+            "Hirak\\Prestissimo\\": "src/"
         }
     },
     "extra": {
