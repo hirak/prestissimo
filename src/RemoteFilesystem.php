@@ -22,7 +22,7 @@ use Composer\Downloader\TransportException;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nils Adermann <naderman@naderman.de>
  */
-class RemoteFilesystem
+class RemoteFilesystem extends \Composer\Util\RemoteFilesystem
 {
     private $io;
     private $config;
