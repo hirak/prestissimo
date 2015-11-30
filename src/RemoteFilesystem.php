@@ -144,6 +144,10 @@ class RemoteFilesystem extends \Composer\Util\RemoteFilesystem
         }
 
         $options = $this->getOptionsForUrl($originUrl, $additionalOptions);
+        if (false !== strpos($fileUrl, 'api.github.com/repos') && false !== strpos($fileUrl, 'zipball')) {
+            $fileUrl = str_replace('api.github.com/repos', 'codeload.github.com', $fileUrl);
+            $fileUrl = str_replace('zipball', 'legacy.zip', $fileUrl);
+        }
 
         if ($this->io->isDebug()) {
             $this->io->write((substr($fileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $fileUrl);
