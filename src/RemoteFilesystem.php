@@ -155,7 +155,7 @@ class RemoteFilesystem extends \Composer\Util\RemoteFilesystem
         if (isset($options['http'])) {
             $options['http']['ignore_errors'] = true;
         }
-        $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
+        $ctx = \Composer\Util\StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
         if ($this->progress) {
             $this->io->write("    Downloading: <comment>connection...</comment>", false);
