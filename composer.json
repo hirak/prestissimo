@@ -1,6 +1,6 @@
 {
     "name": "hirak/prestissimo",
-    "description": "composer speed-up",
+    "description": "A composer plugin to speed up by downloading parallel",
     "type": "composer-plugin",
     "authors": [
         {
@@ -10,6 +10,7 @@
     ],
     "license": "MIT",
     "require": {
+        "ext-curl": "*",
         "composer-plugin-api": "^1.0"
     },
     "autoload": {
