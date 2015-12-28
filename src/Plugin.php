@@ -7,6 +7,10 @@ use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventSubscriberInterface;
+//use Composer\Script\ScriptEvents;
+
+use Composer\Installer;
+use Composer\DependencyResolver\Pool;
 
 class Plugin implements PluginInterface, EventSubscriberInterface
 {
@@ -20,6 +24,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         $this->composer = $composer;
         $this->io = $io;
 
+        /*
         $wrappers = stream_get_wrappers();
         if (in_array('http', $wrappers)) {
             stream_wrapper_unregister('http');
@@ -29,6 +34,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface
         }
         stream_wrapper_register('http', 'Hirak\Prestissimo\CurlStream');
         stream_wrapper_register('https', 'Hirak\Prestissimo\CurlStream');
+         */
     }
 
     /**
@@ -37,8 +43,11 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return array(
-            PluginEvents::PRE_FILE_DOWNLOAD => array(
-                array('onPreFileDownload', 0)
+//            PluginEvents::PRE_FILE_DOWNLOAD => array(
+//                array('onPreFileDownload', 0)
+//            ),
+            Installer\InstallerEvents::POST_DEPENDENCIES_SOLVING => array(
+                array('onPostDependenciesSolving', PHP_INT_MAX),
             ),
         );
     }
@@ -57,6 +66,17 @@ class Plugin implements PluginInterface, EventSubscriberInterface
                 $fs->getOptions()
             );
             $event->setRemoteFilesystem($curl);
+        }
+    }
+
+    public function onPostDependenciesSolving(Installer\InstallerEvent $ev)
+    {
+        echo 'POST DEPENDENCIES SOLVING!!', PHP_EOL;
+
+        $req = $ev->getRequest();
+
+        foreach ($req->getJobs() as $r) {
+            echo json_encode($r), PHP_EOL;
         }
     }
 }

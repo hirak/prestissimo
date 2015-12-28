@@ -154,7 +154,7 @@ class CurlStream
         $result = curl_exec($ch);
         $errno = curl_errno($ch);
         if (CURLE_OK !== $errno) {
-            throw new RuntimeException(curl_error($ch), $errno);
+            throw new \RuntimeException(curl_error($ch), $errno);
         }
 
         $info = curl_getinfo($ch);
