@@ -1,9 +1,10 @@
 <?php
 
-namespace Hiraku\Prestissimo;
+namespace Hirak\Prestissimo;
 
 use Composer\Package;
 use Composer\IO;
+use Composer\Config;
 
 /**
  * 先行して並列ダウンロードを行い、キャッシュファイルを作成する。
@@ -15,14 +16,22 @@ class ParallelDownloader
     /** @var IO/IOInterface */
     protected $io;
 
+    /** @var Config */
+    protected $config;
+
     /** @var int */
     protected $totalCnt = 0;
     protected $successCnt = 0;
     protected $failureCnt = 0;
 
-    public function __construct(IO\IOInterface $io)
+    /** @var Events\PreDownload */
+    public $onPreDownload;
+
+    public function __construct(IO\IOInterface $io, Config $config)
     {
         $this->io = $io;
+        $this->config = $config;
+        $this->onPreDownload = new Events\PreDownload;
     }
 
     /**
@@ -45,12 +54,14 @@ class ParallelDownloader
             curl_setopt_array($ch, array(
                 CURLOPT_HTTPGET => true,
                 CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_MAXREDIRS => 20,
                 CURLOPT_ENCODING => 'gzip',
                 CURLOPT_TIMEOUT => 10,
             ));
             $unused[] = $ch;
-            curl_multi_add_handle($mh, $ch);
         }
+
+        $cachedir = rtrim($this->config->get('cache-files-dir'), '\/');
 
         $chFpMap = array();
         $running = 0; //ref type
@@ -61,13 +72,17 @@ class ParallelDownloader
         $this->failureCnt = 0;
         $this->io->writeError($this->makeDownloadingText(), false);
         do {
-            do {
+            while ($unused && $packages) {
                 // $packagesから一個取ってきて、$unusedから一個取ってきて、chをつくる。
-                $ch = array_pop($unused);
                 $package = array_pop($packages);
+                $filepath = $cachedir . DIRECTORY_SEPARATOR . static::getCacheKey($package);
+                if (file_exists($filepath)) {
+                    echo $filepath, ' is existed, skip', PHP_EOL;
+                    continue;
+                }
+                $ch = array_pop($unused);
 
                 // make file resource
-                $filepath = static::getCacheKey($package);
                 $dir = dirname($filepath);
                 if (! file_exists($dir)) {
                     mkdir($dir, 0766, true);
@@ -77,23 +92,25 @@ class ParallelDownloader
 
                 // make url
                 $url = $package->getDistUrl();
-                if (preg_match($url, '%^https://api\.github\.com/repos/[^/]+/[^/]+/zipball/%')) {
-                    $url = str_replace('api.github.com/repos', 'codeload.github.com', $url);
-                    $url = str_replace('zipball', 'legacy.zip', $url);
-                }
+                $onPreDownload = $this->onPreDownload;
+                $onPreDownload->setInfo('url', $url);
+                $onPreDownload->notify();
+                $url = $onPreDownload->getInfo('url');
+                echo $filepath, PHP_EOL;
 
                 curl_setopt_array($ch, array(
                     CURLOPT_URL => $url,
                     CURLOPT_FILE => $fp,
                 ));
-            } while ($unused || $packages);
+                curl_multi_add_handle($mh, $ch);
+            }
 
             // start multi download
             do $stat = curl_multi_exec($mh, $running);
             while ($stat === CURLM_CALL_MULTI_PERFORM);
 
             // wait for any event
-            do switch (curl_multi_select($mh, 5)) {
+            do switch (curl_multi_select($mh, 0)) {
                 case -1:
                     usleep(10);
                     do $stat = curl_multi_exec($mh, $running);
@@ -102,6 +119,8 @@ class ParallelDownloader
                 case 0:
                     continue 2;
                 default:
+                    do $stat = curl_multi_exec($mh, $running);
+                    while ($stat === CURLM_CALL_MULTI_PERFORM);
                     // イベントが発生して、そのイベントがダウンロード完了であれば、chをunusedに戻す。
                     // それ以外のイベントであれば、再度待つ。
                     // イベントの走査が終わっていたら、ループをやり直す。(そのままdo whileを抜ければOK)
@@ -110,18 +129,21 @@ class ParallelDownloader
                         $info = curl_getinfo($ch);
                         $errno = curl_errno($ch);
                         if (CURLE_OK === $errno && 200 === $info['http_code']) {
-                            ++$this->success;
+                            ++$this->successCnt;
                             $this->io->overwriteError($this->makeDownloadingText(), false);
                         } else {
-                            ++$this->failure;
+                            ++$this->failureCnt;
                             $this->io->overwriteError($this->makeDownloadingText(), false);
                         }
+                        curl_setopt($ch, CURLOPT_FILE, STDOUT);
                         $index = (int)$ch;
                         $fp = $chFpMap[$index];
-                        unset($chFpMap[$index]);
                         fclose($fp);
-                        array_push($unused, $ch);
+                        unset($chFpMap[$index]);
+                        curl_multi_remove_handle($mh, $ch);
+                        $unused[] = $ch;
                     } while ($remains);
+                    continue 3;
             } while ($running);
 
             // もし、$packagesが空っぽになったならば、ループを抜ける。
@@ -129,7 +151,6 @@ class ParallelDownloader
 
         // 後片付
         foreach ($unused as $ch) {
-            curl_multi_remove_handle($mh, $ch);
             curl_close($ch);
         }
         curl_multi_close($mh);
@@ -145,7 +166,7 @@ class ParallelDownloader
         return "    Pre Downloading: <comment>success: $this->successCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>";
     }
 
-    public static function getCacheKey(PackageInterface $p)
+    public static function getCacheKey(Package\PackageInterface $p)
     {
         $distRef = $p->getDistReference();
         if (preg_match('{^[a-f0-9]{40}$}', $distRef)) {
