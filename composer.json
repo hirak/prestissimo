@@ -13,6 +13,13 @@
         "ext-curl": "*",
         "composer-plugin-api": "^1.0"
     },
+    "require-dev": {
+        "composer/composer": "dev-master",
+        "phpunit/phpunit": "^4.0"
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
     "autoload": {
         "psr-4": {
             "Hirak\\Prestissimo\\": "src/"
