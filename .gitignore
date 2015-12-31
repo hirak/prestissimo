@@ -1,1 +1,4 @@
-/vendor/
+vendor/
+node_modules/
+coverage.clover
+
