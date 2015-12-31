@@ -6,7 +6,7 @@ namespace Hirak\Prestissimo;
  *
  * Singleton
  */
-final class ConnectionFactory
+final class Factory
 {
     private static $instance = null;
     public static function getInstance()
@@ -38,7 +38,7 @@ final class ConnectionFactory
      * @param string $origin
      * @return resource<curl>
      */
-    public static function get($origin)
+    public static function getConnection($origin)
     {
         $instance = self::getInstance();
         if (isset($instance->connections[$origin])) {
@@ -46,5 +46,21 @@ final class ConnectionFactory
         }
 
         return $instance->connections[$origin] = curl_init();
+    }
+
+    public static function getPreEvent()
+    {
+        $pre = new Aspects\JoinPoint;
+        $pre->attach(new Aspects\AspectAuth);
+        $pre->attach(new Aspects\AspectRedirect);
+        $pre->attach(new Aspects\AspectProxy);
+        return $pre;
+    }
+
+    public static function getPostEvent()
+    {
+        $post = new Aspects\JoinPoint;
+        // $post->attach( ... );
+        return $post;
     }
 }
