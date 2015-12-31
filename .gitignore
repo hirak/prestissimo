@@ -1,4 +1,4 @@
 vendor/
 node_modules/
-coverage.clover
+npm-debug.log
 

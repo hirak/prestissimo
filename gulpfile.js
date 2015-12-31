@@ -59,6 +59,6 @@ gulp.task('reload', ['test'], function(){
 });
 
 gulp.task('server', ['connect'], function(){
-    gulp.watch(['src/*', 'tests/*'], ['reload']);
+    gulp.watch(['src/**', 'tests/**'], ['reload']);
 });
 

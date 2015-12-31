@@ -3,3 +3,4 @@ coverage
 pyramid.svg
 pdepend.svg
 summary.xml
+coverage.clover

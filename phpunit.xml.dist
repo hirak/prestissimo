@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit
-  colors="true"
+  colors="always"
   bootstrap="vendor/autoload.php">
   <filter>
     <whitelist>
@@ -14,13 +14,13 @@
        target="artifacts/coverage/"
        charset="UTF-8"
        highlight="true"/-->
-    <log type="coverage-clover" target="artifacts/coverage.clover"/>
+    <log type="coverage-clover" target="artifacts/clover.xml"/>
   </logging>
 
   <php>
     <ini name="error_reporting" value="-1"/>
   </php>
   <testsuite name="unit tests">
-    <directory>tests/</directory>
+    <directory>tests/unit/</directory>
   </testsuite>
 </phpunit>
