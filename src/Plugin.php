@@ -5,7 +5,6 @@ use Composer\Composer;
 use Composer\IO;
 use Composer\Plugin as CPlugin;
 use Composer\EventDispatcher;
-//use Composer\Script\ScriptEvents;
 use Composer\Package;
 
 use Composer\Installer;
@@ -15,24 +14,20 @@ class Plugin implements
     CPlugin\PluginInterface,
     EventDispatcher\EventSubscriberInterface
 {
-    private $composer, $io;
+    /** @var Composer */
+    private $composer;
+
+    /** @var IO\IOInterface */
+    private $io;
+
+    /** @var Config */
+    private $config;
 
     public function activate(Composer $composer, IO\IOInterface $io)
     {
         $this->composer = $composer;
+        $this->config = $composer->getConfig();
         $this->io = $io;
-
-        /*
-        $wrappers = stream_get_wrappers();
-        if (in_array('http', $wrappers)) {
-            stream_wrapper_unregister('http');
-        }
-        if (in_array('https', $wrappers)) {
-            stream_wrapper_unregister('https');
-        }
-        stream_wrapper_register('http', 'Hirak\Prestissimo\CurlStream');
-        stream_wrapper_register('https', 'Hirak\Prestissimo\CurlStream');
-         */
     }
 
     public static function getSubscribedEvents()
@@ -49,38 +44,29 @@ class Plugin implements
 
     public function onPreFileDownload(CPlugin\PreFileDownloadEvent $ev)
     {
-        echo __FUNCTION__, PHP_EOL;
-        $rfs = $ev->getRemoteFilesystem();
-        $dummy = new DummyRFS($this->io, $this->composer->getConfig(), $rfs->getOptions());
-        $ev->setRemoteFilesystem($dummy);
-
-        return;
         $url = $ev->getProcessedUrl();
-        $host = parse_url($url, PHP_URL_HOST);
-        $protocol = parse_url($url, PHP_URL_SCHEME);
 
-        if (preg_match('/^https?$/', $protocol)) {
-            $fs = $ev->getRemoteFilesystem();
-            $curl = new RemoteFilesystem(
+        if (!preg_match('/^https?/', $url)) {
+            $rfs = $ev->getRemoteFilesystem();
+            $ev->setRemoteFilesystem(new CurlRemoteFilesystem(
                 $this->io,
-                $this->composer->getConfig(),
-                $fs->getOptions()
-            );
-            $event->setRemoteFilesystem($curl);
+                $this->config,
+                $rfs->getOptions()
+            ));
         }
     }
 
     /**
      * pre parallel download by curl_multi
-     *
      */
     public function onPostDependenciesSolving(Installer\InstallerEvent $ev)
     {
         $ops = $ev->getOperations();
         $packages = $this->filterPackages($ops);
-        $conns = 6;
+        $conns = 6; //TODO read config
         if (count($packages) >= $conns) {
-            $downloader = new ParallelDownloader($this->io);
+            $downloader = new ParallelDownloader($this->io, $this->config);
+            $downloader->onPreDownload->attach(new Hooks\LocalRedirector);
             $downloader->download($packages, $conns, true);
         }
     }

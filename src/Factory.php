@@ -11,19 +11,12 @@ final class Factory
     private static $instance = null;
     public static function getInstance()
     {
-        return $this->instance ?: $this->instance = new self;
+        return self::$instance ?: self::$instance = new self;
     }
 
     private function __construct()
     {
         // do nothing
-    }
-
-    public function __destruct()
-    {
-        foreach ($this->connections as $c) {
-            curl_close($c);
-        }
     }
 
     /**
@@ -48,19 +41,34 @@ final class Factory
         return $instance->connections[$origin] = curl_init();
     }
 
-    public static function getPreEvent()
+    /**
+     * @return Aspects\JoinPoint
+     */
+    public static function getPreEvent(Aspects\HttpGetRequest $req)
     {
-        $pre = new Aspects\JoinPoint;
-        $pre->attach(new Aspects\AspectAuth);
+        $pre = new Aspects\JoinPoint('pre-download', $req);
+        $pre->attach(static::getAspectAuth());
         $pre->attach(new Aspects\AspectRedirect);
         $pre->attach(new Aspects\AspectProxy);
         return $pre;
     }
 
-    public static function getPostEvent()
+    /**
+     * @return Aspects\JoinPoint
+     */
+    public static function getPostEvent(Aspects\HttpGetRequest $req)
     {
-        $post = new Aspects\JoinPoint;
-        // $post->attach( ... );
+        $post = new Aspects\JoinPoint('post-download', $req);
+        $post->attach(static::getAspectAuth());
         return $post;
+    }
+
+    /**
+     * @return Aspects\AspectAuth
+     */
+    public static function getAspectAuth()
+    {
+        static $auth;
+        return $auth ?: $auth = new Aspects\AspectAuth;
     }
 }

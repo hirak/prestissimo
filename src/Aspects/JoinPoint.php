@@ -4,7 +4,7 @@
  * @author Hiraku NAKANO
  * @license MIT https://github.com/hirak/prestissimo
  */
-namespace Hirak\Prestissimo;
+namespace Hirak\Prestissimo\Aspects;
 
 use SplSubject;
 use SplObserver;
@@ -21,17 +21,20 @@ class JoinPoint implements SplSubject
     /** @var HttpGetRequest */
     protected $request;
 
+    /** @var HttpGetResponse */
+    protected $response;
+
     /** @var string */
     protected $name;
 
     /**
      * @param string $pointName
      */
-    public function __construct($pointName)
+    public function __construct($pointName, HttpGetRequest $request)
     {
         $this->name = $pointName;
-        $this->storage = new SplObjectStorage;
-        $this->request = new HttpGetRequest;
+        $this->detachAll();
+        $this->request = $request;
     }
 
     public function attach(SplObserver $observer)
@@ -39,9 +42,22 @@ class JoinPoint implements SplSubject
         $this->storage->attach($observer);
     }
 
+    public function attachArray(array $observers)
+    {
+        $storage = $this->storage;
+        foreach ($observers as $observer) {
+            $storage->attach($observer);
+        }
+    }
+
     public function detach(SplObserver $observer)
     {
         $this->storage->detach($observer);
+    }
+
+    public function detachAll()
+    {
+        $this->storage = new SplObjectStorage;
     }
 
     public function notify()
@@ -54,6 +70,16 @@ class JoinPoint implements SplSubject
     final public function refRequest()
     {
         return $this->request;
+    }
+
+    public function setRequest(HttpGetRequest $req)
+    {
+        $this->request = $req;
+    }
+
+    public function setResponse(HttpGetResponse $res)
+    {
+        $this->response = $res;
     }
 
     public function __toString()

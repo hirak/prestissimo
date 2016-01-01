@@ -6,6 +6,7 @@
 namespace Hirak\Prestissimo\Aspects;
 
 use Composer\IO;
+use Composer\Composer;
 
 /**
  * Simple Container for http-get request
@@ -17,6 +18,8 @@ class HttpGetRequest
         , $host = 'example.com'
         , $port = 80
         , $path = '/'
+
+        , $special = null
 
         , $query = array()
         , $headers = array()
@@ -33,12 +36,30 @@ class HttpGetRequest
      * @param string $url
      * @param IO/IOInterface $io
      */
-    public function __construct($origin, $url, IO/IOInterface $io)
+    public function __construct($origin, $url, IO\IOInterface $io)
+    {
+        // normalize github origin
+        if (substr($origin, -10) === 'github.com') {
+            $origin = 'github.com';
+            $this->special = 'github';
+        }
+        $this->origin = $origin;
+
+        $this->importURL($url);
+
+        if ($this->username && $this->password) {
+            $io->setAuthentication($origin, $this->username, $this->password);
+        } elseif ($io->hasAuthentication($origin)) {
+            $auth = $io->getAuthentication($origin);
+            $this->username = $auth['username'];
+            $this->password = $auth['password'];
+        }
+    }
+
+    public function importURL($url)
     {
         $struct = parse_url($url);
         if (! $struct) throw new \InvalidArgumentException("$url is not valid URL");
-
-        $this->origin = $origin;
 
         $this->scheme = self::setOr($struct, 'scheme', $this->scheme);
         $this->host = self::setOr($struct, 'host', $this->host);
@@ -49,14 +70,6 @@ class HttpGetRequest
 
         if (! empty($struct['query'])) {
             parse_str($struct['query'], $this->query);
-        }
-
-        if ($this->username && $this->password) {
-            $io->setAuthentication($origin, $this->username, $this->password);
-        } elseif ($io->hasAuthentication($origin)) {
-            $auth = $io->getAuthentication($origin);
-            $this->username = $auth['username'];
-            $this->password = $auth['password'];
         }
     }
 
@@ -74,15 +87,17 @@ class HttpGetRequest
     {
         $curlOpts = $this->curlOpts + array(
             CURLOPT_HTTPGET => true,
-            CURLOPT_FOLLOWLOCATEION => true,
+            CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 20,
-            CURLOPT_HTTPHEADER => $this->header,
+            CURLOPT_ENCODING => 'gzip',
+            CURLOPT_HTTPHEADER => $this->headers,
+            CURLOPT_USERAGENT => $this->genUA(),
         );
 
         if ($this->username && $this->password) {
             $curlOpts[CURLOPT_USERPWD] = "$this->username:$this->password";
         } else {
-            $curlOpts[CURLOPT_USERPWD] = '';
+            $curlOpts[CURLOPT_USERPWD] = null;
         }
 
         $curlOpts[CURLOPT_URL] = $this->getUrl();
@@ -90,7 +105,7 @@ class HttpGetRequest
         return $curlOpts;
     }
 
-    public function getUrl()
+    public function getURL()
     {
         if ($this->scheme) {
             $url = "$this->scheme://";
@@ -100,7 +115,7 @@ class HttpGetRequest
         $url .= $this->host;
 
         if ($this->port) {
-            $url .= ":$port";
+            $url .= ":$this->port";
         }
 
         $url .= $this->path;
@@ -110,5 +125,33 @@ class HttpGetRequest
         }
 
         return $url;
+    }
+
+    /**
+     * special domain special flag
+     * @param array $map
+     */
+    public function setSpecial(array $map)
+    {
+        foreach ($map as $key => $domains) {
+            if (in_array($this->origin, $domains)) {
+                $this->special = $key;
+                return;
+            }
+        }
+    }
+
+    public static function genUA() {
+        static $ua;
+        if ($ua) return $ua;
+        $phpVersion = defined('HHVM_VERSION') ? 'HHVM ' . HHVM_VERSION : 'PHP ' . PHP_VERSION;
+
+        return $ua = sprintf(
+            'Composer/%s (%s; %s; %s)',
+            str_replace('@package_version@', 'source', Composer::VERSION),
+            php_uname('s'),
+            php_uname('r'),
+            $phpVersion
+        );
     }
 }

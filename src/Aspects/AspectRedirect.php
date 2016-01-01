@@ -16,16 +16,24 @@ class AspectRedirect implements SplObserver
 {
     public function update(SplSubject $ev)
     {
-        if ('pre-download' != (string)$ev) {
-            return;
+        switch ((string)$ev) {
+            case 'pre-download':
+                $this->before($ev->refRequest());
+                break;
         }
-        $req = $ev->refRequest();
+    }
+
+    public function before(HttpGetRequest $req)
+    {
         $url = $req->getURL();
 
-        if (preg_match('%^https://api\.github\.com/repos/[^/]+/[^/]+/zipball/%', $url)) {
-            $url = str_replace('api.github.com/repos', 'codeload.github.com', $url);
-            $url = str_replace('zipball', 'legacy.zip', $url);
-            $ev->setInfo('url', $url);
+        if (preg_match('%^https://api\.github\.com/repos(/[^/]+/[^/]+/)zipball/%', $url, $m)) {
+            $url = str_replace(
+                "api.github.com/repos$m[1]zipball",
+                "codeload.github.com$m[1]legacy.zip",
+                $url
+            );
+            $req->importURL($url);
         }
     }
 }
