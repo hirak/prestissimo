@@ -34,7 +34,7 @@ class Plugin implements
     {
         return array(
             CPlugin\PluginEvents::PRE_FILE_DOWNLOAD => array(
-                array('onPreFileDownload', 0)
+                array('onPreFileDownload', 0),
             ),
             Installer\InstallerEvents::POST_DEPENDENCIES_SOLVING => array(
                 array('onPostDependenciesSolving', PHP_INT_MAX),
@@ -46,8 +46,9 @@ class Plugin implements
     {
         $url = $ev->getProcessedUrl();
 
-        if (!preg_match('/^https?/', $url)) {
+        if (preg_match('/^https?/', $url)) {
             $rfs = $ev->getRemoteFilesystem();
+
             $ev->setRemoteFilesystem(new CurlRemoteFilesystem(
                 $this->io,
                 $this->config,
@@ -57,7 +58,7 @@ class Plugin implements
     }
 
     /**
-     * pre parallel download by curl_multi
+     * pre-fetch parallel by curl_multi
      */
     public function onPostDependenciesSolving(Installer\InstallerEvent $ev)
     {

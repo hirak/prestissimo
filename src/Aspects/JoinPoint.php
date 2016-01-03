@@ -77,6 +77,11 @@ class JoinPoint implements SplSubject
         $this->request = $req;
     }
 
+    final public function refResponse()
+    {
+        return $this->response;
+    }
+
     public function setResponse(HttpGetResponse $res)
     {
         $this->response = $res;

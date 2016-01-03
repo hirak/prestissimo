@@ -6,7 +6,6 @@
  */
 namespace Hirak\Prestissimo;
 
-use Composer\Composer;
 use Composer\Config;
 use Composer\IO;
 use Composer\Downloader;
@@ -110,7 +109,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
             $this->onPreDownload->notify();
 
-            curl_setopt_array($ch, $request->curlOpts);
+            curl_setopt_array($ch, $request->getCurlOpts());
             $execStatus = curl_exec($ch);
 
             $response = new Aspects\HttpGetResponse(
@@ -125,7 +124,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             fclose($fp);
 
             if ($response->needAuth()) {
-                $this->promptAuthAndRetry();
+                $this->promptAuth();
             }
         } while ($this->retry);
 
@@ -146,7 +145,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
      *
      * @return bool|string The content
      */
-    public function getContents($originUrl, $fileUrl, $progress = true, $options = array())
+    public function getContents($origin, $fileUrl, $progress = true, $options = array())
     {
         do {
             $this->retry = false;
@@ -191,7 +190,8 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
             $this->onPreDownload->notify();
 
-            curl_setopt_array($ch, $request->curlOpts);
+            $opts = $request->getCurlOpts();
+            curl_setopt_array($ch, $request->getCurlOpts());
             $execStatus = curl_exec($ch);
 
             $response = new Aspects\HttpGetResponse(
@@ -202,12 +202,9 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             $this->onPostDownload->setResponse($response);
             $this->onPostDownload->notify();
 
-            curl_setopt($ch, CURLOPT_FILE, STDOUT);
-            fclose($fp);
-
             if ($response->needAuth()) {
-                $this->promptAuthAndRetry();
-            } elseif ($response->info['download_content_length'] <= 0) {
+                $this->promptAuth();
+            } elseif (strlen($execStatus) <= 0) {
                 throw new Downloader\TransportException(
                     "'$fileUrl' appears broken, and returned an empty 200 response"
                 );
@@ -259,7 +256,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
         return 0;
     }
 
-    protected function promptAuthAndRetry(Aspects\HttpGetRequest $req, Aspects\HttpGetResponse $res)
+    protected function promptAuth(Aspects\HttpGetRequest $req, Aspects\HttpGetResponse $res)
     {
         $io = $this->io;
         $httpCode = $res->info['http_code'];

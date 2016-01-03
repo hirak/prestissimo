@@ -24,14 +24,13 @@ class ParallelDownloader
     protected $successCnt = 0;
     protected $failureCnt = 0;
 
-    /** @var Events\PreDownload */
+    /** @var Aspects\JoinPoint */
     public $onPreDownload;
 
     public function __construct(IO\IOInterface $io, Config $config)
     {
         $this->io = $io;
         $this->config = $config;
-        $this->onPreDownload = new Events\PreDownload;
     }
 
     /**
@@ -77,7 +76,7 @@ class ParallelDownloader
                 $package = array_pop($packages);
                 $filepath = $cachedir . DIRECTORY_SEPARATOR . static::getCacheKey($package);
                 if (file_exists($filepath)) {
-                    echo $filepath, ' is existed, skip', PHP_EOL;
+                    // echo $filepath, ' is existed, skip', PHP_EOL;
                     continue;
                 }
                 $ch = array_pop($unused);
