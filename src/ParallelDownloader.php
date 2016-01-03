@@ -24,9 +24,6 @@ class ParallelDownloader
     protected $successCnt = 0;
     protected $failureCnt = 0;
 
-    /** @var Aspects\JoinPoint */
-    public $onPreDownload;
-
     public function __construct(IO\IOInterface $io, Config $config)
     {
         $this->io = $io;
@@ -49,15 +46,7 @@ class ParallelDownloader
         $mh = curl_multi_init();
         $unused = array();
         for ($i = 0; $i < $conns; ++$i) {
-            $ch = curl_init();
-            curl_setopt_array($ch, array(
-                CURLOPT_HTTPGET => true,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_MAXREDIRS => 20,
-                CURLOPT_ENCODING => 'gzip',
-                CURLOPT_TIMEOUT => 10,
-            ));
-            $unused[] = $ch;
+            $unused[] = curl_init();
         }
 
         $cachedir = rtrim($this->config->get('cache-files-dir'), '\/');
@@ -76,31 +65,22 @@ class ParallelDownloader
                 $package = array_pop($packages);
                 $filepath = $cachedir . DIRECTORY_SEPARATOR . static::getCacheKey($package);
                 if (file_exists($filepath)) {
-                    // echo $filepath, ' is existed, skip', PHP_EOL;
                     continue;
                 }
                 $ch = array_pop($unused);
 
                 // make file resource
-                $dir = dirname($filepath);
-                if (! file_exists($dir)) {
-                    mkdir($dir, 0766, true);
-                }
-                $fp = fopen($filepath, 'wb');
+                $fp = CurlRemoteFilesystem::createFile($filepath);
                 $chFpMap[(int)$ch] = $fp;
 
                 // make url
                 $url = $package->getDistUrl();
-                $onPreDownload = $this->onPreDownload;
-                $onPreDownload->setInfo('url', $url);
+                $request = new Aspects\HttpGetRequest(parse_url($url, PHP_URL_HOST), $url, $this->io);
+                $onPreDownload = Factory::getPreEvent($request);
                 $onPreDownload->notify();
-                $url = $onPreDownload->getInfo('url');
-                echo $filepath, PHP_EOL;
 
-                curl_setopt_array($ch, array(
-                    CURLOPT_URL => $url,
-                    CURLOPT_FILE => $fp,
-                ));
+                curl_setopt_array($ch, $request->getCurlOpts());
+                curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_multi_add_handle($mh, $ch);
             }
 
@@ -109,7 +89,7 @@ class ParallelDownloader
             while ($stat === CURLM_CALL_MULTI_PERFORM);
 
             // wait for any event
-            do switch (curl_multi_select($mh, 0)) {
+            do switch (curl_multi_select($mh, 10)) {
                 case -1:
                     usleep(10);
                     do $stat = curl_multi_exec($mh, $running);
@@ -125,14 +105,17 @@ class ParallelDownloader
                     // イベントの走査が終わっていたら、ループをやり直す。(そのままdo whileを抜ければOK)
                     do if ($raised = curl_multi_info_read($mh, $remains)) {
                         $ch = $raised['handle'];
-                        $info = curl_getinfo($ch);
-                        $errno = curl_errno($ch);
+                        $response = new Aspects\HttpGetResponse(
+                            $errno = curl_errno($ch),
+                            $error = curl_error($ch),
+                            $info = curl_getinfo($ch)
+                        );
                         if (CURLE_OK === $errno && 200 === $info['http_code']) {
                             ++$this->successCnt;
-                            $this->io->overwriteError($this->makeDownloadingText(), false);
+                            //$this->io->overwriteError($this->makeDownloadingText(), false);
                         } else {
                             ++$this->failureCnt;
-                            $this->io->overwriteError($this->makeDownloadingText(), false);
+                            //$this->io->overwriteError($this->makeDownloadingText(), false);
                         }
                         curl_setopt($ch, CURLOPT_FILE, STDOUT);
                         $index = (int)$ch;

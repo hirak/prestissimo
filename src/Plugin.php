@@ -67,7 +67,6 @@ class Plugin implements
         $conns = 6; //TODO read config
         if (count($packages) >= $conns) {
             $downloader = new ParallelDownloader($this->io, $this->config);
-            $downloader->onPreDownload->attach(new Hooks\LocalRedirector);
             $downloader->download($packages, $conns, true);
         }
     }
