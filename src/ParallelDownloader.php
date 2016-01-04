@@ -49,6 +49,17 @@ class ParallelDownloader
             $unused[] = curl_init();
         }
 
+        /// @codeCoverageIgnoreStart
+        if (function_exists('curl_share_init')) {
+            $sh = curl_share_init();
+            curl_share_setopt($sh, CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION);
+
+            foreach ($unused as $ch) {
+                curl_setopt($ch, CURLOPT_SHARE, $sh);
+            }
+        }
+        /// @codeCoverageIgnoreEnd
+
         $cachedir = rtrim($this->config->get('cache-files-dir'), '\/');
 
         $chFpMap = array();
@@ -60,8 +71,8 @@ class ParallelDownloader
         $this->failureCnt = 0;
         $this->io->writeError($this->makeDownloadingText(), false);
         do {
+            // prepare curl resources
             while ($unused && $packages) {
-                // $packagesから一個取ってきて、$unusedから一個取ってきて、chをつくる。
                 $package = array_pop($packages);
                 $filepath = $cachedir . DIRECTORY_SEPARATOR . static::getCacheKey($package);
                 if (file_exists($filepath)) {
@@ -79,7 +90,9 @@ class ParallelDownloader
                 $onPreDownload = Factory::getPreEvent($request);
                 $onPreDownload->notify();
 
-                curl_setopt_array($ch, $request->getCurlOpts());
+                $opts = $request->getCurlOpts();
+                unset($opts[CURLOPT_ENCODING]);
+                curl_setopt_array($ch, $opts);
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_multi_add_handle($mh, $ch);
             }
@@ -100,16 +113,11 @@ class ParallelDownloader
                 default:
                     do $stat = curl_multi_exec($mh, $running);
                     while ($stat === CURLM_CALL_MULTI_PERFORM);
-                    // イベントが発生して、そのイベントがダウンロード完了であれば、chをunusedに戻す。
-                    // それ以外のイベントであれば、再度待つ。
-                    // イベントの走査が終わっていたら、ループをやり直す。(そのままdo whileを抜ければOK)
+
                     do if ($raised = curl_multi_info_read($mh, $remains)) {
                         $ch = $raised['handle'];
-                        $response = new Aspects\HttpGetResponse(
-                            $errno = curl_errno($ch),
-                            $error = curl_error($ch),
-                            $info = curl_getinfo($ch)
-                        );
+                        $errno = curl_errno($ch);
+                        $info = curl_getinfo($ch);
                         if (CURLE_OK === $errno && 200 === $info['http_code']) {
                             ++$this->successCnt;
                             //$this->io->overwriteError($this->makeDownloadingText(), false);
@@ -125,7 +133,7 @@ class ParallelDownloader
                         curl_multi_remove_handle($mh, $ch);
                         $unused[] = $ch;
                     } while ($remains);
-                    continue 3;
+                    break 2;
             } while ($running);
 
             // もし、$packagesが空っぽになったならば、ループを抜ける。
