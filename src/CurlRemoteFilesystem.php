@@ -119,7 +119,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             fclose($fp);
 
             if ($response->needAuth()) {
-                $this->promptAuth();
+                $this->promptAuth($request, $response);
             }
         } while ($this->retry);
 
@@ -198,7 +198,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             $this->onPostDownload->notify();
 
             if ($response->needAuth()) {
-                $this->promptAuth();
+                $this->promptAuth($request, $response);
             } elseif (strlen($execStatus) <= 0) {
                 throw new Downloader\TransportException(
                     "'$fileUrl' appears broken, and returned an empty 200 response"
