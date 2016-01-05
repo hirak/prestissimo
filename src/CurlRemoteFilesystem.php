@@ -291,7 +291,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             } else {
                 $message .= 'to go over the API rate limit';
             }
-            $github = new GitHub($io, $this->config, null);
+            $github = new Util\GitHub($io, $this->config, null);
             if ($github->authorizeOAuth($req->origin)) {
                 $this->retry = true;
                 return;
@@ -315,7 +315,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             } else {
                 $message .= 'to go over the API rate limit';
             }
-            $gitlab = new GitLab($io, $this->config, null);
+            $gitlab = new Util\GitLab($io, $this->config, null);
             if ($gitlab->authorizeOAuth($req->origin)) {
                 $this->retry = true;
                 return;
