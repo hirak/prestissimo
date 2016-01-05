@@ -7,8 +7,6 @@ use Composer\IO;
 use Composer\Config;
 
 /**
- * 先行して並列ダウンロードを行い、キャッシュファイルを作成する。
- * ダウンロード先は直接書き込み限定であり、RETURNTRANSFER機能は使うことができない。
  *
  */
 class ParallelDownloader
@@ -120,10 +118,11 @@ class ParallelDownloader
                         $info = curl_getinfo($ch);
                         if (CURLE_OK === $errno && 200 === $info['http_code']) {
                             ++$this->successCnt;
-                            //$this->io->overwriteError($this->makeDownloadingText(), false);
                         } else {
                             ++$this->failureCnt;
-                            //$this->io->overwriteError($this->makeDownloadingText(), false);
+                        }
+                        if ($this->io->isInteractive()) {
+                            $this->io->overwriteError($this->makeDownloadingText(), false);
                         }
                         curl_setopt($ch, CURLOPT_FILE, STDOUT);
                         $index = (int)$ch;
@@ -133,13 +132,15 @@ class ParallelDownloader
                         curl_multi_remove_handle($mh, $ch);
                         $unused[] = $ch;
                     } while ($remains);
-                    break 2;
+
+                    if ($packages) {
+                        break 2;
+                    }
             } while ($running);
 
-            // もし、$packagesが空っぽになったならば、ループを抜ける。
         } while ($packages);
+        $this->io->writeError(PHP_EOL . 'Prefetch Finished!');
 
-        // 後片付
         foreach ($unused as $ch) {
             curl_close($ch);
         }
