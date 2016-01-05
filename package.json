@@ -1,0 +1,30 @@
+{
+  "name": "hirak-prestissimo",
+  "version": "0.0.1",
+  "description": "composer plugin",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit",
+    "dev": "gulp server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/hirak/prestissimo.git"
+  },
+  "keywords": [
+    "composer"
+  ],
+  "author": "Hiraku NAKANO <hiraku@tojiru.net>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hirak/prestissimo/issues"
+  },
+  "homepage": "https://github.com/hirak/prestissimo#readme",
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-connect": "^2.3.1"
+  }
+}

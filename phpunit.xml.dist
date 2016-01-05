@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+  colors="always"
+  bootstrap="vendor/autoload.php">
+  <filter>
+    <whitelist>
+      <directory suffix=".php">src/</directory>
+    </whitelist>
+  </filter>
+
+  <logging>
+    <!--log
+       type="coverage-html"
+       target="artifacts/coverage/"
+       charset="UTF-8"
+       highlight="true"/-->
+    <log type="coverage-clover" target="artifacts/clover.xml"/>
+  </logging>
+
+  <php>
+    <ini name="error_reporting" value="-1"/>
+  </php>
+  <testsuite name="unit tests">
+    <directory>tests/unit/</directory>
+  </testsuite>
+</phpunit>

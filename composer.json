@@ -1,6 +1,6 @@
 {
     "name": "hirak/prestissimo",
-    "description": "A composer plugin to speed up by downloading parallel",
+    "description": "A composer parallel install plugin",
     "type": "composer-plugin",
     "authors": [
         {
@@ -12,6 +12,13 @@
     "require": {
         "ext-curl": "*",
         "composer-plugin-api": "^1.0"
+    },
+    "require-dev": {
+        "composer/composer": "dev-master",
+        "phpunit/phpunit": "^4.0"
+    },
+    "scripts": {
+        "test": "phpunit"
     },
     "autoload": {
         "psr-4": {

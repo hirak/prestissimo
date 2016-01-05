@@ -2,61 +2,92 @@
 namespace Hirak\Prestissimo;
 
 use Composer\Composer;
-use Composer\IO\IOInterface;
-use Composer\Plugin\PluginEvents;
-use Composer\Plugin\PluginInterface;
-use Composer\Plugin\PreFileDownloadEvent;
-use Composer\EventDispatcher\EventSubscriberInterface;
+use Composer\IO;
+use Composer\Plugin as CPlugin;
+use Composer\EventDispatcher;
+use Composer\Package;
 
-class Plugin implements PluginInterface, EventSubscriberInterface
+use Composer\Installer;
+use Composer\DependencyResolver;
+
+class Plugin implements
+    CPlugin\PluginInterface,
+    EventDispatcher\EventSubscriberInterface
 {
-    private $composer, $io;
+    /** @var Composer */
+    private $composer;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function activate(Composer $composer, IOInterface $io)
+    /** @var IO\IOInterface */
+    private $io;
+
+    /** @var Config */
+    private $config;
+
+    public function activate(Composer $composer, IO\IOInterface $io)
     {
         $this->composer = $composer;
+        $this->config = $composer->getConfig();
         $this->io = $io;
-
-        $wrappers = stream_get_wrappers();
-        if (in_array('http', $wrappers)) {
-            stream_wrapper_unregister('http');
-        }
-        if (in_array('https', $wrappers)) {
-            stream_wrapper_unregister('https');
-        }
-        stream_wrapper_register('http', 'Hirak\Prestissimo\CurlStream');
-        stream_wrapper_register('https', 'Hirak\Prestissimo\CurlStream');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents()
     {
         return array(
-            PluginEvents::PRE_FILE_DOWNLOAD => array(
-                array('onPreFileDownload', 0)
+            CPlugin\PluginEvents::PRE_FILE_DOWNLOAD => array(
+                array('onPreFileDownload', 0),
+            ),
+            Installer\InstallerEvents::POST_DEPENDENCIES_SOLVING => array(
+                array('onPostDependenciesSolving', PHP_INT_MAX),
             ),
         );
     }
 
-    public function onPreFileDownload(PreFileDownloadEvent $event)
+    public function onPreFileDownload(CPlugin\PreFileDownloadEvent $ev)
     {
-        $url = $event->getProcessedUrl();
-        $host = parse_url($url, PHP_URL_HOST);
-        $protocol = parse_url($url, PHP_URL_SCHEME);
+        $url = $ev->getProcessedUrl();
 
-        if (preg_match('/^https?$/', $protocol)) {
-            $fs = $event->getRemoteFilesystem();
-            $curl = new RemoteFilesystem(
+        if (preg_match('/^https?/', $url)) {
+            $rfs = $ev->getRemoteFilesystem();
+
+            $ev->setRemoteFilesystem(new CurlRemoteFilesystem(
                 $this->io,
-                $this->composer->getConfig(),
-                $fs->getOptions()
-            );
-            $event->setRemoteFilesystem($curl);
+                $this->config,
+                $rfs->getOptions()
+            ));
         }
+    }
+
+    /**
+     * pre-fetch parallel by curl_multi
+     */
+    public function onPostDependenciesSolving(Installer\InstallerEvent $ev)
+    {
+        $ops = $ev->getOperations();
+        $packages = $this->filterPackages($ops);
+        $conns = 6; //TODO read config
+        if (count($packages) >= $conns) {
+            $downloader = new ParallelDownloader($this->io, $this->config);
+            $downloader->download($packages, $conns, true);
+        }
+    }
+
+    /**
+     * @param DependencyResolver\Operation\OperationInterface[]
+     * @return Package\PackageInterface[]
+     */
+    private static function filterPackages(array $operations)
+    {
+        $packs = array();
+        foreach ($operations as $op) {
+            switch ($op->getJobType()) {
+                case 'install':
+                    $packs[] = $op->getPackage();
+                    break;
+                case 'update':
+                    $packs[] = $op->getTargetPackage();
+                    break;
+            }
+        }
+        return $packs;
     }
 }
