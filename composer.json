@@ -1,6 +1,6 @@
 {
     "name": "hirak/prestissimo",
-    "description": "A composer plugin to speed up by downloading parallel",
+    "description": "A composer parallel install plugin",
     "type": "composer-plugin",
     "authors": [
         {
