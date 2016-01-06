@@ -1,7 +1,9 @@
 prestissimo (composer plugin)
 =================================
 
-A [composer](https://getcomposer.org) parallel install plugin.
+[![Latest Stable Version](https://poser.pugx.org/hirak/prestissimo/v/stable)](https://packagist.org/packages/hirak/prestissimo) [![Total Downloads](https://poser.pugx.org/hirak/prestissimo/downloads)](https://packagist.org/packages/hirak/prestissimo) [![Latest Unstable Version](https://poser.pugx.org/hirak/prestissimo/v/unstable)](https://packagist.org/packages/hirak/prestissimo) [![License](https://poser.pugx.org/hirak/prestissimo/license)](https://packagist.org/packages/hirak/prestissimo)
+
+[composer](https://getcomposer.org) parallel install plugin.
 
 ## Depends
 
