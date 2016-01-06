@@ -28,6 +28,8 @@ class HttpGetRequest
 
         , $username = null
         , $password = null
+
+        , $maybePublic = true
         ;
 
     /**
@@ -87,7 +89,6 @@ class HttpGetRequest
     {
         $curlOpts = $this->curlOpts + array(
             CURLOPT_HTTPGET => true,
-            //CURLOPT_VERBOSE => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 20,
             CURLOPT_ENCODING => 'gzip',

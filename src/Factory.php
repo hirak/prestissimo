@@ -48,7 +48,7 @@ final class Factory
     {
         $pre = new Aspects\JoinPoint('pre-download', $req);
         $pre->attach(static::getAspectAuth());
-        //$pre->attach(new Aspects\AspectRedirect);
+        $pre->attach(new Aspects\AspectRedirect);
         $pre->attach(new Aspects\AspectProxy);
         return $pre;
     }
@@ -64,7 +64,7 @@ final class Factory
     }
 
     /**
-     * @return Aspects\AspectAuth
+     * @return Aspects\AspectAuth (same instance)
      */
     public static function getAspectAuth()
     {

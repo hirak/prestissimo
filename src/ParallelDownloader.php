@@ -85,6 +85,7 @@ class ParallelDownloader
                 // make url
                 $url = $package->getDistUrl();
                 $request = new Aspects\HttpGetRequest(parse_url($url, PHP_URL_HOST), $url, $this->io);
+                $request->maybePublic = preg_match('%(https|git)://github\.com%', $package->getSourceUrl());
                 $onPreDownload = Factory::getPreEvent($request);
                 $onPreDownload->notify();
 

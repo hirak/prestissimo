@@ -25,6 +25,9 @@ class AspectRedirect implements SplObserver
 
     public function before(HttpGetRequest $req)
     {
+        if ('api.github.com' !== $req->host || !$req->maybePublic) {
+            return;
+        }
         $url = $req->getURL();
 
         if (preg_match('%^https://api\.github\.com/repos(/[^/]+/[^/]+/)zipball/%', $url, $m)) {
