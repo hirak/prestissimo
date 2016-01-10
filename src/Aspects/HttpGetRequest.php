@@ -30,6 +30,7 @@ class HttpGetRequest
         , $password = null
 
         , $maybePublic = true
+        , $verbose = false
         ;
 
     /**
@@ -95,6 +96,8 @@ class HttpGetRequest
             CURLOPT_HTTPHEADER => $this->headers,
             CURLOPT_USERAGENT => $this->genUA(),
         );
+
+        $curlOpts[CURLOPT_VERBOSE] = (bool) $this->verbose;
 
         if ($this->username && $this->password) {
             $curlOpts[CURLOPT_USERPWD] = "$this->username:$this->password";

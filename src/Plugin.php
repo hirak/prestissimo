@@ -1,4 +1,9 @@
 <?php
+/**
+ * hirak/prestissimo
+ * @author Hiraku NAKANO
+ * @license MIT https://github.com/hirak/prestissimo
+ */
 namespace Hirak\Prestissimo;
 
 use Composer\Composer;
@@ -64,10 +69,10 @@ class Plugin implements
     {
         $ops = $ev->getOperations();
         $packages = $this->filterPackages($ops);
-        $conns = 6; //TODO read config
-        if (count($packages) >= $conns) {
+        $pluginConfig = $this->getConfig();
+        if (count($packages) >= $pluginConfig['minConnections']) {
             $downloader = new ParallelDownloader($this->io, $this->config);
-            $downloader->download($packages, $conns, true);
+            $downloader->download($packages, $pluginConfig);
         }
     }
 
@@ -89,5 +94,43 @@ class Plugin implements
             }
         }
         return $packs;
+    }
+
+    /**
+     * @return array
+     */
+    private function getConfig()
+    {
+        static $config;
+        if ($config) {
+            return $config;
+        }
+
+        $config = $this->config->get('prestissimo');
+        if (! is_array($config)) {
+            $config = array();
+        }
+        $config += array(
+            'maxConnections' => 6,
+            'minConnections' => 3,
+            'pipeline' => false,
+            'verbose' => false,
+            'privatePackages' => array(),
+        );
+
+        if (! is_int($config['maxConnections']) || $config['maxConnections'] < 1) {
+            $config['maxConnections'] = 6;
+        }
+        if (! is_int($config['minConnections']) || $config['minConnections'] > $config['maxConnections']) {
+            $config['minConnections'] = 3;
+        }
+        if (! is_bool($config['pipeline'])) {
+            $config['pipeline'] = (bool)$config['pipeline'];
+        }
+        if (! is_array($config['privatePackages'])) {
+            $config['privatePackages'] = (array)$config['privatePackages'];
+        }
+
+        return $config;
     }
 }

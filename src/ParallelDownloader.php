@@ -1,5 +1,9 @@
 <?php
-
+/**
+ * hirak/prestissimo
+ * @author Hiraku NAKANO
+ * @license MIT https://github.com/hirak/prestissimo
+ */
 namespace Hirak\Prestissimo;
 
 use Composer\Package;
@@ -29,21 +33,16 @@ class ParallelDownloader
     }
 
     /**
-     * 並列数$connsで$packagesを並列にダウンロードしてゆき、先にキャッシュを作成してゆく。
-     * $connsよりも少ない数しかダウンロードしないのであれば、このメソッドを使ってはならない。
      * @param Package\PackageInterface[] $packages
-     * @param int $conns
-     * @param bool $progress
+     * @param array $pluginConfig
      * @return void
      */
-    public function download(array $packages, $conns, $progress) 
+    public function download(array $packages, array $pluginConfig) 
     {
-        if (count($packages) < $conns) {
-            throw new \InvalidArgumentException;
-        }
         $mh = curl_multi_init();
         $unused = array();
-        for ($i = 0; $i < $conns; ++$i) {
+        $maxConns = $pluginConfig['maxConnections'];
+        for ($i = 0; $i < $maxConns; ++$i) {
             $unused[] = curl_init();
         }
 
@@ -54,6 +53,13 @@ class ParallelDownloader
 
             foreach ($unused as $ch) {
                 curl_setopt($ch, CURLOPT_SHARE, $sh);
+            }
+
+        }
+
+        if (function_exists('curl_multi_setopt')) {
+            if ($pluginConfig['pipeline']) {
+                curl_multi_setopt($mh, CURLMOPT_PIPELINING, true);
             }
         }
         /// @codeCoverageIgnoreEnd
@@ -67,13 +73,14 @@ class ParallelDownloader
         $this->totalCnt = count($packages);
         $this->successCnt = 0;
         $this->failureCnt = 0;
-        $this->io->writeError($this->makeDownloadingText(), false);
+        $this->io->writeError("    Prefetch start: <comment>success: $this->successCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>");
         do {
             // prepare curl resources
             while ($unused && $packages) {
                 $package = array_pop($packages);
                 $filepath = $cachedir . DIRECTORY_SEPARATOR . static::getCacheKey($package);
                 if (file_exists($filepath)) {
+                    ++$this->successCnt;
                     continue;
                 }
                 $ch = array_pop($unused);
@@ -85,7 +92,12 @@ class ParallelDownloader
                 // make url
                 $url = $package->getDistUrl();
                 $request = new Aspects\HttpGetRequest(parse_url($url, PHP_URL_HOST), $url, $this->io);
-                $request->maybePublic = preg_match('%(https|git)://github\.com%', $package->getSourceUrl());
+                $request->verbose = $pluginConfig['verbose'];
+                if (in_array($package->getName(), $pluginConfig['privatePackages'])) {
+                    $request->maybePublic = false;
+                } else {
+                    $request->maybePublic = preg_match('%^(?:https|git)://github\.com%', $package->getSourceUrl());
+                }
                 $onPreDownload = Factory::getPreEvent($request);
                 $onPreDownload->notify();
 
@@ -101,7 +113,7 @@ class ParallelDownloader
             while ($stat === CURLM_CALL_MULTI_PERFORM);
 
             // wait for any event
-            do switch (curl_multi_select($mh, 10)) {
+            do switch (curl_multi_select($mh, 5)) {
                 case -1:
                     usleep(10);
                     do $stat = curl_multi_exec($mh, $running);
@@ -122,9 +134,7 @@ class ParallelDownloader
                         } else {
                             ++$this->failureCnt;
                         }
-                        if ($this->io->isInteractive()) {
-                            $this->io->overwriteError($this->makeDownloadingText(), false);
-                        }
+                        $this->io->writeError($this->makeDownloadingText($info['url']));
                         curl_setopt($ch, CURLOPT_FILE, STDOUT);
                         $index = (int)$ch;
                         $fp = $chFpMap[$index];
@@ -140,7 +150,7 @@ class ParallelDownloader
             } while ($running);
 
         } while ($packages);
-        $this->io->writeError(PHP_EOL . 'Prefetch Finished!');
+        $this->io->writeError("    Finished: <comment>success: $this->successCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>");
 
         foreach ($unused as $ch) {
             curl_close($ch);
@@ -149,13 +159,14 @@ class ParallelDownloader
     }
 
     /**
-     * @param int $success
-     * @param int $failure
+     * @param string $url
      * @return string
      */
-    private function makeDownloadingText()
+    private function makeDownloadingText($url)
     {
-        return "    Pre Downloading: <comment>success: $this->successCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>";
+        $request = new Aspects\HttpGetRequest('example.com', $url, $this->io);
+        $request->query = array();
+        return "    <comment>$this->successCnt/$this->totalCnt</comment>:    {$request->getURL()}";
     }
 
     public static function getCacheKey(Package\PackageInterface $p)
