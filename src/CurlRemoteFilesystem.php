@@ -58,76 +58,22 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
      */
     public function copy($origin, $fileUrl, $fileName, $progress=true, $options=array())
     {
-        do {
-            $this->retry = false;
-
-            $request = new Aspects\HttpGetRequest($origin, $fileUrl, $this->io);
-            $request->setSpecial(array(
-                'github' => $this->config->get('github-domains'),
-                'gitlab' => $this->config->get('gitlab-domains'),
-            ));
-            $this->onPreDownload = Factory::getPreEvent($request);
-            $this->onPostDownload = Factory::getPostEvent($request);
-            if ($this->degradedMode) {
-                $this->onPreDownload->attach(new Aspects\AspectDegradedMode);
-            }
-
-            $ch = Factory::getConnection($origin);
-
-            $allOptions = array_replace_recursive($this->options, $options);
-            // override
-            if ('github' === $request->special && isset($allOptions['github-token'])) {
-                $request->query['access_token'] = $allOptions['github-token'];
-            }
-            if ('gitlab' === $request->special && isset($allOptions['gitlab-token'])) {
-                $request->query['access_token'] = $allOptions['gitlab-token'];
-            }
-
-            if ($this->io->isDebug()) {
-                $this->io->writeError('Downloading ' . $fileUrl);
-            }
-
-            if ($progress) {
-                $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
-                $request->curlOpts[CURLOPT_NOPROGRESS] = false;
-                $request->curlOpts[CURLOPT_PROGRESSFUNCTION] = array($this, 'progress');
-            } else {
-                $request->curlOpts[CURLOPT_NOPROGRESS] = true;
-                $request->curlOpts[CURLOPT_PROGRESSFUNCTION] = null;
-            }
-
+        return $this->fetch($origin, $fileUrl, $progress, $options, function($ch, $request) use($fileName){
             $fp = $this->createFile($fileName);
-            $request->curlOpts[CURLOPT_FILE] = $fp;
-            $request->curlOpts[CURLOPT_RETURNTRANSFER] = false;
-
-            $this->onPreDownload->notify();
-
-            $opts = $request->getCurlOpts();
-            curl_setopt_array($ch, $request->getCurlOpts());
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
             curl_setopt($ch, CURLOPT_FILE, $fp);
-            $execStatus = curl_exec($ch);
 
-            $response = new Aspects\HttpGetResponse(
-                curl_errno($ch),
-                curl_error($ch),
-                curl_getinfo($ch)
-            );
-            $this->onPostDownload->setResponse($response);
-            $this->onPostDownload->notify();
+            list($execStatus, $response) = $result = $this->exec($ch, $request);
 
             curl_setopt($ch, CURLOPT_FILE, STDOUT);
             fclose($fp);
 
-            if ($response->needAuth()) {
-                $this->promptAuth($request, $response);
+            if (200 !== $response->info['http_code']) {
+                unlink($fileName);
             }
-        } while ($this->retry);
 
-        if ($progress) {
-            $this->io->overwriteError("    Downloading: <comment>100%</comment>");
-        }
-
-        return $execStatus;
+            return $result;
+        });
     }
 
     /**
@@ -140,7 +86,18 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
      *
      * @return bool|string The content
      */
-    public function getContents($origin, $fileUrl, $progress = true, $options = array())
+    public function getContents($origin, $fileUrl, $progress=true, $options=array())
+    {
+        return $this->fetch($origin, $fileUrl, $progress, $options, function($ch, $request){
+            // This order is important.
+            curl_setopt($ch, CURLOPT_FILE, STDOUT);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+            return $this->exec($ch, $request);
+        });
+    }
+
+    protected function fetch($origin, $fileUrl, $progress, $options, $exec)
     {
         do {
             $this->retry = false;
@@ -158,13 +115,13 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
             $ch = Factory::getConnection($origin);
 
-            $allOptions = array_replace_recursive($this->options, $options);
+            $options += $this->options;
             // override
-            if ('github' === $request->special && isset($allOptions['github-token'])) {
-                $request->query['access_token'] = $allOptions['github-token'];
+            if ('github' === $request->special && isset($options['github-token'])) {
+                $request->query['access_token'] = $options['github-token'];
             }
-            if ('gitlab' === $request->special && isset($allOptions['gitlab-token'])) {
-                $request->query['access_token'] = $allOptions['gitlab-token'];
+            if ('gitlab' === $request->special && isset($options['gitlab-token'])) {
+                $request->query['access_token'] = $options['gitlab-token'];
             }
 
             if ($this->io->isDebug()) {
@@ -180,30 +137,13 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
                 $request->curlOpts[CURLOPT_PROGRESSFUNCTION] = null;
             }
 
-            $request->curlOpts[CURLOPT_FILE] = STDOUT;
-            $request->curlOpts[CURLOPT_RETURNTRANSFER] = true;
-
             $this->onPreDownload->notify();
 
             $opts = $request->getCurlOpts();
             curl_setopt_array($ch, $request->getCurlOpts());
-            $execStatus = curl_exec($ch);
 
-            $response = new Aspects\HttpGetResponse(
-                curl_errno($ch),
-                curl_error($ch),
-                curl_getinfo($ch)
-            );
-            $this->onPostDownload->setResponse($response);
-            $this->onPostDownload->notify();
+            list($execStatus, $response) = $exec($ch, $request);
 
-            if ($response->needAuth()) {
-                $this->promptAuth($request, $response);
-            } elseif (strlen($execStatus) <= 0) {
-                throw new Downloader\TransportException(
-                    "'$fileUrl' appears broken, and returned an empty 200 response"
-                );
-            }
         } while ($this->retry);
 
         if ($progress) {
@@ -231,6 +171,28 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
     public function getLastHeaders()
     {
         return $this->lastHeaders;
+    }
+
+    /**
+     *
+     */
+    private function exec($ch, $request)
+    {
+        $execStatus = curl_exec($ch);
+
+        $response = new Aspects\HttpGetResponse(
+            curl_errno($ch),
+            curl_error($ch),
+            curl_getinfo($ch)
+        );
+        $this->onPostDownload->setResponse($response);
+        $this->onPostDownload->notify();
+
+        if ($response->needAuth()) {
+            $this->promptAuth($request, $response);
+        }
+
+        return array($execStatus, $response);
     }
 
     /**
