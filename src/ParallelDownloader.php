@@ -87,7 +87,7 @@ class ParallelDownloader
 
                 // make file resource
                 $fp = CurlRemoteFilesystem::createFile($filepath);
-                $chFpMap[(int)$ch] = $fp;
+                $chFpMap[(int)$ch] = compact('fp', 'filepath');
 
                 // make url
                 $url = $package->getDistUrl();
@@ -129,17 +129,20 @@ class ParallelDownloader
                         $ch = $raised['handle'];
                         $errno = curl_errno($ch);
                         $info = curl_getinfo($ch);
+                        curl_setopt($ch, CURLOPT_FILE, STDOUT);
+                        $index = (int)$ch;
+                        $fileinfo = $chFpMap[$index];
+                        unset($chFpMap[$index]);
+                        $fp = $fileinfo['fp'];
+                        $filepath = $fileinfo['filepath'];
+                        fclose($fp);
                         if (CURLE_OK === $errno && 200 === $info['http_code']) {
                             ++$this->successCnt;
                         } else {
                             ++$this->failureCnt;
+                            unlink($filepath);
                         }
                         $this->io->writeError($this->makeDownloadingText($info['url']));
-                        curl_setopt($ch, CURLOPT_FILE, STDOUT);
-                        $index = (int)$ch;
-                        $fp = $chFpMap[$index];
-                        fclose($fp);
-                        unset($chFpMap[$index]);
                         curl_multi_remove_handle($mh, $ch);
                         $unused[] = $ch;
                     } while ($remains);
