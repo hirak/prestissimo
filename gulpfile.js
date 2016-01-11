@@ -14,17 +14,9 @@
  */
 var gulp = require('gulp');
 var exec = require('child_process').exec;
-var connect = require('gulp-connect');
+var browserSync = require('browser-sync').create();
 
 gulp.task('default', ['test', 'inspect']);
-
-gulp.task('help', function(){
-    console.log('gulp test\t... kick vendor/bin/phpunit command');
-    console.log('gulp inspect\t... kick vendor/bin/apigen and vendor/bin/pdepend');
-    console.log('gulp server\t... start static web server on http://localhost:9000/');
-    console.log('\tcoverage report... http://localhost:9000/coverage/');
-    console.log('\tApiGen document... http://localhost:9000/api/');
-});
 
 gulp.task('test', function(done){
     exec('vendor/bin/phpunit', function(err, stdout, stderr){
@@ -35,30 +27,25 @@ gulp.task('test', function(done){
 });
 
 gulp.task('inspect', function(done){
-    var i = 0, count = function(){ if (++i > 1) done() };
     exec([
         'vendor/bin/pdepend',
         '--jdepend-chart=artifacts/pdepend.svg',
         '--overview-pyramid=artifacts/pyramid.svg',
         '--summary-xml=artifacts/summary.xml',
-        'src/'].join(' '), count);
-    exec('vendor/bin/apigen.php', count);
+        'src/'].join(' '), done);
 });
 
-gulp.task('connect', ['default'], function(){
-    connect.server({
-        root: [__dirname + '/artifacts/'],
-        port: 9000,
-        livereload: true
+gulp.task('serve', function(){
+    browserSync.init({
+        server: {
+            baseDir: "artifacts/"
+        }
     });
-});
 
-gulp.task('reload', ['test'], function(){
-    return gulp.src('artifacts/coverage/*')
-        .pipe(connect.reload());
-});
-
-gulp.task('server', ['connect'], function(){
-    gulp.watch(['src/**', 'tests/**'], ['reload']);
+    gulp.watch(['src/**/*.php', 'tests/**/*Test.php'], function(ev){
+        gulp.run('test');
+        gulp.run('inspect');
+        browserSync.reload();
+    });
 });
 

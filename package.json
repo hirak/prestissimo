@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/hirak/prestissimo#readme",
   "devDependencies": {
-    "gulp": "^3.9.0",
-    "gulp-connect": "^2.3.1"
+    "browser-sync": "^2.11.0",
+    "gulp": "^3.9.0"
   }
 }

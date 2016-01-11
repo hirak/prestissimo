@@ -16,10 +16,12 @@
     },
     "require-dev": {
         "composer/composer": "dev-master",
-        "phpunit/phpunit": "^4.0"
+        "phpunit/phpunit": "^4.0",
+        "pdepend/pdepend": "^2.2"
     },
     "scripts": {
-        "test": "phpunit"
+        "test": "phpunit",
+        "apigen": "apigen.php"
     },
     "autoload": {
         "psr-4": {
