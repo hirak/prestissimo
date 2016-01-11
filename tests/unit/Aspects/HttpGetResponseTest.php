@@ -11,5 +11,9 @@ class HttpGetResponseTest extends \PHPUnit_Framework_TestCase
         );
 
         self::assertEquals(10, $res->errno);
+
+        self::assertFalse($res->needAuth());
+        $res->setNeedAuth();
+        self::assertTrue($res->needAuth());
     }
 }
