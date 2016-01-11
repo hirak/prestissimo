@@ -80,6 +80,7 @@ class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
             CURLOPT_ENCODING => 'gzip',
             CURLOPT_HTTPHEADER => array(),
             CURLOPT_USERPWD => '',
+            CURLOPT_VERBOSE => false,
         );
         $curlOpts = $req->getCurlOpts();
         unset($curlOpts[CURLOPT_USERAGENT]);
