@@ -104,8 +104,8 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
             $request = new Aspects\HttpGetRequest($origin, $fileUrl, $this->io);
             $request->setSpecial(array(
-                'github' => $this->config->get('github-domains'),
-                'gitlab' => $this->config->get('gitlab-domains'),
+                'github' => $this->config->get('github-domains') ?: array(),
+                'gitlab' => $this->config->get('gitlab-domains') ?: array(),
             ));
             $this->onPreDownload = Factory::getPreEvent($request);
             $this->onPostDownload = Factory::getPostEvent($request);
