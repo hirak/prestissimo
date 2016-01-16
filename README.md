@@ -7,6 +7,7 @@ prestissimo (composer plugin)
 
 ## Depends
 
+- composer `>=1.0.0-alpha10` (includes dev-master)
 - PHP `>=5.3`, (suggest `>=5.5`, because `curl_share_init`)
 - ext-curl
 
