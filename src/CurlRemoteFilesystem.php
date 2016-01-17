@@ -113,8 +113,6 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
                 $this->onPreDownload->attach(new Aspects\AspectDegradedMode);
             }
 
-            $ch = Factory::getConnection($origin);
-
             $options += $this->options;
             // override
             if ('github' === $request->special && isset($options['github-token'])) {
@@ -140,7 +138,12 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             $this->onPreDownload->notify();
 
             $opts = $request->getCurlOpts();
-            curl_setopt_array($ch, $request->getCurlOpts());
+            if (empty($opts[CURLOPT_USERPWD])) {
+                unset($opts[CURLOPT_USERPWD]);
+            }
+            $ch = Factory::getConnection($origin, isset($opts[CURLOPT_USERPWD]));
+
+            curl_setopt_array($ch, $opts);
 
             list($execStatus, $response) = $exec($ch, $request);
 
