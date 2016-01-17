@@ -20,8 +20,7 @@
         "pdepend/pdepend": "^2.2"
     },
     "scripts": {
-        "test": "phpunit",
-        "apigen": "apigen.php"
+        "test": "phpunit"
     },
     "autoload": {
         "psr-4": {

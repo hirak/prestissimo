@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "vendor/bin/phpunit",
-    "dev": "gulp server"
+    "serve": "gulp serve"
   },
   "repository": {
     "type": "git",
