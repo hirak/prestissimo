@@ -25,6 +25,7 @@ final class Factory
     }
 
     /**
+     * don't need Authorization
      * @var array {
      *  'origin.example.com' => x
      * }
@@ -32,18 +33,35 @@ final class Factory
     private $connections = array();
 
     /**
+     * need Authorization header
+     * @var array {
+     *  'origin.example.com' => x
+     * }
+     */
+    private $authConnections = array();
+
+    /**
      * get cached curl handler
      * @param string $origin
+     * @param bool $auth
      * @return resource<curl>
      */
-    public static function getConnection($origin)
+    public static function getConnection($origin, $auth=false)
     {
         $instance = self::getInstance();
-        if (isset($instance->connections[$origin])) {
-            return $instance->connections[$origin];
-        }
+        if ($auth) {
+            if (isset($instance->authConnections[$origin])) {
+                return $instance->authConnections[$origin];
+            }
 
-        return $instance->connections[$origin] = curl_init();
+            return $instance->authConnections[$origin] = curl_init();
+        } else {
+            if (isset($instance->connections[$origin])) {
+                return $instance->connections[$origin];
+            }
+
+            return $instance->connections[$origin] = curl_init();
+        }
     }
 
     /**

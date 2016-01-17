@@ -103,6 +103,7 @@ class ParallelDownloader
 
                 $opts = $request->getCurlOpts();
                 unset($opts[CURLOPT_ENCODING]);
+                unset($opts[CURLOPT_USERPWD]);
                 curl_setopt_array($ch, $opts);
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_multi_add_handle($mh, $ch);
