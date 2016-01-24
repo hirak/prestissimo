@@ -1,7 +1,13 @@
 prestissimo (composer plugin)
 =================================
 
-[![Latest Stable Version](https://poser.pugx.org/hirak/prestissimo/v/stable)](https://packagist.org/packages/hirak/prestissimo) [![Total Downloads](https://poser.pugx.org/hirak/prestissimo/downloads)](https://packagist.org/packages/hirak/prestissimo) [![Latest Unstable Version](https://poser.pugx.org/hirak/prestissimo/v/unstable)](https://packagist.org/packages/hirak/prestissimo) [![License](https://poser.pugx.org/hirak/prestissimo/license)](https://packagist.org/packages/hirak/prestissimo)
+[![Build Status](https://travis-ci.org/hirak/prestissimo.svg?branch=master)](https://travis-ci.org/hirak/prestissimo)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/hirak/prestissimo/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/hirak/prestissimo/?branch=master)
+[![Code Coverage](https://scrutinizer-ci.com/g/hirak/prestissimo/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/hirak/prestissimo/?branch=master)  
+[![Latest Stable Version](https://poser.pugx.org/hirak/prestissimo/v/stable)](https://packagist.org/packages/hirak/prestissimo)
+[![Total Downloads](https://poser.pugx.org/hirak/prestissimo/downloads)](https://packagist.org/packages/hirak/prestissimo)
+[![Latest Unstable Version](https://poser.pugx.org/hirak/prestissimo/v/unstable)](https://packagist.org/packages/hirak/prestissimo)
+[![License](https://poser.pugx.org/hirak/prestissimo/license)](https://packagist.org/packages/hirak/prestissimo)
 
 [composer](https://getcomposer.org) parallel install plugin.
 
