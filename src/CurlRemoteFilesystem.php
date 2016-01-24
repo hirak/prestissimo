@@ -123,11 +123,11 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             }
 
             if ($this->io->isDebug()) {
-                $this->io->writeError('Downloading ' . $fileUrl);
+                $this->io->write('Downloading ' . $fileUrl);
             }
 
             if ($progress) {
-                $this->io->writeError("    Downloading: <comment>Connecting...</comment>", false);
+                $this->io->write("    Downloading: <comment>Connecting...</comment>", false);
                 $request->curlOpts[CURLOPT_NOPROGRESS] = false;
                 $request->curlOpts[CURLOPT_PROGRESSFUNCTION] = array($this, 'progress');
             } else {
@@ -150,7 +150,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
         } while ($this->retry);
 
         if ($progress) {
-            $this->io->overwriteError("    Downloading: <comment>100%</comment>");
+            $this->io->overwrite("    Downloading: <comment>100%</comment>");
         }
 
         return $execStatus;
@@ -212,7 +212,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
         }
 
         $progression = intval($downBytes / $downBytesMax * 100);
-        $this->io->overwriteError("    Downloading: <comment>$progression%</comment>", false);
+        $this->io->overwrite("    Downloading: <comment>$progression%</comment>", false);
         return 0;
     }
 
@@ -323,7 +323,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             );
         }
 
-        $io->overwriteError("    Authentication required (<info>$req->host</info>):");
+        $io->overwrite("    Authentication required (<info>$req->host</info>):");
         $username = $io->ask('      Username: ');
         $password = $io->askAndHideAnswer('      Password: ');
         $io->setAuthentication($req->origin, $username, $password);

@@ -32,6 +32,16 @@ class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
             array('username'=>'user', 'password'=>'pass'),
             $io->getAuthentication('github.com')
         );
+
+        $req = new HttpGetRequest(
+            'api.github.com',
+            'http://example.com:8080/something/path?a=b&c=d',
+            $io
+        );
+        self::assertEquals(
+            array('username'=>'user', 'password'=>'pass'),
+            $io->getAuthentication('github.com')
+        );
     }
 
     function testGetURL()
@@ -92,5 +102,32 @@ class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
         $curlOpts = $req->getCurlOpts();
         unset($curlOpts[CURLOPT_USERAGENT]);
         self::assertEquals($expects, $curlOpts);
+    }
+
+    function testSetSpecial()
+    {
+        $io = new \Composer\IO\NullIO;
+        $req = new HttpGetRequest(
+            'github.com',
+            'https://github.com/404',
+            $io
+        );
+        $req->setSpecial(array(
+            'github' => array('github.com'),
+        ));
+
+        self::assertSame('github', $req->special);
+
+        $io = new \Composer\IO\NullIO;
+        $req = new HttpGetRequest(
+            'github.com',
+            'https://github.com/',
+            $io
+        );
+        $req->setSpecial(array(
+            'github' => array(),
+        ));
+
+        self::assertSame('github', $req->special);
     }
 }

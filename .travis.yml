@@ -1,0 +1,19 @@
+language: php
+sudo: false
+
+php:
+  - '5.3'
+  - '5.4'
+  - '5.5'
+  - '5.6'
+  - '7.0'
+
+install:
+  - composer install --no-progress --profile
+
+script:
+  - composer test
+
+after_script:
+  - wget https://scrutinizer-ci.com/ocular.phar
+  - php ocular.phar code-coverage:upload --format=php-clover artifacts/clover.xml

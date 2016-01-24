@@ -7,8 +7,8 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "vendor/bin/phpunit",
-    "dev": "gulp server"
+    "test": "vendor/bin/phpunit --colors=always",
+    "start": "gulp start"
   },
   "repository": {
     "type": "git",
