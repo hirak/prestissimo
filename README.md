@@ -29,11 +29,21 @@ $ composer global require hirak/prestissimo
 $ composer global remove hirak/prestissimo
 ```
 
+## Benchmark Example
+
+288s -> 26s
+
+```bash
+$ composer create-project laravel/laravel laravel1 --no-progress --profile --prefer-dist
+```
+
+![laravel](https://cloud.githubusercontent.com/assets/835251/12534815/55071302-c2ad-11e5-96a4-72e2c8744d5f.gif)
+
 ## Config (optional)
 
 in local composer.json
 
-```
+```json
 {
   ...
   "config": {
