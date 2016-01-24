@@ -73,7 +73,7 @@ class ParallelDownloader
         $this->totalCnt = count($packages);
         $this->successCnt = 0;
         $this->failureCnt = 0;
-        $this->io->writeError("    Prefetch start: <comment>success: $this->successCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>");
+        $this->io->write("    Prefetch start: <comment>success: $this->successCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>");
         do {
             // prepare curl resources
             while ($unused && $packages) {
@@ -142,7 +142,7 @@ class ParallelDownloader
                             ++$this->failureCnt;
                             unlink($filepath);
                         }
-                        $this->io->writeError($this->makeDownloadingText($info['url']));
+                        $this->io->write($this->makeDownloadingText($info['url']));
                         curl_multi_remove_handle($mh, $ch);
                         $unused[] = $ch;
                     } while ($remains);
@@ -153,7 +153,7 @@ class ParallelDownloader
             } while ($running);
 
         } while ($packages);
-        $this->io->writeError("    Finished: <comment>success: $this->successCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>");
+        $this->io->write("    Finished: <comment>success: $this->successCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>");
 
         foreach ($unused as $ch) {
             curl_close($ch);
