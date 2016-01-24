@@ -3,7 +3,7 @@
  *
  * 1. install node.js & npm
  * 2. $ npm install
- * 3. $ gulp server
+ * 3. $ gulp serve
  * 4. open http://localhost:9000/ (livereload enabled)
  * 5. coding on src/*.php and tests/*.php
  *
@@ -32,10 +32,11 @@ gulp.task('inspect', function(done){
         '--jdepend-chart=artifacts/pdepend.svg',
         '--overview-pyramid=artifacts/pyramid.svg',
         '--summary-xml=artifacts/summary.xml',
-        'src/'].join(' '), done);
+        'src/'
+    ].join(' '), done);
 });
 
-gulp.task('serve', function(){
+gulp.task('start', function(){
     browserSync.init({
         server: {
             baseDir: "artifacts/"
