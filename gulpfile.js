@@ -19,7 +19,7 @@ var browserSync = require('browser-sync').create();
 gulp.task('default', ['test', 'inspect']);
 
 gulp.task('test', function(done){
-    exec('vendor/bin/phpunit', function(err, stdout, stderr){
+    exec('vendor/bin/phpunit --colors=always', function(err, stdout, stderr){
         console.log(stdout);
         console.error(stderr);
         done();

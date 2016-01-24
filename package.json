@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "vendor/bin/phpunit",
+    "test": "vendor/bin/phpunit --colors=always",
     "serve": "gulp serve"
   },
   "repository": {

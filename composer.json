@@ -20,7 +20,7 @@
         "pdepend/pdepend": "^2.2"
     },
     "scripts": {
-        "test": "phpunit"
+        "test": "phpunit --colors=always"
     },
     "autoload": {
         "psr-4": {
