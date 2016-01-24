@@ -11,12 +11,13 @@
     ],
     "license": "MIT",
     "require": {
+        "php": ">=5.3.2",
         "ext-curl": "*",
         "composer-plugin-api": "~1.0.0-alpha10"
     },
     "require-dev": {
         "composer/composer": "dev-master",
-        "phpunit/phpunit": "^4.0",
+        "phpunit/phpunit": "^4.8",
         "pdepend/pdepend": "^2.2"
     },
     "scripts": {
@@ -29,5 +30,10 @@
     },
     "extra": {
         "class": "Hirak\\Prestissimo\\Plugin"
+    },
+    "config": {
+        "platform": {
+            "php": "5.3.29"
+        }
     }
 }
