@@ -8,7 +8,6 @@ namespace Hirak\Prestissimo\Aspects;
 
 use SplObserver;
 use SplSubject;
-
 use Composer\Downloader;
 
 /**

@@ -11,7 +11,6 @@ use Composer\IO;
 use Composer\Plugin as CPlugin;
 use Composer\EventDispatcher;
 use Composer\Package;
-
 use Composer\Installer;
 use Composer\DependencyResolver;
 

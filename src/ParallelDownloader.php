@@ -37,7 +37,7 @@ class ParallelDownloader
      * @param array $pluginConfig
      * @return void
      */
-    public function download(array $packages, array $pluginConfig) 
+    public function download(array $packages, array $pluginConfig)
     {
         $mh = curl_multi_init();
         $unused = array();
@@ -54,7 +54,6 @@ class ParallelDownloader
             foreach ($unused as $ch) {
                 curl_setopt($ch, CURLOPT_SHARE, $sh);
             }
-
         }
 
         if (function_exists('curl_multi_setopt')) {
@@ -110,49 +109,55 @@ class ParallelDownloader
             }
 
             // start multi download
-            do $stat = curl_multi_exec($mh, $running);
-            while ($stat === CURLM_CALL_MULTI_PERFORM);
+            do {
+                $stat = curl_multi_exec($mh, $running);
+            } while ($stat === CURLM_CALL_MULTI_PERFORM);
 
             // wait for any event
-            do switch (curl_multi_select($mh, 5)) {
+            do {
+                switch (curl_multi_select($mh, 5)) {
                 case -1:
                     usleep(10);
-                    do $stat = curl_multi_exec($mh, $running);
-                    while ($stat === CURLM_CALL_MULTI_PERFORM);
+                    do {
+                        $stat = curl_multi_exec($mh, $running);
+                    } while ($stat === CURLM_CALL_MULTI_PERFORM);
                     continue 2;
                 case 0:
                     continue 2;
                 default:
-                    do $stat = curl_multi_exec($mh, $running);
-                    while ($stat === CURLM_CALL_MULTI_PERFORM);
+                    do {
+                        $stat = curl_multi_exec($mh, $running);
+                    } while ($stat === CURLM_CALL_MULTI_PERFORM);
 
-                    do if ($raised = curl_multi_info_read($mh, $remains)) {
-                        $ch = $raised['handle'];
-                        $errno = curl_errno($ch);
-                        $info = curl_getinfo($ch);
-                        curl_setopt($ch, CURLOPT_FILE, STDOUT);
-                        $index = (int)$ch;
-                        $fileinfo = $chFpMap[$index];
-                        unset($chFpMap[$index]);
-                        $fp = $fileinfo['fp'];
-                        $filepath = $fileinfo['filepath'];
-                        fclose($fp);
-                        if (CURLE_OK === $errno && 200 === $info['http_code']) {
-                            ++$this->successCnt;
-                        } else {
-                            ++$this->failureCnt;
-                            unlink($filepath);
+                    do {
+                        if ($raised = curl_multi_info_read($mh, $remains)) {
+                            $ch = $raised['handle'];
+                            $errno = curl_errno($ch);
+                            $info = curl_getinfo($ch);
+                            curl_setopt($ch, CURLOPT_FILE, STDOUT);
+                            $index = (int)$ch;
+                            $fileinfo = $chFpMap[$index];
+                            unset($chFpMap[$index]);
+                            $fp = $fileinfo['fp'];
+                            $filepath = $fileinfo['filepath'];
+                            fclose($fp);
+                            if (CURLE_OK === $errno && 200 === $info['http_code']) {
+                                ++$this->successCnt;
+                            } else {
+                                ++$this->failureCnt;
+                                unlink($filepath);
+                            }
+                            $this->io->write($this->makeDownloadingText($info['url']));
+                            curl_multi_remove_handle($mh, $ch);
+                            $unused[] = $ch;
                         }
-                        $this->io->write($this->makeDownloadingText($info['url']));
-                        curl_multi_remove_handle($mh, $ch);
-                        $unused[] = $ch;
                     } while ($remains);
 
                     if ($packages) {
                         break 2;
                     }
+            }
             } while ($running);
-
         } while ($packages);
         $this->io->write("    Finished: <comment>success: $this->successCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>");
 
