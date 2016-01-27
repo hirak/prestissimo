@@ -17,6 +17,13 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
 
         $conn2 = Factory::getConnection('example.com');
         self::assertSame($conn, $conn2);
+
+        $conn3 = Factory::getConnection('example.com', true);
+        self::assertNotNull($conn3);
+        self::assertEquals('resource', gettype($conn3));
+
+        $conn4 = Factory::getConnection('example.com', true);
+        self::assertSame($conn3, $conn4);
     }
 
     function testGetPreEvent()
