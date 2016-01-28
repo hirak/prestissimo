@@ -41,36 +41,38 @@ class JoinPointTest extends \PHPUnit_Framework_TestCase
         self::assertAttributeEmpty('storage', $this->pre);
     }
 
-//    function testRefRequest()
-//    {
-//        $pre = new JoinPoint('pre-download', self::$req);
-//        self::assertEquals($pre->refRequest()->origin, 'packagist.org');
-//    }
-
     /**
      * @covers Hirak\Prestissimo\Aspects\JoinPoint::refRequest
      * @covers Hirak\Prestissimo\Aspects\JoinPoint::setRequest
      * @covers Hirak\Prestissimo\Aspects\JoinPoint::refResponse
      * @covers Hirak\Prestissimo\Aspects\JoinPoint::setResponse
+     * @covers Hirak\Prestissimo\Aspects\JoinPoint::notify
      */
     function testSetRequest()
     {
         $req = new HttpGetRequest(
-            'example.com',
-            'example.com',
+            'api.github.com',
+            'https://api.github.com/repos/brunoric/prestissimo/zipball/',
             new \Composer\IO\NullIO
         );
-
         self::assertEquals($this->pre->refRequest()->origin, 'packagist.org');
+        self::assertEquals($this->pre->refRequest()->path, '/packages.json');
+
         $this->pre->setRequest($req);
-        self::assertEquals($this->pre->refRequest()->origin, 'example.com');
+        self::assertEquals($this->pre->refRequest()->origin, 'github.com');
+        self::assertEquals($this->pre->refRequest()->path, '/repos/brunoric/prestissimo/zipball/');
+
+        $observer = new AspectRedirect;
+        $this->pre->attach($observer);
+        $this->pre->notify();
+        self::assertEquals($this->pre->refRequest()->path, '/brunoric/prestissimo/legacy.zip/');
+
 
         $res = new HttpGetResponse(
             'errno',
             'error',
             array()
         );
-
         self::assertEmpty($this->pre->refResponse());
         $this->pre->setResponse($res);
         self::assertNotEmpty($this->pre->refResponse());
