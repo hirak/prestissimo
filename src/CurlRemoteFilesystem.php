@@ -174,7 +174,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
      */
     public function getLastHeaders()
     {
-        return $this->lastHeaders;
+        return parent::getLastHeaders();
     }
 
     /**
