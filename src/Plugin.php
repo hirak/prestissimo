@@ -49,7 +49,7 @@ class Plugin implements
     public function onPreFileDownload(CPlugin\PreFileDownloadEvent $ev)
     {
         $scheme = parse_url($ev->getProcessedUrl(), PHP_URL_SCHEME);
-        if (null !== $scheme || in_array($scheme, ['http', 'https'])) {
+        if ($scheme === 'http' || $scheme === 'https') {
             $rfs = $ev->getRemoteFilesystem();
 
             $ev->setRemoteFilesystem(new CurlRemoteFilesystem(

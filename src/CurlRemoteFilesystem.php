@@ -58,12 +58,14 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
      */
     public function copy($origin, $fileUrl, $fileName, $progress=true, $options=array())
     {
-        return $this->fetch($origin, $fileUrl, $progress, $options, function ($ch, $request) use ($fileName) {
-            $fp = $this->createFile($fileName);
+        $that = $this; // for PHP5.3
+
+        return $this->fetch($origin, $fileUrl, $progress, $options, function ($ch, $request) use ($that, $fileName) {
+            $fp = $that->createFile($fileName);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
             curl_setopt($ch, CURLOPT_FILE, $fp);
 
-            list($execStatus, $response) = $result = $this->exec($ch, $request);
+            list($execStatus, $response) = $result = $that->exec($ch, $request);
 
             curl_setopt($ch, CURLOPT_FILE, STDOUT);
             fclose($fp);
@@ -88,12 +90,14 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
      */
     public function getContents($origin, $fileUrl, $progress=true, $options=array())
     {
-        return $this->fetch($origin, $fileUrl, $progress, $options, function ($ch, $request) {
+        $that = $this; // for PHP5.3
+
+        return $this->fetch($origin, $fileUrl, $progress, $options, function ($ch, $request) use ($that) {
             // This order is important.
             curl_setopt($ch, CURLOPT_FILE, STDOUT);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-            return $this->exec($ch, $request);
+            return $that->exec($ch, $request);
         });
     }
 
@@ -176,9 +180,12 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
     }
 
     /**
-     *
+     * @internal
+     * @param resource<curl> $ch
+     * @param Aspects\HttpGetRequest $request
+     * @return array(int, Aspects\HttpGetResponse)
      */
-    private function exec($ch, $request)
+    public function exec($ch, $request)
     {
         $execStatus = curl_exec($ch);
 
@@ -204,8 +211,16 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
      * @param  int $upBytesMax
      * @param  int $upBytes
      */
-    public function progress($ch, $downBytesMax, $downBytes, $upBytesMax, $upBytes)
+    public function progress()
     {
+        // @codeCoverageIgnoreStart
+        if (PHP_VERSION_ID >= 50500) {
+            list($ch, $downBytesMax, $downBytes, $upBytesMax, $upBytes) = func_get_args();
+        } else {
+            list($downBytesMax, $downBytes, $upBytesMax, $upBytes) = func_get_args();
+        }
+        // @codeCoverageIgnoreEnd
+
         if ($downBytesMax <= 0 || $downBytesMax < $downBytes) {
             return 0;
         }
