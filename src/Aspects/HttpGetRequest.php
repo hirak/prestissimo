@@ -63,7 +63,9 @@ class HttpGetRequest
     public function importURL($url)
     {
         $struct = parse_url($url);
-        if (! $struct) throw new \InvalidArgumentException("$url is not valid URL");
+        if (! $struct) {
+            throw new \InvalidArgumentException("$url is not valid URL");
+        }
 
         $this->scheme = self::setOr($struct, 'scheme', $this->scheme);
         $this->host = self::setOr($struct, 'host', $this->host);
@@ -147,9 +149,12 @@ class HttpGetRequest
         }
     }
 
-    public static function genUA() {
+    public static function genUA()
+    {
         static $ua;
-        if ($ua) return $ua;
+        if ($ua) {
+            return $ua;
+        }
         $phpVersion = defined('HHVM_VERSION') ? 'HHVM ' . HHVM_VERSION : 'PHP ' . PHP_VERSION;
 
         return $ua = sprintf(

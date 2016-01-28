@@ -58,7 +58,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
      */
     public function copy($origin, $fileUrl, $fileName, $progress=true, $options=array())
     {
-        return $this->fetch($origin, $fileUrl, $progress, $options, function($ch, $request) use($fileName){
+        return $this->fetch($origin, $fileUrl, $progress, $options, function ($ch, $request) use ($fileName) {
             $fp = $this->createFile($fileName);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
             curl_setopt($ch, CURLOPT_FILE, $fp);
@@ -88,7 +88,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
      */
     public function getContents($origin, $fileUrl, $progress=true, $options=array())
     {
-        return $this->fetch($origin, $fileUrl, $progress, $options, function($ch, $request){
+        return $this->fetch($origin, $fileUrl, $progress, $options, function ($ch, $request) {
             // This order is important.
             curl_setopt($ch, CURLOPT_FILE, STDOUT);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -146,7 +146,6 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             curl_setopt_array($ch, $opts);
 
             list($execStatus, $response) = $exec($ch, $request);
-
         } while ($this->retry);
 
         if ($progress) {

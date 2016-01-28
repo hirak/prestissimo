@@ -3,7 +3,8 @@ namespace Hirak\Prestissimo\Aspects;
 
 class HttpGetResponseTest extends \PHPUnit_Framework_TestCase
 {
-    function testCreate() {
+    public function testCreate()
+    {
         $res = new HttpGetResponse(
             10,
             'message',

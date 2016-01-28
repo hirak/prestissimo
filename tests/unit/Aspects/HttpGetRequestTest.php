@@ -3,7 +3,7 @@ namespace Hirak\Prestissimo\Aspects;
 
 class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
 {
-    function testConstruct()
+    public function testConstruct()
     {
         $io = new \Composer\IO\NullIO;
         $req = new HttpGetRequest(
@@ -44,7 +44,7 @@ class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    function testGetURL()
+    public function testGetURL()
     {
         $io = new \Composer\IO\NullIO;
         $req = new HttpGetRequest(
@@ -70,7 +70,7 @@ class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
         self::assertSame('packagist.jp:8080/packages.json?a=b&c=d', $req->getURL());
     }
 
-    function testGetCurlOpts()
+    public function testGetCurlOpts()
     {
         $io = new \Composer\IO\NullIO;
         $req = new HttpGetRequest(
@@ -104,7 +104,7 @@ class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
         self::assertEquals($expects, $curlOpts);
     }
 
-    function testSetSpecial()
+    public function testSetSpecial()
     {
         $io = new \Composer\IO\NullIO;
         $req = new HttpGetRequest(

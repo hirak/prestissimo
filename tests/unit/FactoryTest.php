@@ -3,13 +3,13 @@ namespace Hirak\Prestissimo;
 
 class FactoryTest extends \PHPUnit_Framework_TestCase
 {
-    function testGetInstance()
+    public function testGetInstance()
     {
         $instance = Factory::getInstance();
         self::assertInstanceOf('Hirak\Prestissimo\Factory', $instance);
     }
 
-    function testGetConnection()
+    public function testGetConnection()
     {
         $conn = Factory::getConnection('example.com');
         self::assertNotNull($conn);
@@ -26,7 +26,7 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
         self::assertSame($conn3, $conn4);
     }
 
-    function testGetPreEvent()
+    public function testGetPreEvent()
     {
         $req = new Aspects\HttpGetRequest(
             'packagist.org',
@@ -38,7 +38,7 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
         self::assertInstanceOf('Hirak\Prestissimo\Aspects\JoinPoint', $ev);
     }
 
-    function testGetPostEvent()
+    public function testGetPostEvent()
     {
         $req = new Aspects\HttpGetRequest(
             'packagist.org',
