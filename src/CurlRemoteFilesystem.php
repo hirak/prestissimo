@@ -89,7 +89,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
     public function getContents($origin, $fileUrl, $progress=true, $options=array())
     {
         $obj = $this;
-        return $this->fetch($origin, $fileUrl, $progress, $options, function($ch, $request, &$obj){
+        return $this->fetch($origin, $fileUrl, $progress, $options, function($ch, $request) use (&$obj){
             // This order is important.
             curl_setopt($ch, CURLOPT_FILE, STDOUT);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
