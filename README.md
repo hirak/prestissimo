@@ -41,7 +41,7 @@ $ composer create-project laravel/laravel laravel1 --no-progress --profile --pre
 
 ## Config (optional)
 
-in local composer.json
+in local composer.json or ~/.composer/config.json
 
 ```json
 {
@@ -52,6 +52,8 @@ in local composer.json
       "minConnections": 3,
       "pipeline": false,
       "verbose": false,
+      "insecure": false,
+      "capath": "/absolute/path/to/",
       "privatePackages": [
         "myorg/private1", "myorg/private2", ...
       ]
@@ -81,6 +83,18 @@ HTTP/1.1 pipelining option. It needs PHP `>=5.5`.
 * default: false
 
 `CURLOPT_VERBOSE` option.
+
+
+### insecure (bool)
+* default: false
+
+If insecure is true, this plugin doesn't verify all https certs. (`CURLOPT_VERIFYPEER` is off)
+You SHOULD NOT change this option.
+
+### capath (string)
+* default: "" (empty)
+
+Absolute path to cacert.pem
 
 ### privatePackages (string[])
 * default: empty
