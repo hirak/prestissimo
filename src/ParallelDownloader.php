@@ -101,8 +101,14 @@ class ParallelDownloader
                 $onPreDownload->notify();
 
                 $opts = $request->getCurlOpts();
+                if ($pluginConfig['insecure']) {
+                    $opts[CURLOPT_VERIFYPEER] = false;
+                }
+                if (! empty($pluginConfig['capath'])) {
+                    $opts[CURLOPT_CAPATH] = $pluginConfig['capath'];
+                }
                 unset($opts[CURLOPT_ENCODING]);
-                unset($opts[CURLOPT_USERPWD]);
+                unset($opts[CURLOPT_USERPWD]); // ParallelDownloader doesn't support private packages.
                 curl_setopt_array($ch, $opts);
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_multi_add_handle($mh, $ch);
@@ -156,7 +162,7 @@ class ParallelDownloader
                     if ($packages) {
                         break 2;
                     }
-            }
+                }
             } while ($running);
         } while ($packages);
         $this->io->write("    Finished: <comment>success: $this->successCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>");

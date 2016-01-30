@@ -23,6 +23,8 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
     protected $retryAuthFailure = true;
 
+    protected $pluginConfig;
+
     // global flags
     private $retry = false;
     private $degradedMode = false;
@@ -43,6 +45,11 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
         $this->io = $io;
         $this->config = $config;
         $this->options = $options;
+    }
+
+    public function setPluginConfig(array $pluginConfig)
+    {
+        $this->pluginConfig = $pluginConfig;
     }
 
     /**
@@ -146,6 +153,13 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
                 unset($opts[CURLOPT_USERPWD]);
             }
             $ch = Factory::getConnection($origin, isset($opts[CURLOPT_USERPWD]));
+
+            if ($this->pluginConfig['insecure']) {
+                $opts[CURLOPT_VERIFYPEER] = false;
+            }
+            if (! empty($pluginConfig['capath'])) {
+                $opts[CURLOPT_CAPATH] = $pluginConfig['capath'];
+            }
 
             curl_setopt_array($ch, $opts);
 
