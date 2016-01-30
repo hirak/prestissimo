@@ -52,11 +52,13 @@ class Plugin implements
         if ($scheme === 'http' || $scheme === 'https') {
             $rfs = $ev->getRemoteFilesystem();
 
-            $ev->setRemoteFilesystem(new CurlRemoteFilesystem(
+            $curlrfs = new CurlRemoteFilesystem(
                 $this->io,
                 $this->config,
                 $rfs->getOptions()
-            ));
+            );
+            $curlrfs->setPluginConfig($this->getConfig());
+            $ev->setRemoteFilesystem($curlrfs);
         }
     }
 
@@ -113,6 +115,8 @@ class Plugin implements
             'minConnections' => 3,
             'pipeline' => false,
             'verbose' => false,
+            'insecure' => false,
+            'capath' => '',
             'privatePackages' => array(),
         );
 
@@ -124,6 +128,12 @@ class Plugin implements
         }
         if (! is_bool($config['pipeline'])) {
             $config['pipeline'] = (bool)$config['pipeline'];
+        }
+        if (! is_bool($config['insecure'])) {
+            $config['insecure'] = (bool)$config['insecure'];
+        }
+        if (! is_string($config['capath'])) {
+            $config['capath'] = '';
         }
         if (! is_array($config['privatePackages'])) {
             $config['privatePackages'] = (array)$config['privatePackages'];

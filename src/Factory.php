@@ -13,24 +13,13 @@ namespace Hirak\Prestissimo;
  */
 final class Factory
 {
-    private static $instance = null;
-    public static function getInstance()
-    {
-        return self::$instance ?: self::$instance = new self;
-    }
-
-    private function __construct()
-    {
-        // do nothing
-    }
-
     /**
-     * don't need Authorization
+     * not need Authorization
      * @var array {
      *  'origin.example.com' => x
      * }
      */
-    private $connections = array();
+    private static $connections = array();
 
     /**
      * need Authorization header
@@ -38,7 +27,7 @@ final class Factory
      *  'origin.example.com' => x
      * }
      */
-    private $authConnections = array();
+    private static $authConnections = array();
 
     /**
      * get cached curl handler
@@ -48,19 +37,18 @@ final class Factory
      */
     public static function getConnection($origin, $auth=false)
     {
-        $instance = self::getInstance();
         if ($auth) {
-            if (isset($instance->authConnections[$origin])) {
-                return $instance->authConnections[$origin];
+            if (isset(self::$authConnections[$origin])) {
+                return self::$authConnections[$origin];
             }
 
-            return $instance->authConnections[$origin] = curl_init();
+            return self::$authConnections[$origin] = curl_init();
         } else {
-            if (isset($instance->connections[$origin])) {
-                return $instance->connections[$origin];
+            if (isset(self::$connections[$origin])) {
+                return self::$connections[$origin];
             }
 
-            return $instance->connections[$origin] = curl_init();
+            return self::$connections[$origin] = curl_init();
         }
     }
 
