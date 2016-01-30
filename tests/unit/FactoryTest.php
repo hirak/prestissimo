@@ -3,24 +3,18 @@ namespace Hirak\Prestissimo;
 
 class FactoryTest extends \PHPUnit_Framework_TestCase
 {
-    public function testGetInstance()
-    {
-        $instance = Factory::getInstance();
-        self::assertInstanceOf('Hirak\Prestissimo\Factory', $instance);
-    }
-
     public function testGetConnection()
     {
         $conn = Factory::getConnection('example.com');
         self::assertNotNull($conn);
-        self::assertEquals('resource', gettype($conn));
+        self::assertInternalType('resource', $conn);
 
         $conn2 = Factory::getConnection('example.com');
         self::assertSame($conn, $conn2);
 
         $conn3 = Factory::getConnection('example.com', true);
         self::assertNotNull($conn3);
-        self::assertEquals('resource', gettype($conn3));
+        self::assertInternalType('resource', $conn3);
 
         $conn4 = Factory::getConnection('example.com', true);
         self::assertSame($conn3, $conn4);
@@ -34,7 +28,7 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
             new \Composer\IO\NullIO
         );
         $ev = Factory::getPreEvent($req);
-        self::assertEquals('pre-download', $ev);
+        self::assertEquals('pre-download', (string)$ev);
         self::assertInstanceOf('Hirak\Prestissimo\Aspects\JoinPoint', $ev);
     }
 
@@ -46,7 +40,7 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
             new \Composer\IO\NullIO
         );
         $ev = Factory::getPostEvent($req);
-        self::assertEquals('post-download', $ev);
+        self::assertEquals('post-download', (string)$ev);
         self::assertInstanceOf('Hirak\Prestissimo\Aspects\JoinPoint', $ev);
     }
 }
