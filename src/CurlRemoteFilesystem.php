@@ -24,6 +24,8 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
     protected $pluginConfig;
 
+    private $_lastHeaders = array();
+
     // global flags
     private $_retry = false;
     private $_degradedMode = false;
@@ -188,7 +190,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
      */
     public function getLastHeaders()
     {
-        return parent::getLastHeaders();
+        return $this->_lastHeaders;
     }
 
     /**
@@ -199,6 +201,8 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
      */
     public function exec($ch, $request)
     {
+        $this->_lastHeaders = array();
+        curl_setopt($ch, CURLOPT_HEADERFUNCTION, array($this, 'processHeader'));
         $execStatus = curl_exec($ch);
 
         $response = new Aspects\HttpGetResponse(
@@ -217,7 +221,8 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
     }
 
     /**
-     * @param  resource<curl> $ch
+     * @internal
+     * @param  resource $ch
      * @param  int $downBytesMax
      * @param  int $downBytes
      * @param  int $upBytesMax
@@ -240,6 +245,18 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
         $progression = intval($downBytes / $downBytesMax * 100);
         $this->io->overwrite("    Downloading: <comment>$progression%</comment>", false);
         return 0;
+    }
+
+    /**
+     * @internal
+     * @param resource $ch
+     * @param string $header
+     * @return int
+     */
+    public function processHeader($ch, $header)
+    {
+        $this->_lastHeaders[] = trim($header);
+        return strlen($header);
     }
 
     protected function promptAuth(Aspects\HttpGetRequest $req, Aspects\HttpGetResponse $res)
