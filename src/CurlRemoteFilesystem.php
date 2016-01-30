@@ -25,8 +25,8 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
     protected $pluginConfig;
 
     // global flags
-    private $retry = false;
-    private $degradedMode = false;
+    private $_retry = false;
+    private $_degradedMode = false;
 
     /** @var Aspects\JoinPoint */
     public $onPreDownload;
@@ -109,7 +109,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
     protected function fetch($origin, $fileUrl, $progress, $options, $exec)
     {
         do {
-            $this->retry = false;
+            $this->_retry = false;
 
             $request = new Aspects\HttpGetRequest($origin, $fileUrl, $this->io);
             $request->setSpecial(array(
@@ -118,7 +118,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             ));
             $this->onPreDownload = Factory::getPreEvent($request);
             $this->onPostDownload = Factory::getPostEvent($request);
-            if ($this->degradedMode) {
+            if ($this->_degradedMode) {
                 $this->onPreDownload->attach(new Aspects\AspectDegradedMode);
             }
 
@@ -162,7 +162,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             curl_setopt_array($ch, $opts);
 
             list($execStatus, $response) = $exec($ch, $request);
-        } while ($this->retry);
+        } while ($this->_retry);
 
         if ($progress) {
             $this->io->overwrite("    Downloading: <comment>100%</comment>");
@@ -256,12 +256,12 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             }
             $github = new Util\GitHub($io, $this->config, null);
             if ($github->authorizeOAuth($req->origin)) {
-                $this->retry = true;
+                $this->_retry = true;
                 return;
             }
             if ($io->isInteractive() &&
                 $github->authorizeOAuthInteractively($req->origin, $message)) {
-                $this->retry = true;
+                $this->_retry = true;
                 return;
             }
 
@@ -280,12 +280,12 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             }
             $gitlab = new Util\GitLab($io, $this->config, null);
             if ($gitlab->authorizeOAuth($req->origin)) {
-                $this->retry = true;
+                $this->_retry = true;
                 return;
             }
             if ($io->isInteractive() &&
                 $gitlab->authorizeOAuthInteractively($req->origin, $message)) {
-                $this->retry = true;
+                $this->_retry = true;
                 return;
             }
 
@@ -325,6 +325,6 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
         $username = $io->ask('      Username: ');
         $password = $io->askAndHideAnswer('      Password: ');
         $io->setAuthentication($req->origin, $username, $password);
-        $this->retry = true;
+        $this->_retry = true;
     }
 }
