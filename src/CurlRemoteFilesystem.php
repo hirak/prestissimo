@@ -153,7 +153,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             $ch = Factory::getConnection($origin, isset($opts[CURLOPT_USERPWD]));
 
             if ($this->pluginConfig['insecure']) {
-                $opts[CURLOPT_VERIFYPEER] = false;
+                $opts[CURLOPT_SSL_VERIFYPEER] = false;
             }
             if (! empty($pluginConfig['capath'])) {
                 $opts[CURLOPT_CAPATH] = $pluginConfig['capath'];

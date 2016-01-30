@@ -101,7 +101,7 @@ class ParallelDownloader
 
                 $opts = $request->getCurlOpts();
                 if ($pluginConfig['insecure']) {
-                    $opts[CURLOPT_VERIFYPEER] = false;
+                    $opts[CURLOPT_SSL_VERIFYPEER] = false;
                 }
                 if (! empty($pluginConfig['capath'])) {
                     $opts[CURLOPT_CAPATH] = $pluginConfig['capath'];

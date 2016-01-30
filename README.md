@@ -88,7 +88,7 @@ HTTP/1.1 pipelining option. It needs PHP `>=5.5`.
 ### insecure (bool)
 * default: false
 
-If insecure is true, this plugin doesn't verify all https certs. (`CURLOPT_VERIFYPEER` is off)
+If insecure is true, this plugin doesn't verify all https certs. (`CURLOPT_SSL_VERIFYPEER` is off)
 You SHOULD NOT change this option.
 
 ### capath (string)
