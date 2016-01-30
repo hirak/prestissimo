@@ -8,7 +8,6 @@ namespace Hirak\Prestissimo;
 
 use Composer\Config;
 use Composer\IO;
-use Composer\Downloader;
 use Composer\Util;
 
 /**
@@ -68,17 +67,16 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
         $that = $this; // for PHP5.3
 
         return $this->fetch($origin, $fileUrl, $progress, $options, function ($ch, $request) use ($that, $fileName) {
-            $fp = $that->createFile($fileName);
+            $outputFile = new OutputFile($fileName);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-            curl_setopt($ch, CURLOPT_FILE, $fp);
+            curl_setopt($ch, CURLOPT_FILE, $outputFile->getPointer());
 
             list($execStatus, $response) = $result = $that->exec($ch, $request);
 
             curl_setopt($ch, CURLOPT_FILE, STDOUT);
-            fclose($fp);
 
             if (200 !== $response->info['http_code']) {
-                unlink($fileName);
+                $outputFile->setFailure();
             }
 
             return $result;
@@ -242,34 +240,6 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
         $progression = intval($downBytes / $downBytesMax * 100);
         $this->io->overwrite("    Downloading: <comment>$progression%</comment>", false);
         return 0;
-    }
-
-    public static function createFile($fileName)
-    {
-        if (is_dir($fileName)) {
-            throw new Downloader\TransportException(
-                "The file could not be written to $fileName. Directory exists."
-            );
-        }
-
-        $dir = dirname($fileName);
-        if (!file_exists($dir)) {
-            $created = mkdir($dir, 0766, true);
-            if (!$created) {
-                throw new Downloader\TransportException(
-                    "The file could not be written to $fileName."
-                );
-            }
-        }
-
-        $file = fopen($fileName, 'wb');
-        if (!$file) {
-            throw new Downloader\TransportException(
-                "The file could not be written to $fileName."
-            );
-        }
-
-        return $file;
     }
 
     protected function promptAuth(Aspects\HttpGetRequest $req, Aspects\HttpGetResponse $res)

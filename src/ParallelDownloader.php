@@ -85,8 +85,7 @@ class ParallelDownloader
                 $ch = array_pop($unused);
 
                 // make file resource
-                $fp = CurlRemoteFilesystem::createFile($filepath);
-                $chFpMap[(int)$ch] = compact('fp', 'filepath');
+                $chFpMap[(int)$ch] = $outputFile = new OutputFile($filepath);
 
                 // make url
                 $url = $package->getDistUrl();
@@ -110,7 +109,7 @@ class ParallelDownloader
                 unset($opts[CURLOPT_ENCODING]);
                 unset($opts[CURLOPT_USERPWD]); // ParallelDownloader doesn't support private packages.
                 curl_setopt_array($ch, $opts);
-                curl_setopt($ch, CURLOPT_FILE, $fp);
+                curl_setopt($ch, CURLOPT_FILE, $outputFile->getPointer());
                 curl_multi_add_handle($mh, $ch);
             }
 
@@ -142,17 +141,15 @@ class ParallelDownloader
                             $info = curl_getinfo($ch);
                             curl_setopt($ch, CURLOPT_FILE, STDOUT);
                             $index = (int)$ch;
-                            $fileinfo = $chFpMap[$index];
+                            $outputFile = $chFpMap[$index];
                             unset($chFpMap[$index]);
-                            $fp = $fileinfo['fp'];
-                            $filepath = $fileinfo['filepath'];
-                            fclose($fp);
                             if (CURLE_OK === $errno && 200 === $info['http_code']) {
                                 ++$this->successCnt;
                             } else {
                                 ++$this->failureCnt;
-                                unlink($filepath);
+                                $outputFile->setFailure();
                             }
+                            unset($outputFile);
                             $this->io->write($this->makeDownloadingText($info['url']));
                             curl_multi_remove_handle($mh, $ch);
                             $unused[] = $ch;
