@@ -26,6 +26,15 @@ class CurlRemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         ));
     }
 
+    public static function tearDownAfterClass()
+    {
+        $targetFile = 'tests/workspace/target/0.txt';
+        if (file_exists($targetFile)) {
+            unlink($targetFile);
+            rmdir(dirname($targetFile));
+        }
+    }
+
     public function testConstruct()
     {
         self::assertInstanceOf('Hirak\Prestissimo\CurlRemoteFilesystem', $this->rfs);
@@ -56,12 +65,45 @@ class CurlRemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         rmdir(dirname($targetFile));
     }
 
+    public function testCopyFailure()
+    {
+        $targetUrl = 'http://localhost:1337/?status=404';
+        $targetFile = 'tests/workspace/target/0.txt';
+
+        $this->rfs->copy('localhost', $targetUrl, $targetFile);
+
+        self::assertFileNotExists($targetFile);
+        self::assertFileNotExists(dirname($targetFile));
+    }
+
+    /**
+     * @expectedException Composer\Downloader\TransportException
+     */
+    public function testCopyPromptAndRetry1()
+    {
+        $targetUrl = 'http://localhost:1337/?status=401';
+        $targetFile = 'tests/workspace/target/0.txt';
+
+        $this->rfs->copy('localhost', $targetUrl, $targetFile);
+    }
+
+    /**
+     * @expectedException Composer\Downloader\TransportException
+     */
+    public function testCopyPromptAndRetry2()
+    {
+        $targetUrl = 'http://localhost:1337/?status=403';
+        $targetFile = 'tests/workspace/target/0.txt';
+
+        $this->rfs->copy('localhost', $targetUrl, $targetFile);
+    }
+
     public function testGetContents()
     {
         $targetUrl = 'http://localhost:1337/?wait=0';
-        $targetFile = 'tests/workspace/target/0.txt';
 
-        $response = $this->rfs->getContents('localhost', $targetUrl);
+        $progress = false;
+        $response = $this->rfs->getContents('localhost', $targetUrl, $progress);
 
         self::assertEquals('0', $response);
     }
