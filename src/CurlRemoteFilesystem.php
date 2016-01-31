@@ -149,9 +149,6 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             $this->onPreDownload->notify();
 
             $opts = $request->getCurlOpts();
-            if (empty($opts[CURLOPT_USERPWD])) {
-                unset($opts[CURLOPT_USERPWD]);
-            }
             $ch = Factory::getConnection($origin, isset($opts[CURLOPT_USERPWD]));
 
             if ($this->pluginConfig['insecure']) {
@@ -197,7 +194,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
      * @internal
      * @param resource $ch
      * @param Aspects\HttpGetRequest $request
-     * @return array(int, Aspects\HttpGetResponse)
+     * @return array {int, Aspects\HttpGetResponse}
      */
     public function exec($ch, $request)
     {
