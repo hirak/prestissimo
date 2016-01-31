@@ -100,7 +100,8 @@ Absolute path to cacert.pem
 ### userAgent (string)
 * default: "" (empty)
 
-User Agent for downloading.
+User Agent for downloading. `CURLOPT_USERAGENT` option.
+If userAgent is empty, composer user agent is used.
 
 ### privatePackages (string[])
 * default: empty
