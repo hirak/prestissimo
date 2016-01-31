@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit
-  colors="always"
-  bootstrap="vendor/autoload.php">
+  colors="true"
+  bootstrap="tests/bootstrap.php">
   <filter>
     <whitelist>
       <directory suffix=".php">src/</directory>
@@ -20,7 +20,12 @@
   <php>
     <ini name="error_reporting" value="-1"/>
   </php>
+
   <testsuite name="unit tests">
     <directory>tests/unit/</directory>
+  </testsuite>
+
+  <testsuite name="functional tests">
+    <directory>tests/functional/</directory>
   </testsuite>
 </phpunit>
