@@ -3,13 +3,13 @@ prestissimo (composer plugin)
 
 [![Build Status](https://travis-ci.org/hirak/prestissimo.svg?branch=master)](https://travis-ci.org/hirak/prestissimo)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/hirak/prestissimo/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/hirak/prestissimo/?branch=master)
-[![Code Coverage](https://scrutinizer-ci.com/g/hirak/prestissimo/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/hirak/prestissimo/?branch=master)  
+[![Coverage Status](https://coveralls.io/repos/github/hirak/prestissimo/badge.svg?branch=master)](https://coveralls.io/github/hirak/prestissimo?branch=master)
 [![Latest Stable Version](https://poser.pugx.org/hirak/prestissimo/v/stable)](https://packagist.org/packages/hirak/prestissimo)
 [![Total Downloads](https://poser.pugx.org/hirak/prestissimo/downloads)](https://packagist.org/packages/hirak/prestissimo)
-[![Latest Unstable Version](https://poser.pugx.org/hirak/prestissimo/v/unstable)](https://packagist.org/packages/hirak/prestissimo)
 [![License](https://poser.pugx.org/hirak/prestissimo/license)](https://packagist.org/packages/hirak/prestissimo)
 
 [composer](https://getcomposer.org) parallel install plugin.
+
 
 ## Depends
 
@@ -41,7 +41,7 @@ $ composer create-project laravel/laravel laravel1 --no-progress --profile --pre
 
 ## Config (optional)
 
-in local composer.json or ~/.composer/config.json
+in local `composer.json` or `~/.composer/config.json`
 
 ```json
 {
@@ -53,7 +53,7 @@ in local composer.json or ~/.composer/config.json
       "pipeline": false,
       "verbose": false,
       "insecure": false,
-      "capath": "/absolute/path/to/",
+      "capath": "/absolute/path/to/cacert.pem",
       "privatePackages": [
         "myorg/private1", "myorg/private2", ...
       ]
