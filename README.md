@@ -54,6 +54,7 @@ in local `composer.json` or `~/.composer/config.json`
       "verbose": false,
       "insecure": false,
       "capath": "/absolute/path/to/cacert.pem",
+      "userAgent": "Your Awesome User Agent",
       "privatePackages": [
         "myorg/private1", "myorg/private2", ...
       ]
@@ -95,6 +96,12 @@ You SHOULD NOT change this option.
 * default: "" (empty)
 
 Absolute path to cacert.pem
+
+### userAgent (string)
+* default: "" (empty)
+
+User Agent for downloading. `CURLOPT_USERAGENT` option.
+If userAgent is empty, composer user agent is used.
 
 ### privatePackages (string[])
 * default: empty
