@@ -24,7 +24,7 @@ class Plugin implements
     /** @var IO\IOInterface */
     private $io;
 
-    /** @var Config */
+    /** @var Composer\Config */
     private $config;
 
     public function activate(Composer $composer, IO\IOInterface $io)
