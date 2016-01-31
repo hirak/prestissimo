@@ -1,0 +1,6 @@
+service_name: travis-ci
+repo_token: UWp1EuHuGdBmMnyvryRJQW3rTXl7zBtpc
+
+# for php-coveralls
+coverage_clover: artifacts/clover.xml
+json_path: artifacts/coveralls-upload.json
