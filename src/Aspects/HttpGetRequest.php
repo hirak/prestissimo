@@ -62,9 +62,11 @@ class HttpGetRequest
     public function importURL($url)
     {
         $struct = parse_url($url);
+        // @codeCoverageIgnoreStart
         if (! $struct) {
             throw new \InvalidArgumentException("$url is not valid URL");
         }
+        // @codeCoverageIgnoreEnd
 
         $this->scheme = self::setOr($struct, 'scheme', $this->scheme);
         $this->host = self::setOr($struct, 'host', $this->host);
