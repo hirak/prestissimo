@@ -117,46 +117,50 @@ class ParallelDownloader
             // wait for any event
             do {
                 // start multi download
+                while (CURLM_CALL_MULTI_PERFORM === curl_multi_exec($mh, $running));
+                $runningBefore = $running;
+
+                $eventCount = curl_multi_select($mh, 5);
+
+                if ($eventCount === -1) {
+                    usleep(200 * 1000);
+                    continue;
+                }
+
+                if ($eventCount === 0) {
+                    continue;
+                }
+
+                while (CURLM_CALL_MULTI_PERFORM === curl_multi_exec($mh, $running));
+
+                if ($running === $runningBefore) {
+                    continue;
+                }
+
                 do {
-                    $stat = curl_multi_exec($mh, $running);
-                } while ($stat === CURLM_CALL_MULTI_PERFORM);
-
-                switch (curl_multi_select($mh, 5)) {
-                case -1:
-                    usleep(250);
-                    // fall through
-                case 0:
-                    continue 2;
-                default:
-                    do {
-                        $stat = curl_multi_exec($mh, $running);
-                    } while ($stat === CURLM_CALL_MULTI_PERFORM);
-
-                    do {
-                        if ($raised = curl_multi_info_read($mh, $remains)) {
-                            $ch = $raised['handle'];
-                            $errno = curl_errno($ch);
-                            $info = curl_getinfo($ch);
-                            curl_setopt($ch, CURLOPT_FILE, STDOUT);
-                            $index = (int)$ch;
-                            $outputFile = $chFpMap[$index];
-                            unset($chFpMap[$index]);
-                            if (CURLE_OK === $errno && 200 === $info['http_code']) {
-                                ++$this->successCnt;
-                            } else {
-                                ++$this->failureCnt;
-                                $outputFile->setFailure();
-                            }
-                            unset($outputFile);
-                            $this->io->write($this->makeDownloadingText($info['url']));
-                            curl_multi_remove_handle($mh, $ch);
-                            $unused[] = $ch;
+                    if ($raised = curl_multi_info_read($mh, $remains)) {
+                        $ch = $raised['handle'];
+                        $errno = curl_errno($ch);
+                        $info = curl_getinfo($ch);
+                        curl_setopt($ch, CURLOPT_FILE, STDOUT);
+                        $index = (int)$ch;
+                        $outputFile = $chFpMap[$index];
+                        unset($chFpMap[$index]);
+                        if (CURLE_OK === $errno && 200 === $info['http_code']) {
+                            ++$this->successCnt;
+                        } else {
+                            ++$this->failureCnt;
+                            $outputFile->setFailure();
                         }
-                    } while ($remains > 0);
-
-                    if (count($packages) > 0) {
-                        break 2;
+                        unset($outputFile);
+                        $this->io->write($this->makeDownloadingText($info['url']));
+                        curl_multi_remove_handle($mh, $ch);
+                        $unused[] = $ch;
                     }
+                } while ($remains > 0);
+
+                if (count($packages) > 0) {
+                    break;
                 }
             } while ($running);
         } while (count($packages) > 0);
