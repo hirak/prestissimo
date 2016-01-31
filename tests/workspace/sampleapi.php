@@ -76,6 +76,40 @@ LOOP: {
         parse_str(parse_url($path, PHP_URL_QUERY), $query);
         if (isset($query['exit']) && $query['exit'] === '1') exit;
 
+        if (isset($query['status'])) {
+            switch ($query['status']) {
+                case '401':
+                    $errorResponse = <<<_HTTP_
+HTTP/1.1 401 Unauthorized\r
+Connection: close\r
+\r
+
+_HTTP_;
+                    break;
+                case '403':
+                    $errorResponse = <<<_HTTP_
+HTTP/1.1 403 Forbidden\r
+Connection: close\r
+\r
+
+_HTTP_;
+                    break;
+                case '404':
+                default:
+                    $errorResponse = <<<_HTTP_
+HTTP/1.1 404 Not Found\r
+Connection: close\r
+\r
+
+_HTTP_;
+                    break;
+            }
+            fwrite($stream, $errorResponse);
+            fclose($stream);
+            unset($readOrigin[(int)$stream]);
+            continue;
+        }
+
         if (isset($query['wait']) && $query['wait'] > 0) {
             $waiting[(int)$stream] = array(
                 $stream,
