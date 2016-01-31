@@ -46,7 +46,7 @@ class ParallelDownloader
             $unused[] = curl_init();
         }
 
-        /// @codeCoverageIgnoreStart
+        // @codeCoverageIgnoreStart
         if (function_exists('curl_share_init')) {
             $sh = curl_share_init();
             curl_share_setopt($sh, CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION);
@@ -61,7 +61,7 @@ class ParallelDownloader
                 curl_multi_setopt($mh, CURLMOPT_PIPELINING, true);
             }
         }
-        /// @codeCoverageIgnoreEnd
+        // @codeCoverageIgnoreEnd
 
         $cachedir = rtrim($this->config->get('cache-files-dir'), '\/');
 

@@ -3,7 +3,6 @@ namespace Hirak\Prestissimo;
 
 use Composer\Config;
 use Composer\IO;
-use Composer\Util;
 
 class CurlRemoteFilesystemTest extends \PHPUnit_Framework_TestCase
 {
