@@ -8,10 +8,9 @@ namespace Hirak\Prestissimo\Aspects;
 
 class HttpGetResponse
 {
-    public $errno
-        , $error
-        , $info
-        ;
+    public $errno;
+    public $error;
+    public $info;
 
     protected $needAuth = false;
 
