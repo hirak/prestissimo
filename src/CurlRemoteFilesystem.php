@@ -41,7 +41,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
      * @param Config $config
      * @param array $options
      */
-    public function __construct(IO\IOInterface $io, Config $config = null, array $options = array())
+    public function __construct(IO\IOInterface $io, Config $config, array $options = array())
     {
         $this->io = $io;
         $this->config = $config;
@@ -73,7 +73,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
             curl_setopt($ch, CURLOPT_FILE, $outputFile->getPointer());
 
-            list($execStatus, $response) = $result = $that->exec($ch, $request);
+            list(, $response) = $result = $that->exec($ch, $request);
 
             curl_setopt($ch, CURLOPT_FILE, STDOUT);
 
@@ -163,7 +163,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
             curl_setopt_array($ch, $opts);
 
-            list($execStatus, $response) = $exec($ch, $request);
+            list($execStatus, ) = $exec($ch, $request);
         } while ($this->_retry);
 
         if ($progress) {
