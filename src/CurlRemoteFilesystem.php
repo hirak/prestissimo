@@ -41,7 +41,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
      * @param Config $config
      * @param array $options
      */
-    public function __construct(IO\IOInterface $io, Config $config = null, array $options = array())
+    public function __construct(IO\IOInterface $io, Config $config, array $options = array())
     {
         $this->io = $io;
         $this->config = $config;
@@ -73,7 +73,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
             curl_setopt($ch, CURLOPT_FILE, $outputFile->getPointer());
 
-            list($execStatus, $response) = $result = $that->exec($ch, $request);
+            list(, $response) = $result = $that->exec($ch, $request);
 
             curl_setopt($ch, CURLOPT_FILE, STDOUT);
 
@@ -88,7 +88,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
     /**
      * Get the content.
      *
-     * @param string $originUrl The origin URL
+     * @param string $origin The origin URL
      * @param string $fileUrl   The file URL
      * @param bool   $progress  Display the progression
      * @param array  $options   Additional context options
@@ -149,9 +149,6 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             $this->onPreDownload->notify();
 
             $opts = $request->getCurlOpts();
-            if (empty($opts[CURLOPT_USERPWD])) {
-                unset($opts[CURLOPT_USERPWD]);
-            }
             $ch = Factory::getConnection($origin, isset($opts[CURLOPT_USERPWD]));
 
             if ($this->pluginConfig['insecure']) {
@@ -163,7 +160,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
             curl_setopt_array($ch, $opts);
 
-            list($execStatus, $response) = $exec($ch, $request);
+            list($execStatus, ) = $exec($ch, $request);
         } while ($this->_retry);
 
         if ($progress) {
@@ -195,9 +192,9 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
     /**
      * @internal
-     * @param resource<curl> $ch
+     * @param resource $ch
      * @param Aspects\HttpGetRequest $request
-     * @return array(int, Aspects\HttpGetResponse)
+     * @return array {int, Aspects\HttpGetResponse}
      */
     public function exec($ch, $request)
     {
@@ -222,19 +219,14 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
     /**
      * @internal
-     * @param  resource $ch
-     * @param  int $downBytesMax
-     * @param  int $downBytes
-     * @param  int $upBytesMax
-     * @param  int $upBytes
      */
     public function progress()
     {
         // @codeCoverageIgnoreStart
         if (PHP_VERSION_ID >= 50500) {
-            list($ch, $downBytesMax, $downBytes, $upBytesMax, $upBytes) = func_get_args();
+            list(, $downBytesMax, $downBytes, , ) = func_get_args();
         } else {
-            list($downBytesMax, $downBytes, $upBytesMax, $upBytes) = func_get_args();
+            list($downBytesMax, $downBytes, , ) = func_get_args();
         }
         // @codeCoverageIgnoreEnd
 

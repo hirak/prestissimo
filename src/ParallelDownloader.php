@@ -75,7 +75,7 @@ class ParallelDownloader
         $this->io->write("    Prefetch start: <comment>success: $this->successCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>");
         do {
             // prepare curl resources
-            while ($unused && $packages) {
+            while (count($unused) > 0 && count($packages) > 0) {
                 $package = array_pop($packages);
                 $filepath = $cachedir . DIRECTORY_SEPARATOR . static::getCacheKey($package);
                 if (file_exists($filepath)) {
@@ -89,12 +89,13 @@ class ParallelDownloader
 
                 // make url
                 $url = $package->getDistUrl();
-                $request = new Aspects\HttpGetRequest(parse_url($url, PHP_URL_HOST), $url, $this->io);
+                $host = parse_url($url, PHP_URL_HOST) ?: '';
+                $request = new Aspects\HttpGetRequest($host, $url, $this->io);
                 $request->verbose = $pluginConfig['verbose'];
                 if (in_array($package->getName(), $pluginConfig['privatePackages'])) {
                     $request->maybePublic = false;
                 } else {
-                    $request->maybePublic = preg_match('%^(?:https|git)://github\.com%', $package->getSourceUrl());
+                    $request->maybePublic = (bool)preg_match('%^(?:https|git)://github\.com%', $package->getSourceUrl());
                 }
                 $onPreDownload = Factory::getPreEvent($request);
                 $onPreDownload->notify();
@@ -113,20 +114,17 @@ class ParallelDownloader
                 curl_multi_add_handle($mh, $ch);
             }
 
-            // start multi download
-            do {
-                $stat = curl_multi_exec($mh, $running);
-            } while ($stat === CURLM_CALL_MULTI_PERFORM);
-
             // wait for any event
             do {
+                // start multi download
+                do {
+                    $stat = curl_multi_exec($mh, $running);
+                } while ($stat === CURLM_CALL_MULTI_PERFORM);
+
                 switch (curl_multi_select($mh, 5)) {
                 case -1:
-                    usleep(10);
-                    do {
-                        $stat = curl_multi_exec($mh, $running);
-                    } while ($stat === CURLM_CALL_MULTI_PERFORM);
-                    continue 2;
+                    usleep(250);
+                    // fall through
                 case 0:
                     continue 2;
                 default:
@@ -154,14 +152,14 @@ class ParallelDownloader
                             curl_multi_remove_handle($mh, $ch);
                             $unused[] = $ch;
                         }
-                    } while ($remains);
+                    } while ($remains > 0);
 
-                    if ($packages) {
+                    if (count($packages) > 0) {
                         break 2;
                     }
                 }
             } while ($running);
-        } while ($packages);
+        } while (count($packages) > 0);
         $this->io->write("    Finished: <comment>success: $this->successCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>");
 
         foreach ($unused as $ch) {

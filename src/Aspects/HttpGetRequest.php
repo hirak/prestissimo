@@ -14,25 +14,24 @@ use Composer\Composer;
  */
 class HttpGetRequest
 {
-    public $origin
-        , $scheme = 'http'
-        , $host = 'example.com'
-        , $port = 80
-        , $path = '/'
+    public $origin;
+    public $scheme = 'http';
+    public $host = 'example.com';
+    public $port = 80;
+    public $path = '/';
 
-        , $special = null
+    public $special = null;
 
-        , $query = array()
-        , $headers = array()
+    public $query = array();
+    public $headers = array();
 
-        , $curlOpts = array()
+    public $curlOpts = array();
 
-        , $username = null
-        , $password = null
+    public $username = null;
+    public $password = null;
 
-        , $maybePublic = true
-        , $verbose = false
-        ;
+    public $maybePublic = true;
+    public $verbose = false;
 
     /**
      * normalize url and authentication info
@@ -63,9 +62,11 @@ class HttpGetRequest
     public function importURL($url)
     {
         $struct = parse_url($url);
+        // @codeCoverageIgnoreStart
         if (! $struct) {
             throw new \InvalidArgumentException("$url is not valid URL");
         }
+        // @codeCoverageIgnoreEnd
 
         $this->scheme = self::setOr($struct, 'scheme', $this->scheme);
         $this->host = self::setOr($struct, 'host', $this->host);
@@ -105,7 +106,7 @@ class HttpGetRequest
         if ($this->username && $this->password) {
             $curlOpts[CURLOPT_USERPWD] = "$this->username:$this->password";
         } else {
-            $curlOpts[CURLOPT_USERPWD] = null;
+            unset($curlOpts[CURLOPT_USERPWD]);
         }
 
         $curlOpts[CURLOPT_URL] = $this->getUrl();
