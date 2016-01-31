@@ -88,7 +88,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
     /**
      * Get the content.
      *
-     * @param string $originUrl The origin URL
+     * @param string $origin The origin URL
      * @param string $fileUrl   The file URL
      * @param bool   $progress  Display the progression
      * @param array  $options   Additional context options
@@ -195,7 +195,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
     /**
      * @internal
-     * @param resource<curl> $ch
+     * @param resource $ch
      * @param Aspects\HttpGetRequest $request
      * @return array(int, Aspects\HttpGetResponse)
      */
@@ -222,19 +222,14 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
     /**
      * @internal
-     * @param  resource $ch
-     * @param  int $downBytesMax
-     * @param  int $downBytes
-     * @param  int $upBytesMax
-     * @param  int $upBytes
      */
     public function progress()
     {
         // @codeCoverageIgnoreStart
         if (PHP_VERSION_ID >= 50500) {
-            list($ch, $downBytesMax, $downBytes, $upBytesMax, $upBytes) = func_get_args();
+            list(, $downBytesMax, $downBytes, , ) = func_get_args();
         } else {
-            list($downBytesMax, $downBytes, $upBytesMax, $upBytes) = func_get_args();
+            list($downBytesMax, $downBytes, , ) = func_get_args();
         }
         // @codeCoverageIgnoreEnd
 
