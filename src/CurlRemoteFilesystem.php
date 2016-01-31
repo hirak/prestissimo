@@ -154,6 +154,9 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             if ($this->pluginConfig['insecure']) {
                 $opts[CURLOPT_SSL_VERIFYPEER] = false;
             }
+            if (! empty($pluginConfig['userAgent'])) {
+                $opts[CURLOPT_HTTPHEADER] = [ "User-Agent: {$pluginConfig['userAgent']}" ];
+            }
             if (! empty($pluginConfig['capath'])) {
                 $opts[CURLOPT_CAPATH] = $pluginConfig['capath'];
             }
