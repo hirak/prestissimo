@@ -73,100 +73,101 @@ class ParallelDownloader
         $this->successCnt = 0;
         $this->failureCnt = 0;
         $this->io->write("    Prefetch start: <comment>success: $this->successCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>");
+
+        EVENTLOOP:
+        // prepare curl resources
+        while (count($unused) > 0 && count($packages) > 0) {
+            $package = array_pop($packages);
+            $filepath = $cachedir . DIRECTORY_SEPARATOR . static::getCacheKey($package);
+            if (file_exists($filepath)) {
+                ++$this->successCnt;
+                continue;
+            }
+            $ch = array_pop($unused);
+
+            // make file resource
+            $chFpMap[(int)$ch] = $outputFile = new OutputFile($filepath);
+
+            // make url
+            $url = $package->getDistUrl();
+            $host = parse_url($url, PHP_URL_HOST) ?: '';
+            $request = new Aspects\HttpGetRequest($host, $url, $this->io);
+            $request->verbose = $pluginConfig['verbose'];
+            if (in_array($package->getName(), $pluginConfig['privatePackages'])) {
+                $request->maybePublic = false;
+            } else {
+                $request->maybePublic = (bool)preg_match('%^(?:https|git)://github\.com%', $package->getSourceUrl());
+            }
+            $onPreDownload = Factory::getPreEvent($request);
+            $onPreDownload->notify();
+
+            $opts = $request->getCurlOpts();
+            if ($pluginConfig['insecure']) {
+                $opts[CURLOPT_SSL_VERIFYPEER] = false;
+            }
+            if (! empty($pluginConfig['userAgent'])) {
+                $opts[CURLOPT_USERAGENT] = $pluginConfig['userAgent'];
+            }
+            if (! empty($pluginConfig['capath'])) {
+                $opts[CURLOPT_CAPATH] = $pluginConfig['capath'];
+            }
+            unset($opts[CURLOPT_ENCODING]);
+            unset($opts[CURLOPT_USERPWD]); // ParallelDownloader doesn't support private packages.
+            curl_setopt_array($ch, $opts);
+            curl_setopt($ch, CURLOPT_FILE, $outputFile->getPointer());
+            curl_multi_add_handle($mh, $ch);
+        }
+
+        // wait for any event
         do {
-            // prepare curl resources
-            while (count($unused) > 0 && count($packages) > 0) {
-                $package = array_pop($packages);
-                $filepath = $cachedir . DIRECTORY_SEPARATOR . static::getCacheKey($package);
-                if (file_exists($filepath)) {
-                    ++$this->successCnt;
-                    continue;
-                }
-                $ch = array_pop($unused);
+            $runningBefore = $running;
+            while (CURLM_CALL_MULTI_PERFORM === curl_multi_exec($mh, $running));
 
-                // make file resource
-                $chFpMap[(int)$ch] = $outputFile = new OutputFile($filepath);
+            SELECT:
+            $eventCount = curl_multi_select($mh, 5);
 
-                // make url
-                $url = $package->getDistUrl();
-                $host = parse_url($url, PHP_URL_HOST) ?: '';
-                $request = new Aspects\HttpGetRequest($host, $url, $this->io);
-                $request->verbose = $pluginConfig['verbose'];
-                if (in_array($package->getName(), $pluginConfig['privatePackages'])) {
-                    $request->maybePublic = false;
-                } else {
-                    $request->maybePublic = (bool)preg_match('%^(?:https|git)://github\.com%', $package->getSourceUrl());
-                }
-                $onPreDownload = Factory::getPreEvent($request);
-                $onPreDownload->notify();
-
-                $opts = $request->getCurlOpts();
-                if ($pluginConfig['insecure']) {
-                    $opts[CURLOPT_SSL_VERIFYPEER] = false;
-                }
-                if (! empty($pluginConfig['userAgent'])) {
-                    $opts[CURLOPT_USERAGENT] = $pluginConfig['userAgent'];
-                }
-                if (! empty($pluginConfig['capath'])) {
-                    $opts[CURLOPT_CAPATH] = $pluginConfig['capath'];
-                }
-                unset($opts[CURLOPT_ENCODING]);
-                unset($opts[CURLOPT_USERPWD]); // ParallelDownloader doesn't support private packages.
-                curl_setopt_array($ch, $opts);
-                curl_setopt($ch, CURLOPT_FILE, $outputFile->getPointer());
-                curl_multi_add_handle($mh, $ch);
+            if ($eventCount === -1) {
+                usleep(200 * 1000);
+                continue;
             }
 
-            // wait for any event
+            if ($eventCount === 0) {
+                continue;
+            }
+
+            while (CURLM_CALL_MULTI_PERFORM === curl_multi_exec($mh, $running));
+
+            if ($running > 0 && $running === $runningBefore) {
+                goto SELECT;
+            }
+
             do {
-                // start multi download
-                while (CURLM_CALL_MULTI_PERFORM === curl_multi_exec($mh, $running));
-                $runningBefore = $running;
-
-                $eventCount = curl_multi_select($mh, 5);
-
-                if ($eventCount === -1) {
-                    usleep(200 * 1000);
-                    continue;
-                }
-
-                if ($eventCount === 0) {
-                    continue;
-                }
-
-                while (CURLM_CALL_MULTI_PERFORM === curl_multi_exec($mh, $running));
-
-                if ($running === $runningBefore) {
-                    continue;
-                }
-
-                do {
-                    if ($raised = curl_multi_info_read($mh, $remains)) {
-                        $ch = $raised['handle'];
-                        $errno = curl_errno($ch);
-                        $info = curl_getinfo($ch);
-                        curl_setopt($ch, CURLOPT_FILE, STDOUT);
-                        $index = (int)$ch;
-                        $outputFile = $chFpMap[$index];
-                        unset($chFpMap[$index]);
-                        if (CURLE_OK === $errno && 200 === $info['http_code']) {
-                            ++$this->successCnt;
-                        } else {
-                            ++$this->failureCnt;
-                            $outputFile->setFailure();
-                        }
-                        unset($outputFile);
-                        $this->io->write($this->makeDownloadingText($info['url']));
-                        curl_multi_remove_handle($mh, $ch);
-                        $unused[] = $ch;
+                if ($raised = curl_multi_info_read($mh, $remains)) {
+                    $ch = $raised['handle'];
+                    $errno = curl_errno($ch);
+                    $info = curl_getinfo($ch);
+                    curl_setopt($ch, CURLOPT_FILE, STDOUT);
+                    $index = (int)$ch;
+                    $outputFile = $chFpMap[$index];
+                    unset($chFpMap[$index]);
+                    if (CURLE_OK === $errno && 200 === $info['http_code']) {
+                        ++$this->successCnt;
+                    } else {
+                        ++$this->failureCnt;
+                        $outputFile->setFailure();
                     }
-                } while ($remains > 0);
-
-                if (count($packages) > 0) {
-                    break;
+                    unset($outputFile);
+                    $this->io->write($this->makeDownloadingText($info['url']));
+                    curl_multi_remove_handle($mh, $ch);
+                    $unused[] = $ch;
                 }
-            } while ($running);
-        } while (count($packages) > 0);
+            } while ($remains > 0);
+
+            if (count($packages) > 0) {
+                goto EVENTLOOP;
+            }
+        } while ($running > 0);
+
         $this->io->write("    Finished: <comment>success: $this->successCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>");
 
         foreach ($unused as $ch) {
