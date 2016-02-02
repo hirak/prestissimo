@@ -35,7 +35,7 @@ final class Factory
      * @param bool $auth
      * @return resource<curl>
      */
-    public static function getConnection($origin, $auth=false)
+    public static function getConnection($origin, $auth = false)
     {
         if ($auth) {
             if (isset(self::$authConnections[$origin])) {

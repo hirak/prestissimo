@@ -49,7 +49,7 @@ class OutputFile
             fclose($this->fp);
         }
 
-        if (! $this->success) {
+        if (!$this->success) {
             unlink($this->fileName);
             foreach ($this->createdDirs as $dir) {
                 rmdir($dir);
@@ -74,7 +74,7 @@ class OutputFile
         do {
             $dir = dirname($dir);
             $createdDirs[] = $dir;
-        } while (! file_exists($dir));
+        } while (!file_exists($dir));
         array_pop($createdDirs);
         $this->createdDirs = array_reverse($createdDirs);
 

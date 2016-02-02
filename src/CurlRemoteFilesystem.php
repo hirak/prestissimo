@@ -65,11 +65,11 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
      *
      * @return bool true
      */
-    public function copy($origin, $fileUrl, $fileName, $progress=true, $options=array())
+    public function copy($origin, $fileUrl, $fileName, $progress = true, $options = array())
     {
         $that = $this; // for PHP5.3
 
-        return $this->fetch($origin, $fileUrl, $progress, $options, function ($ch, $request) use ($that, $fileName) {
+        return $this->fetch($origin, $fileUrl, $progress, $options, function($ch, $request) use ($that, $fileName) {
             $outputFile = new OutputFile($fileName);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
             curl_setopt($ch, CURLOPT_FILE, $outputFile->getPointer());
@@ -96,11 +96,11 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
      *
      * @return bool|string The content
      */
-    public function getContents($origin, $fileUrl, $progress=true, $options=array())
+    public function getContents($origin, $fileUrl, $progress = true, $options = array())
     {
         $that = $this; // for PHP5.3
 
-        return $this->fetch($origin, $fileUrl, $progress, $options, function ($ch, $request) use ($that) {
+        return $this->fetch($origin, $fileUrl, $progress, $options, function($ch, $request) use ($that) {
             // This order is important.
             curl_setopt($ch, CURLOPT_FILE, STDOUT);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -109,6 +109,12 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
         });
     }
 
+    /**
+     * @param string $origin
+     * @param string $fileUrl
+     * @param boolean $progress
+     * @param \Closure $exec
+     */
     protected function fetch($origin, $fileUrl, $progress, $options, $exec)
     {
         do {
@@ -155,16 +161,16 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             if ($this->pluginConfig['insecure']) {
                 $opts[CURLOPT_SSL_VERIFYPEER] = false;
             }
-            if (! empty($pluginConfig['userAgent'])) {
+            if (!empty($pluginConfig['userAgent'])) {
                 $opts[CURLOPT_USERAGENT] = $pluginConfig['userAgent'];
             }
-            if (! empty($pluginConfig['capath'])) {
+            if (!empty($pluginConfig['capath'])) {
                 $opts[CURLOPT_CAPATH] = $pluginConfig['capath'];
             }
 
             curl_setopt_array($ch, $opts);
 
-            list($execStatus, ) = $exec($ch, $request);
+            list($execStatus,) = $exec($ch, $request);
         } while ($this->_retry);
 
         if ($progress) {
@@ -228,9 +234,9 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
     {
         // @codeCoverageIgnoreStart
         if (PHP_VERSION_ID >= 50500) {
-            list(, $downBytesMax, $downBytes, , ) = func_get_args();
+            list(, $downBytesMax, $downBytes,,) = func_get_args();
         } else {
-            list($downBytesMax, $downBytes, , ) = func_get_args();
+            list($downBytesMax, $downBytes,,) = func_get_args();
         }
         // @codeCoverageIgnoreEnd
 

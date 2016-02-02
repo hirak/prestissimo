@@ -59,6 +59,9 @@ class HttpGetRequest
         }
     }
 
+    /**
+     * @param string $url
+     */
     public function importURL($url)
     {
         $struct = parse_url($url);
@@ -81,6 +84,11 @@ class HttpGetRequest
     }
 
     // utility for __construct
+
+    /**
+     * @param string $key
+     * @param string $default
+     */
     private static function setOr(array $struct, $key, $default=null)
     {
         if (!empty($struct[$key])) {
@@ -101,7 +109,7 @@ class HttpGetRequest
             CURLOPT_USERAGENT => $this->genUA(),
         );
 
-        $curlOpts[CURLOPT_VERBOSE] = (bool) $this->verbose;
+        $curlOpts[CURLOPT_VERBOSE] = (bool)$this->verbose;
 
         if ($this->username && $this->password) {
             $curlOpts[CURLOPT_USERPWD] = "$this->username:$this->password";
