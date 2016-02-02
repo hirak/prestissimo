@@ -107,7 +107,7 @@ class Plugin implements
         }
 
         $config = $this->config->get('prestissimo');
-        if (! is_array($config)) {
+        if (!is_array($config)) {
             $config = array();
         }
         $config += array(
@@ -120,22 +120,22 @@ class Plugin implements
             'privatePackages' => array(),
         );
 
-        if (! is_int($config['maxConnections']) || $config['maxConnections'] < 1) {
+        if (!is_int($config['maxConnections']) || $config['maxConnections'] < 1) {
             $config['maxConnections'] = 6;
         }
-        if (! is_int($config['minConnections']) || $config['minConnections'] > $config['maxConnections']) {
+        if (!is_int($config['minConnections']) || $config['minConnections'] > $config['maxConnections']) {
             $config['minConnections'] = 3;
         }
-        if (! is_bool($config['pipeline'])) {
+        if (!is_bool($config['pipeline'])) {
             $config['pipeline'] = (bool)$config['pipeline'];
         }
-        if (! is_bool($config['insecure'])) {
+        if (!is_bool($config['insecure'])) {
             $config['insecure'] = (bool)$config['insecure'];
         }
-        if (! is_string($config['capath'])) {
+        if (!is_string($config['capath'])) {
             $config['capath'] = '';
         }
-        if (! is_array($config['privatePackages'])) {
+        if (!is_array($config['privatePackages'])) {
             $config['privatePackages'] = (array)$config['privatePackages'];
         }
 
