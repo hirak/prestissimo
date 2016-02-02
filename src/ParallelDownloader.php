@@ -89,7 +89,8 @@ class ParallelDownloader
             $chFpMap[(int)$ch] = $outputFile = new OutputFile($filepath);
 
             // make url
-            $url = $package->getDistUrl();
+            $url = $package->getDistUrls();
+            $url = $url[0];
             $host = parse_url($url, PHP_URL_HOST) ?: '';
             $request = new Aspects\HttpGetRequest($host, $url, $this->io);
             $request->verbose = $pluginConfig['verbose'];
