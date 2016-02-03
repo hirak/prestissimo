@@ -90,7 +90,11 @@ class ParallelDownloader
 
             // make url
             $url = $package->getDistUrls();
-            $url = $url[0];
+            if (count($url) > 0) {
+                $url = $url[0];
+            } else {
+                $url = $package->getDistUrl();
+            }
             $host = parse_url($url, PHP_URL_HOST) ?: '';
             $request = new Aspects\HttpGetRequest($host, $url, $this->io);
             $request->verbose = $pluginConfig['verbose'];
