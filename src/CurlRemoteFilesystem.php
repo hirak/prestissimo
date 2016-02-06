@@ -29,7 +29,6 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
     // global flags
     private $_retry = false;
-    private $_degradedMode = false;
 
     /** @var Aspects\JoinPoint */
     public $onPreDownload;
@@ -123,9 +122,6 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
             $request = Factory::getHttpGetRequest($origin, $fileUrl, $this->io, $this->config, $this->pluginConfig);
             $this->onPreDownload = Factory::getPreEvent($request);
             $this->onPostDownload = Factory::getPostEvent($request);
-            if ($this->_degradedMode) {
-                $this->onPreDownload->attach(new Aspects\AspectDegradedMode);
-            }
 
             $options += $this->options;
             $request->processRFSOption($options);
