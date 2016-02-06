@@ -17,17 +17,16 @@ class AspectAuth implements SplObserver
 {
     public function update(SplSubject $ev)
     {
-        switch ((string)$ev) {
-            case 'pre-download':
-                $this->before($ev->refRequest());
-                break;
-            case 'post-download':
-                $this->after($ev->refResponse());
-                break;
+        $name = (string)$ev;
+        if ('pre-download' === $name) {
+            return $this->before($ev->refRequest());
+        }
+        if ('post-download' === $name) {
+            $this->after($ev->refResponse());
         }
     }
 
-    public function before(HttpGetRequest $req)
+    private function before(HttpGetRequest $req)
     {
         if (!$req->username || !$req->password) {
             $req->username = $req->password = null;
@@ -49,7 +48,7 @@ class AspectAuth implements SplObserver
         }
     }
 
-    public function after(HttpGetResponse $res)
+    private function after(HttpGetResponse $res)
     {
         if (CURLE_OK !== $res->errno) {
             throw new Downloader\TransportException("$res->error:$res->errno");
