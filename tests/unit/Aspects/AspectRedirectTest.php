@@ -1,46 +1,22 @@
 <?php
 namespace Hirak\Prestissimo\Aspects;
 
+use Composer\IO;
+
 class AspectRedirectTest extends \PHPUnit_Framework_TestCase
 {
-    protected static $req;
-    protected $pre;
-
-    public static function setUpBeforeClass() {
-        self::$req = new HttpGetRequest(
-            'packagist.org',
-            'https://packagist.org/packages.json',
-            new \Composer\IO\NullIO
-        );
-    }
-
-    public function setUp()
+    public function testUpdate()
     {
-        $this->pre = new JoinPoint('pre-download', self::$req);
-    }
-
-    /**
-     * @covers Hirak\Prestissimo\Aspects\AspectRedirect::update
-     * @covers Hirak\Prestissimo\Aspects\AspectRedirect::before
-     */
-    function testUpdate()
-    {
-        $aR = new AspectRedirect();
-        self::assertEquals('pre-download', (string) $this->pre);
-
-        $aR->update($this->pre);
         $req = new HttpGetRequest(
-            'api.github.com',
-            'https://api.github.com/repos/brunoric/prestissimo/zipball/',
-            new \Composer\IO\NullIO
+            'github.com',
+            'https://api.github.com/repos/exampleorg/examplerepo/zipball/00000',
+            new IO\NullIO
         );
-        self::assertEquals('packagist.org', $this->pre->refRequest()->host);
+        $preDownload = new JoinPoint('pre-download', $req);
 
-        $this->pre->setRequest($req);
-        self::assertEquals('api.github.com', $this->pre->refRequest()->host);
-        self::assertEquals('/repos/brunoric/prestissimo/zipball/', $this->pre->refRequest()->path);
+        $redirect = new AspectRedirect;
+        $redirect->update($preDownload);
 
-        $aR->update($this->pre);
-        self::assertEquals('/brunoric/prestissimo/legacy.zip/', $this->pre->refRequest()->path);
+        self::assertSame('https://codeload.github.com/exampleorg/examplerepo/legacy.zip/00000', $req->getURL());
     }
 }

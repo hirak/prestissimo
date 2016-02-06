@@ -16,14 +16,12 @@ class AspectRedirect implements SplObserver
 {
     public function update(SplSubject $ev)
     {
-        switch ((string)$ev) {
-            case 'pre-download':
-                $this->before($ev->refRequest());
-                break;
+        if ('pre-download' === (string)$ev) {
+            $this->before($ev->refRequest());
         }
     }
 
-    public function before(HttpGetRequest $req)
+    private function before(HttpGetRequest $req)
     {
         if ('api.github.com' !== $req->host || !$req->maybePublic) {
             return;
