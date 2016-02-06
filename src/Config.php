@@ -31,7 +31,7 @@ class Config
         $validator->check((object)$config, json_decode($schema));
 
         if (! $validator->isValid()) {
-            throw new \InvalidArgumentException(print_r($validator->getErrors(), true));
+            throw new \InvalidArgumentException(var_export($validator->getErrors(), true));
         }
 
         $this->config = $config;
