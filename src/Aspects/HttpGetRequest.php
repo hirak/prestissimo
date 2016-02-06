@@ -8,6 +8,8 @@ namespace Hirak\Prestissimo\Aspects;
 
 use Composer\IO;
 use Composer\Composer;
+use Composer\Config as CConfig;
+use Composer\Downloader;
 
 /**
  * Simple Container for http-get request
@@ -19,8 +21,6 @@ class HttpGetRequest
     public $host = 'example.com';
     public $port = 80;
     public $path = '/';
-
-    public $special = null;
 
     public $query = array();
     public $headers = array();
@@ -37,17 +37,11 @@ class HttpGetRequest
      * normalize url and authentication info
      * @param string $origin domain text
      * @param string $url
-     * @param IO/IOInterface $io
+     * @param IO\IOInterface $io
      */
     public function __construct($origin, $url, IO\IOInterface $io)
     {
-        // normalize github origin
-        if (substr($origin, -10) === 'github.com') {
-            $origin = 'github.com';
-            $this->special = 'github';
-        }
         $this->origin = $origin;
-
         $this->importURL($url);
 
         if ($this->username && $this->password) {
@@ -83,7 +77,6 @@ class HttpGetRequest
         }
     }
 
-    // utility for __construct
 
     /**
      * @param string $key
@@ -96,6 +89,15 @@ class HttpGetRequest
         }
 
         return $default;
+    }
+
+    /**
+     * process option for RemortFileSystem
+     * @return void
+     */
+    public function processRFSOption(array $option)
+    {
+        // template method
     }
 
     public function getCurlOpts()
@@ -144,18 +146,37 @@ class HttpGetRequest
         return $url;
     }
 
-    /**
-     * special domain special flag
-     * @param array $map
-     */
-    public function setSpecial(array $map)
+    public function promptAuth(HttpGetResponse $res, CConfig $config, IO\IOInterface $io)
     {
-        foreach ($map as $key => $domains) {
-            if (in_array($this->origin, $domains)) {
-                $this->special = $key;
-                return;
-            }
+        $httpCode = $res->info['http_code'];
+        // 404s are only handled for github
+        if (404 === $httpCode) {
+            return false;
         }
+
+        // fail if the console is not interactive
+        if (!$io->isInteractive()) {
+            switch ($httpCode) {
+                case 401:
+                    $message = "The '{$this->getURL()}' URL required authentication.\nYou must be using the interactive console to authenticate";
+                    break;
+                case 403:
+                    $message = "The '{$this->getURL()}' URL could not be accessed.";
+                    break;
+            }
+            throw new Downloader\TransportException($message, $httpCode);
+        }
+
+        // fail if we already have auth
+        if ($io->hasAuthentication($this->origin)) {
+            throw new Downloader\TransportException("Invalid credentials for '{$this->getURL()}', aborting.", $httpCode);
+        }
+
+        $io->overwrite("    Authentication required (<info>$this->host</info>):");
+        $username = $io->ask('      Username: ');
+        $password = $io->askAndHideAnswer('      Password: ');
+        $io->setAuthentication($this->origin, $username, $password);
+        return true;
     }
 
     public static function genUA()
