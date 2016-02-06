@@ -22,7 +22,7 @@ class OutputFile
     protected $createdDirs = array();
 
     /** @var bool */
-    private $success = true;
+    private $success = false;
 
     public function __construct($fileName)
     {
@@ -62,9 +62,9 @@ class OutputFile
         return $this->fp;
     }
 
-    public function setFailure()
+    public function setSuccess()
     {
-        $this->success = false;
+        $this->success = true;
     }
 
     protected function createDir($fileName)

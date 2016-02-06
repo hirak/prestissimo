@@ -78,8 +78,8 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
             curl_setopt($ch, CURLOPT_FILE, STDOUT);
 
-            if (200 !== $response->info['http_code']) {
-                $outputFile->setFailure();
+            if (200 === $response->info['http_code']) {
+                $outputFile->setSuccess();
             }
 
             return $result;

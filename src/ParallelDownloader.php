@@ -157,9 +157,9 @@ class ParallelDownloader
                     unset($chFpMap[$index]);
                     if (CURLE_OK === $errno && 200 === $info['http_code']) {
                         ++$this->successCnt;
+                        $outputFile->setSuccess();
                     } else {
                         ++$this->failureCnt;
-                        $outputFile->setFailure();
                     }
                     unset($outputFile);
                     $this->io->write($this->makeDownloadingText($info['url']));
