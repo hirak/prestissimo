@@ -6,7 +6,7 @@
  */
 namespace Hirak\Prestissimo;
 
-use Composer\Config;
+use Composer\Config as CConfig;
 use Composer\IO;
 use Composer\Downloader;
 use Composer\Util;
@@ -39,10 +39,10 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
     /**
      * @param IO\IOInterface $io
-     * @param Config $config
+     * @param CConfig $config
      * @param array $options
      */
-    public function __construct(IO\IOInterface $io, Config $config, array $options = array())
+    public function __construct(IO\IOInterface $io, CConfig $config, array $options = array())
     {
         $this->io = $io;
         $this->config = $config;
@@ -78,8 +78,8 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
             curl_setopt($ch, CURLOPT_FILE, STDOUT);
 
-            if (200 !== $response->info['http_code']) {
-                $outputFile->setFailure();
+            if (200 === $response->info['http_code']) {
+                $outputFile->setSuccess();
             }
 
             return $result;

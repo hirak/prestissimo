@@ -27,11 +27,15 @@ class Plugin implements
     /** @var Composer\Config */
     private $config;
 
+    /** @var Config */
+    private $pluginConfig;
+
     public function activate(Composer $composer, IO\IOInterface $io)
     {
         $this->composer = $composer;
         $this->config = $composer->getConfig();
         $this->io = $io;
+        $this->pluginConfig = $this->setPluginConfig();
     }
 
     public static function getSubscribedEvents()
@@ -57,7 +61,7 @@ class Plugin implements
                 $this->config,
                 $rfs->getOptions()
             );
-            $curlrfs->setPluginConfig($this->getConfig());
+            $curlrfs->setPluginConfig($this->pluginConfig->get());
             $ev->setRemoteFilesystem($curlrfs);
         }
     }
@@ -69,7 +73,7 @@ class Plugin implements
     {
         $ops = $ev->getOperations();
         $packages = $this->filterPackages($ops);
-        $pluginConfig = $this->getConfig();
+        $pluginConfig = $this->pluginConfig->get();
         if (count($packages) >= $pluginConfig['minConnections']) {
             $downloader = new ParallelDownloader($this->io, $this->config);
             $downloader->download($packages, $pluginConfig);
@@ -96,49 +100,12 @@ class Plugin implements
         return $packs;
     }
 
-    /**
-     * @return array
-     */
-    private function getConfig()
+    private function setPluginConfig()
     {
-        static $config;
-        if ($config) {
-            return $config;
-        }
-
         $config = $this->config->get('prestissimo');
         if (!is_array($config)) {
             $config = array();
         }
-        $config += array(
-            'maxConnections' => 6,
-            'minConnections' => 3,
-            'pipeline' => false,
-            'verbose' => false,
-            'insecure' => false,
-            'capath' => '',
-            'privatePackages' => array(),
-        );
-
-        if (!is_int($config['maxConnections']) || $config['maxConnections'] < 1) {
-            $config['maxConnections'] = 6;
-        }
-        if (!is_int($config['minConnections']) || $config['minConnections'] > $config['maxConnections']) {
-            $config['minConnections'] = 3;
-        }
-        if (!is_bool($config['pipeline'])) {
-            $config['pipeline'] = (bool)$config['pipeline'];
-        }
-        if (!is_bool($config['insecure'])) {
-            $config['insecure'] = (bool)$config['insecure'];
-        }
-        if (!is_string($config['capath'])) {
-            $config['capath'] = '';
-        }
-        if (!is_array($config['privatePackages'])) {
-            $config['privatePackages'] = (array)$config['privatePackages'];
-        }
-
-        return $config;
+        return new Config($config);
     }
 }

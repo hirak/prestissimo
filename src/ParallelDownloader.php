@@ -8,7 +8,7 @@ namespace Hirak\Prestissimo;
 
 use Composer\Package;
 use Composer\IO;
-use Composer\Config;
+use Composer\Config as CConfig;
 
 /**
  *
@@ -18,15 +18,16 @@ class ParallelDownloader
     /** @var IO/IOInterface */
     protected $io;
 
-    /** @var Config */
+    /** @var CConfig */
     protected $config;
 
     /** @var int */
     protected $totalCnt = 0;
     protected $successCnt = 0;
+    protected $skippedCnt = 0;
     protected $failureCnt = 0;
 
-    public function __construct(IO\IOInterface $io, Config $config)
+    public function __construct(IO\IOInterface $io, CConfig $config)
     {
         $this->io = $io;
         $this->config = $config;
@@ -71,8 +72,9 @@ class ParallelDownloader
 
         $this->totalCnt = count($packages);
         $this->successCnt = 0;
+        $this->skippedCnt = 0;
         $this->failureCnt = 0;
-        $this->io->write("    Prefetch start: <comment>success: $this->successCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>");
+        $this->io->write("    Prefetch start: total: $this->totalCnt</comment>");
 
         EVENTLOOP:
         // prepare curl resources
@@ -80,7 +82,7 @@ class ParallelDownloader
             $package = array_pop($packages);
             $filepath = $cachedir . DIRECTORY_SEPARATOR . static::getCacheKey($package);
             if (file_exists($filepath)) {
-                ++$this->successCnt;
+                ++$this->skippedCnt;
                 continue;
             }
             $ch = array_pop($unused);
@@ -89,11 +91,13 @@ class ParallelDownloader
             $chFpMap[(int)$ch] = $outputFile = new OutputFile($filepath);
 
             // make url
-            $url = $package->getDistUrls();
-            if (count($url) > 0) {
-                $url = $url[0];
-            } else {
-                $url = $package->getDistUrl();
+            $url = $package->getDistUrl();
+            if (! $url) {
+                ++$this->skippedCnt;
+                continue;
+            }
+            if ($package->getDistMirrors()) {
+                $url = current($package->getDistUrls());
             }
             $host = parse_url($url, PHP_URL_HOST) ?: '';
             $request = new Aspects\HttpGetRequest($host, $url, $this->io);
@@ -136,10 +140,6 @@ class ParallelDownloader
                 continue;
             }
 
-            if ($eventCount === 0) {
-                continue;
-            }
-
             while (CURLM_CALL_MULTI_PERFORM === curl_multi_exec($mh, $running));
 
             if ($running > 0 && $running === $runningBefore) {
@@ -157,9 +157,9 @@ class ParallelDownloader
                     unset($chFpMap[$index]);
                     if (CURLE_OK === $errno && 200 === $info['http_code']) {
                         ++$this->successCnt;
+                        $outputFile->setSuccess();
                     } else {
                         ++$this->failureCnt;
-                        $outputFile->setFailure();
                     }
                     unset($outputFile);
                     $this->io->write($this->makeDownloadingText($info['url']));
@@ -173,7 +173,7 @@ class ParallelDownloader
             }
         } while ($running > 0);
 
-        $this->io->write("    Finished: <comment>success: $this->successCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>");
+        $this->io->write("    Finished: <comment>success: $this->successCnt, skipped: $this->skippedCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>");
 
         foreach ($unused as $ch) {
             curl_close($ch);

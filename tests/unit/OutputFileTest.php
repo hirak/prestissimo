@@ -17,7 +17,6 @@ class OutputFileTest extends \PHPUnit_Framework_TestCase
 
         self::assertInternalType('resource', $outputFile->getPointer());
 
-        $outputFile->setFailure();
         unset($outputFile); // auto clean
 
         self::assertFileNotExists($fileName);
