@@ -8,7 +8,7 @@ namespace Hirak\Prestissimo;
 
 use Composer\Package;
 use Composer\IO;
-use Composer\Config;
+use Composer\Config as CConfig;
 
 /**
  *
@@ -18,7 +18,7 @@ class ParallelDownloader
     /** @var IO/IOInterface */
     protected $io;
 
-    /** @var Config */
+    /** @var CConfig */
     protected $config;
 
     /** @var int */
@@ -27,7 +27,7 @@ class ParallelDownloader
     protected $skippedCnt = 0;
     protected $failureCnt = 0;
 
-    public function __construct(IO\IOInterface $io, Config $config)
+    public function __construct(IO\IOInterface $io, CConfig $config)
     {
         $this->io = $io;
         $this->config = $config;

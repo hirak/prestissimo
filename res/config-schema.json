@@ -1,0 +1,36 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "maxConnections": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "minConnections": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "pipeline": {
+            "type": "boolean"
+        },
+        "verbose": {
+            "type": "boolean"
+        },
+        "insecure": {
+            "type": "boolean"
+        },
+        "capath": {
+            "type": "string"
+        },
+        "userAgent": {
+            "type": "string"
+        },
+        "privatePackages": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": ".*/.*"
+            }
+        }
+    }
+}
