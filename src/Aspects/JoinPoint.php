@@ -42,14 +42,6 @@ class JoinPoint implements SplSubject
         $this->storage->attach($observer);
     }
 
-    public function attachArray(array $observers)
-    {
-        $storage = $this->storage;
-        foreach ($observers as $observer) {
-            $storage->attach($observer);
-        }
-    }
-
     public function detach(SplObserver $observer)
     {
         $this->storage->detach($observer);
