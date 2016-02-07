@@ -8,7 +8,7 @@ namespace Hirak\Prestissimo;
 
 use JsonSchema;
 
-class Config
+final class Config
 {
     protected $config;
 

@@ -100,8 +100,7 @@ class ParallelDownloader
                 $url = current($package->getDistUrls());
             }
             $host = parse_url($url, PHP_URL_HOST) ?: '';
-            $request = new Aspects\HttpGetRequest($host, $url, $this->io);
-            $request->verbose = $pluginConfig['verbose'];
+            $request = Factory::getHttpGetRequest($host, $url, $this->io, $this->config, $pluginConfig);
             if (in_array($package->getName(), $pluginConfig['privatePackages'])) {
                 $request->maybePublic = false;
             } else {
@@ -111,15 +110,6 @@ class ParallelDownloader
             $onPreDownload->notify();
 
             $opts = $request->getCurlOpts();
-            if ($pluginConfig['insecure']) {
-                $opts[CURLOPT_SSL_VERIFYPEER] = false;
-            }
-            if (! empty($pluginConfig['userAgent'])) {
-                $opts[CURLOPT_USERAGENT] = $pluginConfig['userAgent'];
-            }
-            if (! empty($pluginConfig['capath'])) {
-                $opts[CURLOPT_CAPATH] = $pluginConfig['capath'];
-            }
             unset($opts[CURLOPT_ENCODING]);
             unset($opts[CURLOPT_USERPWD]); // ParallelDownloader doesn't support private packages.
             curl_setopt_array($ch, $opts);

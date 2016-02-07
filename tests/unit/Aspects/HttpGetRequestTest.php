@@ -1,11 +1,13 @@
 <?php
 namespace Hirak\Prestissimo\Aspects;
 
+use Composer\IO;
+
 class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
 {
     public function testConstruct()
     {
-        $io = new \Composer\IO\NullIO;
+        $io = new IO\NullIO;
         $req = new HttpGetRequest(
             'packagist.org',
             'https://packagist.org/packages.json',
@@ -19,7 +21,7 @@ class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
         self::assertSame(array(), $req->query);
 
         $req = new HttpGetRequest(
-            'api.github.com',
+            'example.com',
             'http://user:pass@example.com:8080/something/path?a=b&c=d',
             $io
         );
@@ -30,18 +32,22 @@ class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
         self::assertEquals(array('a'=>'b', 'c'=>'d'), $req->query);
         self::assertEquals(
             array('username'=>'user', 'password'=>'pass'),
-            $io->getAuthentication('github.com')
+            $io->getAuthentication('example.com')
         );
+    }
 
+    public function testRestoreAuth()
+    {
+        $io = new IO\NullIO;
+        $io->setAuthentication('example.com', 'user', 'pass');
         $req = new HttpGetRequest(
-            'api.github.com',
-            'http://example.com:8080/something/path?a=b&c=d',
+            'example.com',
+            'http://example.com/foo.txt',
             $io
         );
-        self::assertEquals(
-            array('username'=>'user', 'password'=>'pass'),
-            $io->getAuthentication('github.com')
-        );
+
+        self::assertSame('user', $req->username);
+        self::assertSame('pass', $req->password);
     }
 
     public function testGetURL()
@@ -101,32 +107,5 @@ class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
         $curlOpts = $req->getCurlOpts();
         unset($curlOpts[CURLOPT_USERAGENT]);
         self::assertEquals($expects, $curlOpts);
-    }
-
-    public function testSetSpecial()
-    {
-        $io = new \Composer\IO\NullIO;
-        $req = new HttpGetRequest(
-            'github.com',
-            'https://github.com/404',
-            $io
-        );
-        $req->setSpecial(array(
-            'github' => array('github.com'),
-        ));
-
-        self::assertSame('github', $req->special);
-
-        $io = new \Composer\IO\NullIO;
-        $req = new HttpGetRequest(
-            'github.com',
-            'https://github.com/',
-            $io
-        );
-        $req->setSpecial(array(
-            'github' => array(),
-        ));
-
-        self::assertSame('github', $req->special);
     }
 }

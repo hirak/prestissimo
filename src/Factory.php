@@ -1,10 +1,13 @@
 <?php
-/**
+/*
  * hirak/prestissimo
  * @author Hiraku NAKANO
  * @license MIT https://github.com/hirak/prestissimo
  */
 namespace Hirak\Prestissimo;
+
+use Composer\IO;
+use Composer\Config as CConfig;
 
 /**
  * cache manager for curl handler
@@ -50,6 +53,41 @@ final class Factory
 
             return self::$connections[$origin] = curl_init();
         }
+    }
+
+    /**
+     * @param string $origin domain text
+     * @param string $url
+     * @param IO\IOInterface $io
+     * @param CConfig $config
+     * @param array $pluginConfig
+     * @return Aspects\HttpGetRequest
+     */
+    public static function getHttpGetRequest($origin, $url, IO\IOInterface $io, CConfig $config, array $pluginConfig)
+    {
+        if (substr($origin, -10) === 'github.com') {
+            $origin = 'github.com';
+            $requestClass = 'GitHub';
+        } elseif (in_array($origin, $config->get('github-domains') ?: array())) {
+            $requestClass = 'GitHub';
+        } elseif (in_array($origin, $config->get('gitlab-domains') ?: array())) {
+            $requestClass = 'GitLab';
+        } else {
+            $requestClass = 'HttpGet';
+        }
+        $requestClass = __NAMESPACE__ . '\Aspects\\' . $requestClass . 'Request';
+        $request = new $requestClass($origin, $url, $io);
+        $request->verbose = $pluginConfig['verbose'];
+        if ($pluginConfig['insecure']) {
+            $request->curlOpts[CURLOPT_SSL_VERIFYPEER] = false;
+        }
+        if (!empty($pluginConfig['capath'])) {
+            $request->curlOpts[CURLOPT_CAPATH] = $pluginConfig['capath'];
+        }
+        if (!empty($pluginConfig['userAgent'])) {
+            $request->curlOpts[CURLOPT_USERAGENT] = $pluginConfig['userAgent'];
+        }
+        return $request;
     }
 
     /**

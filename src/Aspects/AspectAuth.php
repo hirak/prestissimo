@@ -17,63 +17,46 @@ class AspectAuth implements SplObserver
 {
     public function update(SplSubject $ev)
     {
-        switch ((string)$ev) {
-            case 'pre-download':
-                $this->before($ev->refRequest());
-                break;
-            case 'post-download':
-                $this->after($ev->refResponse());
-                break;
+        $name = (string)$ev;
+        if ('pre-download' === $name) {
+            return $this->before($ev->refRequest());
+        }
+        if ('post-download' === $name) {
+            $this->after($ev->refResponse());
         }
     }
 
-    public function before(HttpGetRequest $req)
+    private function before(HttpGetRequest $req)
     {
         if (!$req->username || !$req->password) {
-            $req->username = null;
-            $req->password = null;
+            $req->username = $req->password = null;
             return;
         }
 
-        switch ($req->special) {
-            case 'github':
-                if ($req->password === 'x-oauth-basic') {
-                    $req->query['access_token'] = $req->username;
-                    // forbid basic-auth
-                    $req->username = null;
-                    $req->password = null;
-                    return;
-                }
-                break;
-            case 'gitlab':
-                if ($req->password === 'oauth2') {
-                    $req->headers[] = 'Authorization: Bearer ' . $req->username;
-                    // forbid basic-auth
-                    $req->username = null;
-                    $req->password = null;
-                    return;
-                }
-                break;
+        if ($req instanceof GitHubRequest && $req->password === 'x-oauth-basic') {
+            $req->query['access_token'] = $req->username;
+            // forbid basic-auth
+            $req->username = $req->password = null;
+            return;
+        }
+
+        if ($req instanceof GitLabRequest && $req->password === 'oauth2') {
+            $req->headers[] = 'Authorization: Bearer ' . $req->username;
+            // forbid basic-auth
+            $req->username = $req->password = null;
+            return;
         }
     }
 
-    // どうしようもない失敗なのか、リトライする余地があるのかを判別する
-    public function after(HttpGetResponse $res)
+    private function after(HttpGetResponse $res)
     {
         if (CURLE_OK !== $res->errno) {
             throw new Downloader\TransportException("$res->error:$res->errno");
         }
 
-        switch ($res->info['http_code']) {
-            case 200: //OK
-                return;
-            case 401: //Unauthorized
-            case 403: //Forbidden
-            case 404: //Not Found
-                $res->setNeedAuth();
-                break;
-            case 407: //Proxy Authentication Required
-                break;
+        if (in_array($res->info['http_code'], array(401, 403, 404))) {
+            $res->setNeedAuth();
+            return;
         }
     }
 }

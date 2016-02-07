@@ -29,7 +29,6 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
     // global flags
     private $_retry = false;
-    private $_degradedMode = false;
 
     /** @var Aspects\JoinPoint */
     public $onPreDownload;
@@ -120,25 +119,12 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
         do {
             $this->_retry = false;
 
-            $request = new Aspects\HttpGetRequest($origin, $fileUrl, $this->io);
-            $request->setSpecial(array(
-                'github' => $this->config->get('github-domains') ?: array(),
-                'gitlab' => $this->config->get('gitlab-domains') ?: array(),
-            ));
+            $request = Factory::getHttpGetRequest($origin, $fileUrl, $this->io, $this->config, $this->pluginConfig);
             $this->onPreDownload = Factory::getPreEvent($request);
             $this->onPostDownload = Factory::getPostEvent($request);
-            if ($this->_degradedMode) {
-                $this->onPreDownload->attach(new Aspects\AspectDegradedMode);
-            }
 
             $options += $this->options;
-            // override
-            if ('github' === $request->special && isset($options['github-token'])) {
-                $request->query['access_token'] = $options['github-token'];
-            }
-            if ('gitlab' === $request->special && isset($options['gitlab-token'])) {
-                $request->query['access_token'] = $options['gitlab-token'];
-            }
+            $request->processRFSOption($options);
 
             if ($this->io->isDebug()) {
                 $this->io->write('Downloading ' . $fileUrl);
@@ -157,16 +143,6 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
             $opts = $request->getCurlOpts();
             $ch = Factory::getConnection($origin, isset($opts[CURLOPT_USERPWD]));
-
-            if ($this->pluginConfig['insecure']) {
-                $opts[CURLOPT_SSL_VERIFYPEER] = false;
-            }
-            if (!empty($pluginConfig['userAgent'])) {
-                $opts[CURLOPT_USERAGENT] = $pluginConfig['userAgent'];
-            }
-            if (!empty($pluginConfig['capath'])) {
-                $opts[CURLOPT_CAPATH] = $pluginConfig['capath'];
-            }
 
             curl_setopt_array($ch, $opts);
 
@@ -206,7 +182,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
      * @param Aspects\HttpGetRequest $request
      * @return array {int, Aspects\HttpGetResponse}
      */
-    public function exec($ch, $request)
+    public function exec($ch, Aspects\HttpGetRequest $request)
     {
         $this->_lastHeaders = array();
         curl_setopt($ch, CURLOPT_HEADERFUNCTION, array($this, 'processHeader'));
@@ -263,87 +239,6 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
     protected function promptAuth(Aspects\HttpGetRequest $req, Aspects\HttpGetResponse $res)
     {
-        $io = $this->io;
-        $httpCode = $res->info['http_code'];
-
-        if ('github' === $req->special) {
-            $message = "\nCould not fetch {$req->getURL()}, please create a GitHub OAuth token ";
-            if (404 === $httpCode) {
-                $message .= 'to access private repos';
-            } else {
-                $message .= 'to go over the API rate limit';
-            }
-            $github = new Util\GitHub($io, $this->config, null);
-            if ($github->authorizeOAuth($req->origin)) {
-                $this->_retry = true;
-                return;
-            }
-            if ($io->isInteractive() &&
-                $github->authorizeOAuthInteractively($req->origin, $message)) {
-                $this->_retry = true;
-                return;
-            }
-
-            throw new Downloader\TransportException(
-                "Could not authenticate against $req->origin",
-                401
-            );
-        }
-        
-        if ('gitlab' === $req->special) {
-            $message = "\nCould not fetch {$req->getURL()}, enter your $req->origin credentials ";
-            if (401 === $httpCode) {
-                $message .= 'to access private repos';
-            } else {
-                $message .= 'to go over the API rate limit';
-            }
-            $gitlab = new Util\GitLab($io, $this->config, null);
-            if ($gitlab->authorizeOAuth($req->origin)) {
-                $this->_retry = true;
-                return;
-            }
-            if ($io->isInteractive() &&
-                $gitlab->authorizeOAuthInteractively($req->origin, $message)) {
-                $this->_retry = true;
-                return;
-            }
-
-            throw new Downloader\TransportException(
-                "Could not authenticate against $req->origin",
-                401
-            );
-        }
-
-        // 404s are only handled for github
-        if (404 === $httpCode) {
-            return;
-        }
-
-        // fail if the console is not interactive
-        if (!$io->isInteractive()) {
-            switch ($httpCode) {
-                case 401:
-                    $message = "The '{$req->getURL()}' URL required authentication.\nYou must be using the interactive console to authenticate";
-                    break;
-                case 403:
-                    $message = "The '{$req->getURL()}' URL could not be accessed.";
-                    break;
-            }
-            throw new Downloader\TransportException($message, $httpCode);
-        }
-
-        // fail if we already have auth
-        if ($io->hasAuthentication($req->origin)) {
-            throw new Downloader\TransportException(
-                "Invalid credentials for '{$req->getURL()}', aborting.",
-                $res->info['http_code']
-            );
-        }
-
-        $io->overwrite("    Authentication required (<info>$req->host</info>):");
-        $username = $io->ask('      Username: ');
-        $password = $io->askAndHideAnswer('      Password: ');
-        $io->setAuthentication($req->origin, $username, $password);
-        $this->_retry = true;
+        $this->_retry = $req->promptAuth($res, $this->config, $this->io);
     }
 }

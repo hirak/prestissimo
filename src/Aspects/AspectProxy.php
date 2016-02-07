@@ -17,20 +17,18 @@ class AspectProxy implements SplObserver
 {
     public function update(SplSubject $ev)
     {
-        switch ((string)$ev) {
-            case 'pre-download':
-                $this->before($ev->refRequest());
-                return;
+        if ('pre-download' === (string)$ev) {
+            $this->before($ev->refRequest());
         }
     }
 
-    public static function before(HttpGetRequest $req)
+    private static function before(HttpGetRequest $req)
     {
         // no_proxy skip
         if (isset($_SERVER['no_proxy'])) {
             $pattern = new NoProxyPattern($_SERVER['no_proxy']);
             if ($pattern->test($req->getURL())) {
-                $req->curlOpts[CURLOPT_PROXY] = null;
+                unset($req->curlOpts[CURLOPT_PROXY]);
                 return;
             }
         }
@@ -47,8 +45,8 @@ class AspectProxy implements SplObserver
             return;
         }
 
-        $req->curlOpts[CURLOPT_PROXY] = null;
-        $req->curlOpts[CURLOPT_PROXYUSERPWD] = null;
+        unset($req->curlOpts[CURLOPT_PROXY]);
+        unset($req->curlOpts[CURLOPT_PROXYUSERPWD]);
     }
 
     private static function issetOr(array $arr, $key1, $key2)
