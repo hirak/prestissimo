@@ -54,16 +54,9 @@ class AspectAuth implements SplObserver
             throw new Downloader\TransportException("$res->error:$res->errno");
         }
 
-        switch ($res->info['http_code']) {
-            case 200: //OK
-                return;
-            case 401: //Unauthorized
-            case 403: //Forbidden
-            case 404: //Not Found
-                $res->setNeedAuth();
-                break;
-            case 407: //Proxy Authentication Required
-                break;
+        if (in_array($res->info['http_code'], array(401, 403, 404))) {
+            $res->setNeedAuth();
+            return;
         }
     }
 }
