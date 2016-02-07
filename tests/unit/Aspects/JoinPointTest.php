@@ -45,13 +45,14 @@ class JoinPointTest extends \PHPUnit_Framework_TestCase
             'https://example.com/',
             new IO\NullIO
         ));
-        $joinPoint->attach($observer->reveal());
+        $mock = $observer->reveal();
+        $joinPoint->attach($mock);
 
         $observer->update($joinPoint)->shouldBeCalled();
         $joinPoint->notify();
 
-        $joinPoint->detach($observer->reveal());
-        $observer->update($joinPoint)->shouldNotBeCalled();
+        $joinPoint->detach($mock);
+        $observer->update()->shouldNotBeCalled();
         $joinPoint->notify();
     }
 }
