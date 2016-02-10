@@ -76,7 +76,7 @@ class OutputFile
             $createdDirs[] = $dir;
         } while (!file_exists($dir));
         array_pop($createdDirs);
-        $this->createdDirs = array_reverse($createdDirs);
+        $this->createdDirs = $createdDirs;
 
         $targetdir = dirname($fileName);
         if (!file_exists($targetdir)) {
