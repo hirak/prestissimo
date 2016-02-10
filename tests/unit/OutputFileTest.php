@@ -10,7 +10,7 @@ class OutputFileTest extends \PHPUnit_Framework_TestCase
 
     public function testNewAndAutoClean()
     {
-        $fileName = 'tests/workspace/test/example.txt';
+        $fileName = 'tests/workspace/test/foo/example.txt';
         self::assertFileNotExists($fileName);
         $outputFile = new OutputFile($fileName);
         self::assertInstanceOf('Hirak\Prestissimo\OutputFile', $outputFile);
@@ -20,7 +20,7 @@ class OutputFileTest extends \PHPUnit_Framework_TestCase
         unset($outputFile); // auto clean
 
         self::assertFileNotExists($fileName);
-        self::assertFileNotExists(dirname($fileName));
+        self::assertFileNotExists('tests/workspace/test');
     }
 
     /**
