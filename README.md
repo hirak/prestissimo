@@ -23,6 +23,7 @@ prestissimo (composer plugin)
 $ composer global require hirak/prestissimo
 ```
 
+
 ## Uninstall
 
 ```bash
@@ -107,6 +108,21 @@ If userAgent is empty, composer user agent is used.
 * default: empty
 
 If you list packages in this option, the local redirector(api.github.com -> codeload.github.com) will be off.
+
+## Composer authentication
+
+It is also recommended to use [composer's authentication](https://getcomposer.org/doc/articles/troubleshooting.md#api-rate-limit-and-oauth-tokens)
+as you may run into access errors otherwise due to request restriction for anonymous user for external services like github.
+
+For github.com you can use an `auth.json` with an [oauth access token](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) placed on your on the same level as your `composer.json`:
+
+```json
+{
+    "github-oauth": {
+        "github.com": "YOUR_GITHUB_ACCESS_TOKEN"
+    }
+}
+```
 
 ## License
 
