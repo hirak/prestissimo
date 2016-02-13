@@ -18,9 +18,6 @@ class Plugin implements
     CPlugin\PluginInterface,
     EventDispatcher\EventSubscriberInterface
 {
-    /** @var Composer */
-    private $composer;
-
     /** @var IO\IOInterface */
     private $io;
 
@@ -64,7 +61,6 @@ class Plugin implements
             class_exists(__NAMESPACE__ . '\\' . $class);
         }
 
-        $this->composer = $composer;
         $this->config = $composer->getConfig();
         $this->io = $io;
         $this->pluginConfig = $this->setPluginConfig();
