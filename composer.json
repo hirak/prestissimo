@@ -18,10 +18,12 @@
     "require-dev": {
         "composer/composer": "1.0.0-alpha10",
         "phpunit/phpunit": "^4.8",
-        "pdepend/pdepend": "^2.2"
+        "pdepend/pdepend": "^2.2",
+        "phpmd/phpmd": "^2.3"
     },
     "scripts": {
-        "test": "phpunit --colors=always"
+        "test": "phpunit --colors=always",
+        "phpmd": "phpmd src/ text .phpmd.xml"
     },
     "autoload": {
         "psr-4": {
