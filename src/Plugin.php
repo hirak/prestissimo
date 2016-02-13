@@ -30,8 +30,40 @@ class Plugin implements
     /** @var Config */
     private $pluginConfig;
 
+    /** @var boolean */
+    private $disabled = false;
+
+    private static $pluginClasses = array(
+        'Aspects\AspectAuth',
+        'Aspects\AspectProxy',
+        'Aspects\AspectRedirect',
+        'Aspects\GitHubRequest',
+        'Aspects\GitLabRequest',
+        'Aspects\HttpGetRequest',
+        'Aspects\HttpGetResponse',
+        'Aspects\JoinPoint',
+        'Config',
+        'CurlRemoteFilesystem',
+        'Factory',
+        'OutputFile',
+        'ParallelDownloader',
+        'Plugin',
+    );
+
     public function activate(Composer $composer, IO\IOInterface $io)
     {
+        // @codeCoverageIgnoreStart
+        // guard for self-update problem
+        if (__CLASS__ !== 'Hirak\Prestissimo\Plugin') {
+            return $this->disable();
+        }
+        // @codeCoverageIgnoreEnd
+
+        // load all classes
+        foreach (self::$pluginClasses as $class) {
+            class_exists(__NAMESPACE__ . '\\' . $class);
+        }
+
         $this->composer = $composer;
         $this->config = $composer->getConfig();
         $this->io = $io;
@@ -52,6 +84,9 @@ class Plugin implements
 
     public function onPreFileDownload(CPlugin\PreFileDownloadEvent $ev)
     {
+        if ($this->disabled) {
+            return;
+        }
         $scheme = parse_url($ev->getProcessedUrl(), PHP_URL_SCHEME);
         if ($scheme === 'http' || $scheme === 'https') {
             $rfs = $ev->getRemoteFilesystem();
@@ -71,6 +106,9 @@ class Plugin implements
      */
     public function onPostDependenciesSolving(Installer\InstallerEvent $ev)
     {
+        if ($this->disabled) {
+            return;
+        }
         $ops = $ev->getOperations();
         $packages = $this->filterPackages($ops);
         $pluginConfig = $this->pluginConfig->get();
@@ -107,5 +145,15 @@ class Plugin implements
             $config = array();
         }
         return new Config($config);
+    }
+
+    public function disable()
+    {
+        $this->disabled = true;
+    }
+
+    public function isDisabled()
+    {
+        return $this->disabled;
     }
 }
