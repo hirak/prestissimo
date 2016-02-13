@@ -18,15 +18,15 @@ var browserSync = require('browser-sync').create();
 
 gulp.task('default', ['test', 'inspect']);
 
-gulp.task('test', function(done){
+function phpunit(done) {
     exec('vendor/bin/phpunit --colors=always', function(err, stdout, stderr){
         console.log(stdout);
         console.error(stderr);
         done();
     });
-});
+}
 
-gulp.task('inspect', function(done){
+function pdepend(done) {
     exec([
         'vendor/bin/pdepend',
         '--jdepend-chart=artifacts/pdepend.svg',
@@ -34,7 +34,11 @@ gulp.task('inspect', function(done){
         '--summary-xml=artifacts/summary.xml',
         'src/'
     ].join(' '), done);
-});
+}
+
+gulp.task('test', phpunit);
+
+gulp.task('inspect', pdepend);
 
 gulp.task('start', function(){
     browserSync.init({
@@ -43,8 +47,10 @@ gulp.task('start', function(){
         }
     });
 
-    gulp.watch(['src/**/*.php', 'tests/**/*Test.php'], ['test', 'inspect'], function(ev){
-        browserSync.reload();
+    gulp.watch(['src/**/*.php', 'tests/**/*Test.php'], {}, function(ev){
+        phpunit(function(){
+            browserSync.reload();
+        });
     });
 });
 
