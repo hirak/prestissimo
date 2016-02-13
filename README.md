@@ -6,7 +6,8 @@ prestissimo (composer plugin)
 [![Coverage Status](https://coveralls.io/repos/github/hirak/prestissimo/badge.svg?branch=master)](https://coveralls.io/github/hirak/prestissimo?branch=master)
 [![Latest Stable Version](https://poser.pugx.org/hirak/prestissimo/v/stable)](https://packagist.org/packages/hirak/prestissimo)
 [![Total Downloads](https://poser.pugx.org/hirak/prestissimo/downloads)](https://packagist.org/packages/hirak/prestissimo)
-[![License](https://poser.pugx.org/hirak/prestissimo/license)](https://packagist.org/packages/hirak/prestissimo)
+[![License](https://poser.pugx.org/hirak/prestissimo/license)](https://packagist.org/packages/hirak/prestissimo)  
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/56ca0f9e-63a2-4e89-b5f8-e0cc39d0c38f/big.png)](https://insight.sensiolabs.com/projects/56ca0f9e-63a2-4e89-b5f8-e0cc39d0c38f)
 
 [composer](https://getcomposer.org) parallel install plugin.
 
