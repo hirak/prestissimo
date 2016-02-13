@@ -52,11 +52,12 @@ class Plugin implements
 
     public function activate(Composer $composer, IO\IOInterface $io)
     {
+        // @codeCoverageIgnoreStart
         // guard for self-update problem
         if (__CLASS__ !== 'Hirak\Prestissimo\Plugin') {
-            $this->disabled = true;
-            return;
+            return $this->disable();
         }
+        // @codeCoverageIgnoreEnd
 
         // load all classes
         foreach (self::$pluginClasses as $class) {
@@ -144,5 +145,15 @@ class Plugin implements
             $config = array();
         }
         return new Config($config);
+    }
+
+    public function disable()
+    {
+        $this->disabled = true;
+    }
+
+    public function isDisabled()
+    {
+        return $this->disabled;
     }
 }
