@@ -8,7 +8,6 @@ namespace Hirak\Prestissimo;
 
 use Composer\Config as CConfig;
 use Composer\IO;
-use Composer\Downloader;
 use Composer\Util;
 
 /**
