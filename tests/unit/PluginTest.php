@@ -26,7 +26,7 @@ class PluginTest extends \PHPUnit_Framework_TestCase
                 ->willReturn('tests/workspace/')
             ->getObjectProphecy()
                 ->get('prestissimo')
-                ->willReturn(array())
+                ->willReturn(null)
             ->getObjectProphecy()
             ->reveal();
         $this->composer = new Composer($this->io);
