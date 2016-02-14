@@ -11,5 +11,5 @@
  <arg value="np"/>
  <arg name="colors"/>
 
- <rule ref="PSR2"/>
+ <rule ref="PSR1"/>
 </ruleset>
