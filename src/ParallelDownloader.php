@@ -10,6 +10,17 @@ use Composer\Package;
 use Composer\IO;
 use Composer\Config as CConfig;
 
+register_tick_function(function(){
+    $bt = debug_backtrace(false);
+    if (count($bt) > 1) {
+        array_shift($bt);
+        $b = current($bt);
+        if (isset($b['line'])) {
+            echo "$b[file]:$b[line]:$b[function]\n";
+        }
+    }
+});
+declare(ticks=1) {
 /**
  *
  */
@@ -45,23 +56,24 @@ class ParallelDownloader
         for ($i = 0; $i < $pluginConfig['maxConnections']; ++$i) {
             $unused[] = curl_init();
         }
-
         $this->setupShareHandler($mh, $unused, $pluginConfig);
 
         $using = array(); //memory pool
-        $running = $remains = 0;
+        $running = 0;
+        $remains = 0;
         $this->totalCnt = count($packages);
-        $this->successCnt = $this->skippedCnt = $this->failureCnt = 0;
+        $this->successCnt = 0;
+        $this->skippedCnt = 0;
+        $this->failureCnt = 0;
         $this->io->write("    Prefetch start: total: $this->totalCnt</comment>");
 
         $targets = $this->filterPackages($packages, $pluginConfig);
         EVENTLOOP:
         // prepare curl resources
         while (count($unused) > 0 && count($targets) > 0) {
-            $target = array_pop($targets);
+            $using[(int)$ch] = $target = array_pop($targets);
             $ch = array_pop($unused);
 
-            $using[(int)$ch] = $target;
             $onPreDownload = Factory::getPreEvent($target['src']);
             $onPreDownload->notify();
 
@@ -204,4 +216,5 @@ class ParallelDownloader
 
         return "{$p->getName()}/{$p->getVersion()}-$distRef.{$p->getDistType()}";
     }
+}
 }
