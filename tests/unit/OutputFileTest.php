@@ -20,7 +20,9 @@ class OutputFileTest extends \PHPUnit_Framework_TestCase
         unset($outputFile); // auto clean
 
         self::assertFileNotExists($fileName);
-        self::assertFileNotExists('tests/workspace/test');
+        self::assertFileNotExists('tests/workspace/test/foo');
+
+        rmdir('tests/workspace/test');
     }
 
     /**
