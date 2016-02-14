@@ -42,85 +42,49 @@ class ParallelDownloader
     {
         $mh = curl_multi_init();
         $unused = array();
-        $maxConns = $pluginConfig['maxConnections'];
-        for ($i = 0; $i < $maxConns; ++$i) {
+        for ($i = 0; $i < $pluginConfig['maxConnections']; ++$i) {
             $unused[] = curl_init();
         }
 
         $this->setupShareHandler($mh, $unused, $pluginConfig);
 
-        $chFpMap = array();
-        $running = 0; //ref type
-        $remains = 0; //ref type
-
+        $using = array(); //memory pool
+        $running = $remains = 0;
         $this->totalCnt = count($packages);
-        $this->successCnt = 0;
-        $this->skippedCnt = 0;
-        $this->failureCnt = 0;
+        $this->successCnt = $this->skippedCnt = $this->failureCnt = 0;
         $this->io->write("    Prefetch start: total: $this->totalCnt</comment>");
 
-        $cachedir = rtrim($this->config->get('cache-files-dir'), '\/');
-
+        $targets = $this->filterPackages($packages, $pluginConfig);
         EVENTLOOP:
         // prepare curl resources
-        while (count($unused) > 0 && count($packages) > 0) {
-            $package = array_pop($packages);
-            $filepath = $cachedir . DIRECTORY_SEPARATOR . static::getCacheKey($package);
-            if (file_exists($filepath)) {
-                ++$this->skippedCnt;
-                continue;
-            }
+        while (count($unused) > 0 && count($targets) > 0) {
+            $target = array_pop($targets);
             $ch = array_pop($unused);
 
-            // make file resource
-            $chFpMap[(int)$ch] = $outputFile = new OutputFile($filepath);
-
-            // make url
-            $url = $package->getDistUrl();
-            if (! $url) {
-                ++$this->skippedCnt;
-                continue;
-            }
-            if ($package->getDistMirrors()) {
-                $url = current($package->getDistUrls());
-            }
-            $host = parse_url($url, PHP_URL_HOST) ?: '';
-            $request = Factory::getHttpGetRequest($host, $url, $this->io, $this->config, $pluginConfig);
-            if (in_array($package->getName(), $pluginConfig['privatePackages'])) {
-                $request->maybePublic = false;
-            } else {
-                $request->maybePublic = (bool)preg_match('%^(?:https|git)://github\.com%', $package->getSourceUrl());
-            }
-            $onPreDownload = Factory::getPreEvent($request);
+            $using[(int)$ch] = $target;
+            $onPreDownload = Factory::getPreEvent($target['src']);
             $onPreDownload->notify();
 
-            $opts = $request->getCurlOpts();
-            unset($opts[CURLOPT_ENCODING]);
-            unset($opts[CURLOPT_USERPWD]); // ParallelDownloader doesn't support private packages.
+            $opts = $target['src']->getCurlOpts();
+            // ParallelDownloader doesn't support private packages.
+            unset($opts[CURLOPT_ENCODING], $opts[CURLOPT_USERPWD]);
             curl_setopt_array($ch, $opts);
-            curl_setopt($ch, CURLOPT_FILE, $outputFile->getPointer());
+            curl_setopt($ch, CURLOPT_FILE, $target['dest']->getPointer());
             curl_multi_add_handle($mh, $ch);
         }
 
         // wait for any event
         do {
             $runningBefore = $running;
-            while (CURLM_CALL_MULTI_PERFORM === curl_multi_exec($mh, $running)) {
-
-            }
+            while (CURLM_CALL_MULTI_PERFORM === curl_multi_exec($mh, $running));
 
             SELECT:
-            $eventCount = curl_multi_select($mh, 5);
-
-            if ($eventCount === -1) {
+            if (-1 === curl_multi_select($mh, 5)) {
                 usleep(200 * 1000);
                 continue;
             }
 
-            while (CURLM_CALL_MULTI_PERFORM === curl_multi_exec($mh, $running)) {
-
-            }
-
+            while (CURLM_CALL_MULTI_PERFORM === curl_multi_exec($mh, $running));
             if ($running > 0 && $running === $runningBefore) {
                 goto SELECT;
             }
@@ -132,15 +96,15 @@ class ParallelDownloader
                     $info = curl_getinfo($ch);
                     curl_setopt($ch, CURLOPT_FILE, STDOUT);
                     $index = (int)$ch;
-                    $outputFile = $chFpMap[$index];
-                    unset($chFpMap[$index]);
+                    $target = $using[$index];
+                    unset($using[$index]);
                     if (CURLE_OK === $errno && 200 === $info['http_code']) {
                         ++$this->successCnt;
-                        $outputFile->setSuccess();
+                        $target['dest']->setSuccess();
                     } else {
                         ++$this->failureCnt;
                     }
-                    unset($outputFile);
+                    unset($target);
                     $this->io->write($this->makeDownloadingText($info['url']));
                     curl_multi_remove_handle($mh, $ch);
                     $unused[] = $ch;
@@ -179,6 +143,45 @@ class ParallelDownloader
                 curl_multi_setopt($mh, CURLMOPT_PIPELINING, true);
             }
         }
+    }
+
+    /**
+     * @param Package\PackageInterface[] $packages
+     * @param string[] $pluginConfig
+     * @return [{src: Aspects\HttpGetRequest, dest: OutputFile}]
+     */
+    private function filterPackages(array $packages, array $pluginConfig)
+    {
+        $cachedir = rtrim($this->config->get('cache-files-dir'), '\/');
+        $zips = array();
+        foreach ($packages as $p) {
+            $filepath = $cachedir . DIRECTORY_SEPARATOR . static::getCacheKey($p);
+            if (file_exists($filepath)) {
+                ++$this->skippedCnt;
+                continue;
+            }
+            $url = $p->getDistUrl();
+            if (!$url) {
+                ++$this->skippedCnt;
+                continue;
+            }
+            if ($p->getDistMirrors()) {
+                $url = current($p->getDistUrls());
+            }
+            $host = parse_url($url, PHP_URL_HOST) ?: '';
+            $src = Factory::getHttpGetRequest($host, $url, $this->io, $this->config, $pluginConfig);
+            if (in_array($p->getName(), $pluginConfig['privatePackages'])) {
+                $src->maybePublic = false;
+            } else {
+                $src->maybePublic = (bool)preg_match('%^(?:https|git)://github\.com%', $p->getSourceUrl());
+            }
+            // make file resource
+            $dest = new OutputFile($filepath);
+
+            $zips[] = compact('src', 'dest');
+        }
+
+        return $zips;
     }
 
     /**
