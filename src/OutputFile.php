@@ -18,8 +18,8 @@ class OutputFile
     /** @var string */
     protected $fileName;
 
-    /** @var string[] */
-    protected $createdDirs = array();
+    /** @var string */
+    protected $createdDir;
 
     /** @var bool */
     private $success = false;
@@ -51,8 +51,8 @@ class OutputFile
 
         if (!$this->success) {
             unlink($this->fileName);
-            foreach ($this->createdDirs as $dir) {
-                rmdir($dir);
+            if ($this->createdDir) {
+                rmdir($this->createdDir);
             }
         }
     }
@@ -69,24 +69,14 @@ class OutputFile
 
     protected function createDir($fileName)
     {
-        $dir = $fileName;
-        $createdDirs = array();
-        do {
-            $dir = dirname($dir);
-            $createdDirs[] = $dir;
-        } while (!file_exists($dir));
-        array_pop($createdDirs);
-        $this->createdDirs = $createdDirs;
-
         $targetdir = dirname($fileName);
         if (!file_exists($targetdir)) {
-            $created = mkdir($targetdir, 0766, true);
-            if (!$created) {
-                $this->success = false;
+            if (!mkdir($targetdir, 0766, true)) {
                 throw new Downloader\TransportException(
                     "The file could not be written to $this->fileName."
                 );
             }
+            $this->createdDir = $targetdir;
         }
     }
 }
