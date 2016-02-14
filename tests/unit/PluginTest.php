@@ -6,11 +6,14 @@ use Composer\Config as CConfig;
 use Composer\Plugin as CPlugin;
 use Composer\Util as CUtil;
 use Composer\IO;
+use Composer\DependencyResolver\Operation;
+use Composer\Package;
 
 use Prophecy\Argument;
 
 class PluginTest extends \PHPUnit_Framework_TestCase
 {
+    // dummy objects
     private $io;
     private $config;
     private $composer;
@@ -18,7 +21,14 @@ class PluginTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $this->io = new IO\NullIO;
-        $this->config = new CConfig;
+        $this->config = $this->prophesize('Composer\Config')
+                ->get('cache-files-dir')
+                ->willReturn('tests/workspace/')
+            ->getObjectProphecy()
+                ->get('prestissimo')
+                ->willReturn(array())
+            ->getObjectProphecy()
+            ->reveal();
         $this->composer = new Composer($this->io);
         $this->composer->setConfig($this->config);
     }
@@ -97,7 +107,7 @@ class PluginTest extends \PHPUnit_Framework_TestCase
         $plugin->onPostDependenciesSolving(
             $this->prophesize('Composer\Installer\InstallerEvent')
                 ->getOperations()
-                ->willReturn(array())
+                ->willReturn($this->createDummyOperations())
             ->getObjectProphecy()
             ->reveal()
         );
@@ -110,6 +120,22 @@ class PluginTest extends \PHPUnit_Framework_TestCase
                 ->shouldNotBeCalled()
             ->getObjectProphecy()
             ->reveal()
+        );
+    }
+
+    private function createDummyOperations()
+    {
+        return array(
+            new Operation\InstallOperation(
+                new Package\Package('vendor/pkg1', '0.0.0', '0.0.0')
+            ),
+            new Operation\UpdateOperation(
+                new Package\Package('vendor/pkg2', '0.0.0', '0.0.0'),
+                new Package\Package('vendor/pkg2', '0.0.1', '0.0.1')
+            ),
+            new Operation\InstallOperation(
+                new Package\Package('vendor/pkg3', '0.0.0', '0.0.0')
+            ),
         );
     }
 }

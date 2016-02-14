@@ -8,7 +8,6 @@ namespace Hirak\Prestissimo;
 
 use Composer\Package;
 use Composer\IO;
-use Composer\Config as CConfig;
 
 /**
  *
@@ -18,8 +17,8 @@ class ParallelDownloader
     /** @var IO/IOInterface */
     protected $io;
 
-    /** @var CConfig */
-    protected $config;
+    /** @var string */
+    protected $cachedir;
 
     /** @var int */
     protected $totalCnt = 0;
@@ -27,10 +26,10 @@ class ParallelDownloader
     protected $skippedCnt = 0;
     protected $failureCnt = 0;
 
-    public function __construct(IO\IOInterface $io, CConfig $config)
+    public function __construct(IO\IOInterface $io, $cachedir)
     {
         $this->io = $io;
-        $this->config = $config;
+        $this->cachedir = $cachedir;
     }
 
     /**
@@ -47,24 +46,7 @@ class ParallelDownloader
             $unused[] = curl_init();
         }
 
-        // @codeCoverageIgnoreStart
-        if (function_exists('curl_share_init')) {
-            $sh = curl_share_init();
-            curl_share_setopt($sh, CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION);
-
-            foreach ($unused as $ch) {
-                curl_setopt($ch, CURLOPT_SHARE, $sh);
-            }
-        }
-
-        if (function_exists('curl_multi_setopt')) {
-            if ($pluginConfig['pipeline']) {
-                curl_multi_setopt($mh, CURLMOPT_PIPELINING, true);
-            }
-        }
-        // @codeCoverageIgnoreEnd
-
-        $cachedir = rtrim($this->config->get('cache-files-dir'), '\/');
+        $this->setupShareHanlder($mh, $unused, $pluginConfig);
 
         $chFpMap = array();
         $running = 0; //ref type
@@ -80,7 +62,7 @@ class ParallelDownloader
         // prepare curl resources
         while (count($unused) > 0 && count($packages) > 0) {
             $package = array_pop($packages);
-            $filepath = $cachedir . DIRECTORY_SEPARATOR . static::getCacheKey($package);
+            $filepath = $this->cachedir . DIRECTORY_SEPARATOR . static::getCacheKey($package);
             if (file_exists($filepath)) {
                 ++$this->skippedCnt;
                 continue;
@@ -169,6 +151,27 @@ class ParallelDownloader
             curl_close($ch);
         }
         curl_multi_close($mh);
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    private function setupShareHanlder($mh, array $unused, array $pluginConfig)
+    {
+        if (function_exists('curl_share_init')) {
+            $sh = curl_share_init();
+            curl_share_setopt($sh, CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION);
+
+            foreach ($unused as $ch) {
+                curl_setopt($ch, CURLOPT_SHARE, $sh);
+            }
+        }
+
+        if (function_exists('curl_multi_setopt')) {
+            if ($pluginConfig['pipeline']) {
+                curl_multi_setopt($mh, CURLMOPT_PIPELINING, true);
+            }
+        }
     }
 
     /**

@@ -109,7 +109,8 @@ class Plugin implements
         $packages = $this->filterPackages($ops);
         $pluginConfig = $this->pluginConfig->get();
         if (count($packages) >= $pluginConfig['minConnections']) {
-            $downloader = new ParallelDownloader($this->io, $this->config);
+            $cachedir = rtrim($this->config->get('cache-files-dir'), '\/');
+            $downloader = new ParallelDownloader($this->io, $cachedir);
             $downloader->download($packages, $pluginConfig);
         }
     }
@@ -122,13 +123,15 @@ class Plugin implements
     {
         $packs = array();
         foreach ($operations as $op) {
-            switch ($op->getJobType()) {
-                case 'install':
-                    $packs[] = $op->getPackage();
-                    break;
-                case 'update':
-                    $packs[] = $op->getTargetPackage();
-                    break;
+            $type = $op->getJobType();
+            if ('install' === $type) {
+                $packs[] = $op->getPackage();
+                continue;
+            }
+
+            if ('update' === $type) {
+                $packs[] = $op->getTargetPackage();
+                continue;
             }
         }
         return $packs;
