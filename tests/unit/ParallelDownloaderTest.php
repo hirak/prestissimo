@@ -1,9 +1,10 @@
 <?php
 namespace Hirak\Prestissimo;
 
-use Composer\Config;
+use Composer\Config as CConfig;
 use Composer\IO;
 use Composer\Package;
+use Prophecy\Argument;
 
 class ParallelDownloaderTest extends \PHPUnit_Framework_TestCase
 {
@@ -22,7 +23,20 @@ class ParallelDownloaderTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $io = new IO\NullIO;
-        $config = new Config;
+        $config = $this->prophesize('Composer\Config')
+                ->get('prestissimo')
+                ->willReturn(null)
+            ->getObjectProphecy()
+                ->get('cache-files-dir')
+                ->willReturn('tests/workspace/cache')
+            ->getObjectProphecy()
+                ->get('github-domains')
+                ->willReturn(array())
+            ->getObjectProphecy()
+                ->get('gitlab-domains')
+                ->willReturn(array())
+            ->getObjectProphecy()
+            ->reveal();
         $this->downloader = new ParallelDownloader($io, $config);
     }
 
@@ -34,11 +48,11 @@ class ParallelDownloaderTest extends \PHPUnit_Framework_TestCase
     public function testDownloadSimple()
     {
         $packages = array(
-            self::createPackage('vendor/package1', 'http://localhost:1337/', '1234'),
-            self::createPackage('vendor/package2', 'http://localhost:1337/', '2345'),
+            $this->createPackage('vendor/package1', 'http://localhost:1337/?status=400', '1234'),
+            $this->createPackage('vendor/package2', 'http://localhost:1337/?status=400', '2345'),
         );
-
-        $this->markTestIncomplete();
+        $pluginConfig = new Config(array());
+        $this->downloader->download($packages, $pluginConfig->get());
     }
 
     private static function createPackage($name, $url, $ref)

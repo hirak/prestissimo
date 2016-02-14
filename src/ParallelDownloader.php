@@ -8,6 +8,7 @@ namespace Hirak\Prestissimo;
 
 use Composer\Package;
 use Composer\IO;
+use Composer\Config as CConfig;
 
 /**
  *
@@ -17,8 +18,8 @@ class ParallelDownloader
     /** @var IO/IOInterface */
     protected $io;
 
-    /** @var string */
-    protected $cachedir;
+    /** @var CConfig */
+    protected $config;
 
     /** @var int */
     protected $totalCnt = 0;
@@ -26,10 +27,10 @@ class ParallelDownloader
     protected $skippedCnt = 0;
     protected $failureCnt = 0;
 
-    public function __construct(IO\IOInterface $io, $cachedir)
+    public function __construct(IO\IOInterface $io, CConfig $config)
     {
         $this->io = $io;
-        $this->cachedir = $cachedir;
+        $this->config = $config;
     }
 
     /**
@@ -46,7 +47,7 @@ class ParallelDownloader
             $unused[] = curl_init();
         }
 
-        $this->setupShareHanlder($mh, $unused, $pluginConfig);
+        $this->setupShareHandler($mh, $unused, $pluginConfig);
 
         $chFpMap = array();
         $running = 0; //ref type
@@ -58,11 +59,13 @@ class ParallelDownloader
         $this->failureCnt = 0;
         $this->io->write("    Prefetch start: total: $this->totalCnt</comment>");
 
+        $cachedir = rtrim($this->config->get('cache-files-dir'), '\/');
+
         EVENTLOOP:
         // prepare curl resources
         while (count($unused) > 0 && count($packages) > 0) {
             $package = array_pop($packages);
-            $filepath = $this->cachedir . DIRECTORY_SEPARATOR . static::getCacheKey($package);
+            $filepath = $cachedir . DIRECTORY_SEPARATOR . static::getCacheKey($package);
             if (file_exists($filepath)) {
                 ++$this->skippedCnt;
                 continue;
@@ -160,7 +163,7 @@ class ParallelDownloader
     /**
      * @codeCoverageIgnore
      */
-    private function setupShareHanlder($mh, array $unused, array $pluginConfig)
+    private function setupShareHandler($mh, array $unused, array $pluginConfig)
     {
         if (function_exists('curl_share_init')) {
             $sh = curl_share_init();

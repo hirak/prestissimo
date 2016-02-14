@@ -109,8 +109,7 @@ class Plugin implements
         $packages = $this->filterPackages($ops);
         $pluginConfig = $this->pluginConfig->get();
         if (count($packages) >= $pluginConfig['minConnections']) {
-            $cachedir = rtrim($this->config->get('cache-files-dir'), '\/');
-            $downloader = new ParallelDownloader($this->io, $cachedir);
+            $downloader = new ParallelDownloader($this->io, $this->config);
             $downloader->download($packages, $pluginConfig);
         }
     }
