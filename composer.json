@@ -23,7 +23,8 @@
     },
     "scripts": {
         "test": "phpunit --colors=always",
-        "phpcs": "phpcs"
+        "lint": "phpcs",
+        "fmt": "phpcbf"
     },
     "autoload": {
         "psr-4": {

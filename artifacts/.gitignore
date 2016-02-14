@@ -5,3 +5,4 @@ pdepend.svg
 summary.xml
 clover.xml
 coveralls-upload.json
+phpcs.patch
