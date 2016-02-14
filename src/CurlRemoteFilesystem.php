@@ -67,7 +67,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
     {
         $that = $this; // for PHP5.3
 
-        return $this->fetch($origin, $fileUrl, $progress, $options, function($ch, $request) use ($that, $fileName) {
+        return $this->fetch($origin, $fileUrl, $progress, $options, function ($ch, $request) use ($that, $fileName) {
             $outputFile = new OutputFile($fileName);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
             curl_setopt($ch, CURLOPT_FILE, $outputFile->getPointer());
@@ -98,7 +98,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
     {
         $that = $this; // for PHP5.3
 
-        return $this->fetch($origin, $fileUrl, $progress, $options, function($ch, $request) use ($that) {
+        return $this->fetch($origin, $fileUrl, $progress, $options, function ($ch, $request) use ($that) {
             // This order is important.
             curl_setopt($ch, CURLOPT_FILE, STDOUT);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

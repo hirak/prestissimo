@@ -82,7 +82,7 @@ class HttpGetRequest
      * @param string $key
      * @param string $default
      */
-    private static function setOr(array $struct, $key, $default=null)
+    private static function setOr(array $struct, $key, $default = null)
     {
         if (!empty($struct[$key])) {
             return $struct[$key];

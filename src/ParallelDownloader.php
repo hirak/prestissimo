@@ -102,7 +102,9 @@ class ParallelDownloader
         // wait for any event
         do {
             $runningBefore = $running;
-            while (CURLM_CALL_MULTI_PERFORM === curl_multi_exec($mh, $running));
+            while (CURLM_CALL_MULTI_PERFORM === curl_multi_exec($mh, $running)) {
+
+            }
 
             SELECT:
             $eventCount = curl_multi_select($mh, 5);
@@ -112,7 +114,9 @@ class ParallelDownloader
                 continue;
             }
 
-            while (CURLM_CALL_MULTI_PERFORM === curl_multi_exec($mh, $running));
+            while (CURLM_CALL_MULTI_PERFORM === curl_multi_exec($mh, $running)) {
+
+            }
 
             if ($running > 0 && $running === $runningBefore) {
                 goto SELECT;
