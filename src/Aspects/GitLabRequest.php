@@ -30,7 +30,7 @@ class GitLabRequest extends HttpGetRequest
         return $curlOpts;
     }
 
-    public function promptAuth(HttpGetResponse $res, CConfig $config, IO\IOInterface $io)
+    public function promptAuth(HttpGetResponse $res, IO\IOInterface $io)
     {
         $httpCode = $res->info['http_code'];
         $message = "\nCould not fetch {$this->getURL()}, enter your $this->origin credentials ";
@@ -39,7 +39,7 @@ class GitLabRequest extends HttpGetRequest
         } else {
             $message .= 'to go over the API rate limit';
         }
-        $gitlab = new Util\GitLab($io, $config, null);
+        $gitlab = new Util\GitLab($io, $this->config, null);
         if ($gitlab->authorizeOAuth($this->origin)) {
             return true;
         }

@@ -30,7 +30,7 @@ class GitHubRequest extends HttpGetRequest
         return $curlOpts;
     }
 
-    public function promptAuth(HttpGetResponse $res, CConfig $config, IO\IOInterface $io)
+    public function promptAuth(HttpGetResponse $res, IO\IOInterface $io)
     {
         $httpCode = $res->info['http_code'];
         $message = "\nCould not fetch {$this->getURL()}, please create a GitHub OAuth token ";
@@ -39,7 +39,7 @@ class GitHubRequest extends HttpGetRequest
         } else {
             $message .= 'to go over the API rate limit';
         }
-        $github = new Util\GitHub($io, $config, null);
+        $github = new Util\GitHub($io, $this->config, null);
         if ($github->authorizeOAuth($this->origin)) {
             return true;
         }
