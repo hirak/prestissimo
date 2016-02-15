@@ -44,6 +44,7 @@ class Plugin implements
         'Factory',
         'OutputFile',
         'ParallelDownloader',
+        'FileDownloaderDummy',
         'Plugin',
     );
 
