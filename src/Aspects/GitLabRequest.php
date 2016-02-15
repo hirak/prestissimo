@@ -7,7 +7,6 @@
 namespace Hirak\Prestissimo\Aspects;
 
 use Composer\IO;
-use Composer\Config as CConfig;
 use Composer\Util;
 use Composer\Downloader;
 
