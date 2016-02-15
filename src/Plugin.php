@@ -18,9 +18,6 @@ class Plugin implements
     CPlugin\PluginInterface,
     EventDispatcher\EventSubscriberInterface
 {
-    /** @var Composer */
-    private $composer;
-
     /** @var IO\IOInterface */
     private $io;
 
@@ -64,7 +61,6 @@ class Plugin implements
             class_exists(__NAMESPACE__ . '\\' . $class);
         }
 
-        $this->composer = $composer;
         $this->config = $composer->getConfig();
         $this->io = $io;
         $this->pluginConfig = $this->setPluginConfig();
@@ -126,13 +122,15 @@ class Plugin implements
     {
         $packs = array();
         foreach ($operations as $op) {
-            switch ($op->getJobType()) {
-                case 'install':
-                    $packs[] = $op->getPackage();
-                    break;
-                case 'update':
-                    $packs[] = $op->getTargetPackage();
-                    break;
+            $type = $op->getJobType();
+            if ('install' === $type) {
+                $packs[] = $op->getPackage();
+                continue;
+            }
+
+            if ('update' === $type) {
+                $packs[] = $op->getTargetPackage();
+                continue;
             }
         }
         return $packs;

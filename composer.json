@@ -18,10 +18,13 @@
     "require-dev": {
         "composer/composer": "1.0.0-alpha10",
         "phpunit/phpunit": "^4.8",
-        "pdepend/pdepend": "^2.2"
+        "pdepend/pdepend": "^2.2",
+        "squizlabs/php_codesniffer": "^2.5"
     },
     "scripts": {
-        "test": "phpunit --colors=always"
+        "test": "phpunit --colors=always",
+        "lint": "phpcs",
+        "fmt": "phpcbf"
     },
     "autoload": {
         "psr-4": {

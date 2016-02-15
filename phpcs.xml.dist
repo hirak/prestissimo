@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<ruleset name="prestissimo coding rules">
+ <description>prestissimo coding rules</description>
+
+ <file>src</file>
+ <file>tests</file>
+
+ <arg name="report" value="full"/>
+ <arg name="report-diff" value="artifacts/phpcs.patch"/>
+ <arg name="extensions" value="php"/>
+ <arg value="np"/>
+ <arg name="colors"/>
+
+ <rule ref="PSR1"/>
+</ruleset>
