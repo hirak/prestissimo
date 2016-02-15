@@ -43,7 +43,7 @@ class ParallelDownloaderTest extends \PHPUnit_Framework_TestCase
     protected function tearDown()
     {
         // clean download files
-        foreach (glob('tests/workspace/vendor/*') as $dir) {
+        foreach (glob('tests/workspace/cache/vendor/*') as $dir) {
             foreach (glob("$dir/*") as $file) {
                 unlink($file);
             }
@@ -61,14 +61,16 @@ class ParallelDownloaderTest extends \PHPUnit_Framework_TestCase
         $ref = str_repeat('a', 40);
         //failure requests
         $packages = array(
-            $this->createPackage('vendor/package1', 'http://localhost:1337/?status=400', $ref),
-            $this->createPackage('vendor/package2', 'http://localhost:1337/?status=400', $ref),
+            $p1 = $this->createPackage('vendor/package1', 'http://localhost:1337/?status=400', $ref),
+            $p2 = $this->createPackage('vendor/package2', 'http://localhost:1337/?status=400', $ref),
         );
         $pluginConfig = new Config(array());
         $this->downloader->download($packages, $pluginConfig->get());
 
-        self::assertFileNotExists("tests/workspace/cache/vendor/package1/$ref.zip");
-        self::assertFileNotExists("tests/workspace/cache/vendor/package2/$ref.zip");
+        $cache1 = FileDownloaderDummy::getCacheKeyCompat($p1, 'http://localhost:1337/?status=400');
+        $cache2 = FileDownloaderDummy::getCacheKeyCompat($p2, 'http://localhost:1337/?status=400');
+        self::assertFileNotExists("tests/workspace/cache/$cache1");
+        self::assertFileNotExists("tests/workspace/cache/$cache2");
     }
 
     public function testDownloadSuccess()
@@ -77,30 +79,20 @@ class ParallelDownloaderTest extends \PHPUnit_Framework_TestCase
         $ref = str_repeat('a', 40);
         //success requests
         $packages = array(
-            $this->createPackage('vendor/package1', 'http://localhost:1337/?wait=1', $ref),
-            $this->createPackage('vendor/package2', 'http://localhost:1337/?wait=2', $ref),
-            $this->createPackage('vendor/package3', 'http://localhost:1337/?wait=3', $ref),
+            $p1 = $this->createPackage('vendor/package1', 'http://localhost:1337/?wait=1', $ref),
+            $p2 = $this->createPackage('vendor/package2', 'http://localhost:1337/?wait=2', $ref),
+            $p3 = $this->createPackage('vendor/package3', 'http://localhost:1337/?wait=3', $ref),
         );
         $pluginConfig = new Config(array());
         $this->downloader->download($packages, $pluginConfig->get());
-        self::assertLessThan(6, microtime(true) - $start, '1s + 2s + 3s must less than < 6s in parallel download.');
+        self::assertLessThan(6, microtime(true) - $start, '1s + 2s + 3s must be less than < 6s in parallel download.');
 
-        self::assertFileExists("tests/workspace/cache/vendor/package1/$ref.zip");
-        self::assertFileExists("tests/workspace/cache/vendor/package2/$ref.zip");
-        self::assertFileExists("tests/workspace/cache/vendor/package3/$ref.zip");
-    }
-
-    public function testGetCacheKey()
-    {
-        $ref = str_repeat('a', 40);
-        $package = $this->createPackage('vendor/p1', 'http://example.com', $ref);
-        $cachekey = ParallelDownloader::getCacheKey($package);
-        self::assertSame("vendor/p1/$ref.zip", $cachekey);
-
-        $ref = str_repeat('a', 20);
-        $package = $this->createPackage('vendor/p1', 'http://example.com', $ref);
-        $cachekey = ParallelDownloader::getCacheKey($package);
-        self::assertSame("vendor/p1/1.0.0-$ref.zip", $cachekey);
+        $cache1 = FileDownloaderDummy::getCacheKeyCompat($p1, 'http://localhost:1337/?wait=1');
+        $cache2 = FileDownloaderDummy::getCacheKeyCompat($p2, 'http://localhost:1337/?wait=2');
+        $cache3 = FileDownloaderDummy::getCacheKeyCompat($p3, 'http://localhost:1337/?wait=3');
+        self::assertFileExists("tests/workspace/cache/$cache1");
+        self::assertFileExists("tests/workspace/cache/$cache2");
+        self::assertFileExists("tests/workspace/cache/$cache3");
     }
 
     private static function createPackage($name, $url, $ref)

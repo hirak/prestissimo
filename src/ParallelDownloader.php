@@ -52,7 +52,7 @@ class ParallelDownloader
         $running = $remains = 0;
         $this->totalCnt = count($packages);
         $this->successCnt = $this->skippedCnt = $this->failureCnt = 0;
-        $this->io->write("    Prefetch start: total: $this->totalCnt</comment>");
+        $this->io->write("    Prefetch start: <comment>total: $this->totalCnt</comment>");
 
         $targets = $this->filterPackages($packages, $pluginConfig);
         EVENTLOOP:
@@ -111,7 +111,7 @@ class ParallelDownloader
                 }
             } while ($remains > 0);
 
-            if (count($packages) > 0) {
+            if (count($targets) > 0) {
                 goto EVENTLOOP;
             }
         } while ($running > 0);
@@ -155,11 +155,6 @@ class ParallelDownloader
         $cachedir = rtrim($this->config->get('cache-files-dir'), '\/');
         $zips = array();
         foreach ($packages as $p) {
-            $filepath = $cachedir . DIRECTORY_SEPARATOR . static::getCacheKey($p);
-            if (file_exists($filepath)) {
-                ++$this->skippedCnt;
-                continue;
-            }
             $url = $p->getDistUrl();
             if (!$url) {
                 ++$this->skippedCnt;
@@ -176,6 +171,13 @@ class ParallelDownloader
                 $src->maybePublic = (bool)preg_match('%^(?:https|git)://github\.com%', $p->getSourceUrl());
             }
             // make file resource
+            $filepath = $cachedir
+                . DIRECTORY_SEPARATOR
+                . FileDownloaderDummy::getCacheKeyCompat($p, $src->getURL());
+            if (file_exists($filepath)) {
+                ++$this->skippedCnt;
+                continue;
+            }
             $dest = new OutputFile($filepath);
 
             $zips[] = compact('src', 'dest');
@@ -193,15 +195,5 @@ class ParallelDownloader
         $request = new Aspects\HttpGetRequest('example.com', $url, $this->io);
         $request->query = array();
         return "    <comment>$this->successCnt/$this->totalCnt</comment>:    {$request->getURL()}";
-    }
-
-    public static function getCacheKey(Package\PackageInterface $p)
-    {
-        $distRef = $p->getDistReference();
-        if (preg_match('{^[a-f0-9]{40}$}', $distRef)) {
-            return "{$p->getName()}/$distRef.{$p->getDistType()}";
-        }
-
-        return "{$p->getName()}/{$p->getVersion()}-$distRef.{$p->getDistType()}";
     }
 }
