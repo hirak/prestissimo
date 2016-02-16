@@ -1,15 +1,25 @@
 <?xml version="1.0"?>
 <ruleset name="prestissimo coding rules">
- <description>prestissimo coding rules</description>
+  <description>prestissimo coding rules</description>
 
- <file>src</file>
- <file>tests</file>
+  <file>src</file>
+  <file>tests</file>
 
- <arg name="report" value="full"/>
- <arg name="report-diff" value="artifacts/phpcs.patch"/>
- <arg name="extensions" value="php"/>
- <arg value="np"/>
- <arg name="colors"/>
+  <arg name="report" value="full"/>
+  <arg name="report-diff" value="artifacts/phpcs.patch"/>
+  <arg name="extensions" value="php"/>
+  <arg value="np"/>
+  <arg name="colors"/>
 
- <rule ref="PSR1"/>
+  <rule ref="PSR2"/>
+  <rule ref="Generic.Commenting.Todo.CommentFound">
+    <message>Please review this TODO comment: %s</message>
+    <severity>3</severity>
+  </rule>
+  <rule ref="Generic.PHP.ForbiddenFunctions">
+    <properties>
+      <property name="forbiddenFunctions" type="array"
+        value="delete=>unset,print=>echo,create_function=>null,join=>implode,split=>explode" />
+    </properties>
+  </rule>
 </ruleset>
