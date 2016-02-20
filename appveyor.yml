@@ -1,33 +1,33 @@
 build: false
-shallow_clone: true
-platform:
-  - x86
-  - x64
-clone_folder: "c:\projects\prestissimo"
+shallow_clone: false
+platform: 'x86'
+clone_folder: C:\projects\prestissimo
 
 init:
-  - SET PATH=C:\Program Files\OpenSSL;c:\tools\php;%PATH%
   - SET COMPOSER_NO_INTERACTION=1
-  - SET PHP=1
   - SET ANSICON=121x90 (121x90)
 
 install:
-  - IF EXIST c:\tools\php (SET PHP=0)
-  - IF %PHP%==1 cinst -y OpenSSL.Light
-  - IF %PHP%==1 cinst -y php
+  - cinst -y OpenSSL.Light
+  - SET PATH=C:\Program Files\OpenSSL;c:\tools\php;%PATH%
+  - cinst -y php
   - cd c:\tools\php
-  - IF %PHP%==1 copy php.ini-production php.ini /Y
-  - IF %PHP%==1 echo date.timezone="UTC" >> php.ini
-  - IF %PHP%==1 echo extension_dir=ext >> php.ini
-  - IF %PHP%==1 echo extension=php_openssl.dll >> php.ini
-  - IF %PHP%==1 echo extension=php_mbstring.dll >> php.ini
-  - IF %PHP%==1 echo extension=php_fileinfo.dll >> php.ini
-  - IF %PHP%==1 echo @php %%~dp0composer.phar %%* > composer.bat
+  - copy php.ini-production php.ini /Y
+  - echo date.timezone="UTC" >> php.ini
+  - echo extension_dir=ext >> php.ini
+  - echo extension=php_openssl.dll >> php.ini
+  - echo extension=php_mbstring.dll >> php.ini
+  - echo extension=php_fileinfo.dll >> php.ini
+  - echo @php %%~dp0composer.phar %%* > composer.bat
   - appveyor DownloadFile https://getcomposer.org/composer.phar
-  - cd "c:\projects\prestissimo"
-  - composer install --no-progress
+  - cd C:\projects\prestissimo
+
+  - composer config -g repositories.packagist path C:\projects\prestissimo
+  - composer global require 'hirak/prestissimo:@dev'
+  - composer config -g --unset repositories.packagist
+  - composer install --no-progress --profile
 
 test_script:
-  - cd "c:\projects\prestissimo"
+  - cd C:\projects\prestissimo
   - composer test
 
