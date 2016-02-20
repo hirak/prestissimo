@@ -29,7 +29,7 @@
             "type": "array",
             "items": {
                 "type": "string",
-                "pattern": ".*/.*"
+                "pattern": "[a-zA-Z0-9-]+/[a-zA-Z0-9-]+"
             }
         }
     }

@@ -238,6 +238,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
     protected function promptAuth(Aspects\HttpGetRequest $req, Aspects\HttpGetResponse $res)
     {
-        $this->_retry = $req->promptAuth($res, $this->config, $this->io);
+        $req->setConfig($this->config);
+        $this->_retry = $req->promptAuth($res, $this->io);
     }
 }

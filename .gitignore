@@ -2,3 +2,7 @@ vendor/
 node_modules/
 npm-debug.log
 phpunit.xml
+phpcs.xml
+phpdox.xml
+artifacts
+!artifacts/index.html

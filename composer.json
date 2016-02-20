@@ -18,13 +18,14 @@
     "require-dev": {
         "composer/composer": "1.0.0-alpha10",
         "phpunit/phpunit": "^4.8",
-        "pdepend/pdepend": "^2.2",
         "squizlabs/php_codesniffer": "^2.5"
     },
     "scripts": {
         "test": "phpunit --colors=always",
         "lint": "phpcs",
-        "fmt": "phpcbf"
+        "fmt": "phpcbf",
+        "doc": "php bin/apigen.phar generate",
+        "metrics": "php bin/phpmetrics.phar --report-html=artifacts/metrics.html src/"
     },
     "autoload": {
         "psr-4": {

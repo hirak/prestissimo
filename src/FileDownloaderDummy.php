@@ -7,7 +7,9 @@ namespace Hirak\Prestissimo;
 
 use Composer\Package;
 
-// dirty hack for getCacheKey compatiblity
+/**
+ * dirty hack for getCacheKey compatiblity
+ */
 class FileDownloaderDummy extends \Composer\Downloader\FileDownloader
 {
     public function __construct()
@@ -28,6 +30,8 @@ class FileDownloaderDummy extends \Composer\Downloader\FileDownloader
             return $rgetCacheKey->invoke($my, $p);
         }
 
+        // @codeCoverageIgnoreStart
         return $rgetCacheKey->invoke($my, $p, $processedUrl);
+        // @codeCoverageIgnoreEnd
     }
 }

@@ -33,6 +33,9 @@ class HttpGetRequest
     public $maybePublic = true;
     public $verbose = false;
 
+    /** @var CConfig */
+    protected $config;
+
     /**
      * normalize url and authentication info
      * @param string $origin domain text
@@ -146,7 +149,12 @@ class HttpGetRequest
         return $url;
     }
 
-    public function promptAuth(HttpGetResponse $res, CConfig $config, IO\IOInterface $io)
+    public function setConfig(CConfig $config)
+    {
+        $this->config = $config;
+    }
+
+    public function promptAuth(HttpGetResponse $res, IO\IOInterface $io)
     {
         $httpCode = $res->info['http_code'];
         // 404s are only handled for github

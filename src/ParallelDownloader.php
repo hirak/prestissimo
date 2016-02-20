@@ -40,120 +40,43 @@ class ParallelDownloader
      */
     public function download(array $packages, array $pluginConfig)
     {
-        $mh = curl_multi_init();
-        $unused = array();
-        for ($i = 0; $i < $pluginConfig['maxConnections']; ++$i) {
-            $unused[] = curl_init();
-        }
+        $multi = new CurlMulti($pluginConfig['maxConnections']);
+        $multi->setupShareHandler($pluginConfig['pipeline']);
 
-        $this->setupShareHandler($mh, $unused, $pluginConfig);
-
-        $using = array(); //memory pool
-        $running = $remains = 0;
         $this->totalCnt = count($packages);
         $this->successCnt = $this->skippedCnt = $this->failureCnt = 0;
         $this->io->write("    Prefetch start: <comment>total: $this->totalCnt</comment>");
 
-        $targets = $this->filterPackages($packages, $pluginConfig);
-        EVENTLOOP:
-        // prepare curl resources
-        while (count($unused) > 0 && count($targets) > 0) {
-            $target = array_pop($targets);
-            $ch = array_pop($unused);
+        $multi->setTargets($this->filterPackages($packages, $pluginConfig));
 
-            $using[(int)$ch] = $target;
-            $onPreDownload = Factory::getPreEvent($target['src']);
-            $onPreDownload->notify();
-
-            $opts = $target['src']->getCurlOpts();
-            // ParallelDownloader doesn't support private packages.
-            unset($opts[CURLOPT_ENCODING], $opts[CURLOPT_USERPWD]);
-            curl_setopt_array($ch, $opts);
-            curl_setopt($ch, CURLOPT_FILE, $target['dest']->getPointer());
-            curl_multi_add_handle($mh, $ch);
-        }
-
-        // wait for any event
         do {
-            $runningBefore = $running;
-            while (CURLM_CALL_MULTI_PERFORM === curl_multi_exec($mh, $running));
+            $multi->setupEventLoop();
+            $multi->wait();
 
-            SELECT:
-            if (-1 === curl_multi_select($mh, 5)) {
-                usleep(200 * 1000);
-                continue;
+            $result = $multi->getFinishedResults();
+            $this->successCnt += $result['successCnt'];
+            $this->failureCnt += $result['failureCnt'];
+            foreach ($result['results'] as $url) {
+                $this->io->write($this->makeDownloadingText($url));
             }
+        } while ($multi->remain());
 
-            while (CURLM_CALL_MULTI_PERFORM === curl_multi_exec($mh, $running));
-            if ($running > 0 && $running === $runningBefore) {
-                goto SELECT;
-            }
-
-            do {
-                if ($raised = curl_multi_info_read($mh, $remains)) {
-                    $ch = $raised['handle'];
-                    $errno = curl_errno($ch);
-                    $info = curl_getinfo($ch);
-                    curl_setopt($ch, CURLOPT_FILE, STDOUT);
-                    $index = (int)$ch;
-                    $target = $using[$index];
-                    unset($using[$index]);
-                    if (CURLE_OK === $errno && 200 === $info['http_code']) {
-                        ++$this->successCnt;
-                        $target['dest']->setSuccess();
-                    } else {
-                        ++$this->failureCnt;
-                    }
-                    unset($target);
-                    $this->io->write($this->makeDownloadingText($info['url']));
-                    curl_multi_remove_handle($mh, $ch);
-                    $unused[] = $ch;
-                }
-            } while ($remains > 0);
-
-            if (count($targets) > 0) {
-                goto EVENTLOOP;
-            }
-        } while ($running > 0);
-
-        $this->io->write("    Finished: <comment>success: $this->successCnt, skipped: $this->skippedCnt, failure: $this->failureCnt, total: $this->totalCnt</comment>");
-
-        foreach ($unused as $ch) {
-            curl_close($ch);
-        }
-        curl_multi_close($mh);
-    }
-
-    /**
-     * @codeCoverageIgnore
-     */
-    private function setupShareHandler($mh, array $unused, array $pluginConfig)
-    {
-        if (function_exists('curl_share_init')) {
-            $sh = curl_share_init();
-            curl_share_setopt($sh, CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION);
-
-            foreach ($unused as $ch) {
-                curl_setopt($ch, CURLOPT_SHARE, $sh);
-            }
-        }
-
-        if (function_exists('curl_multi_setopt')) {
-            if ($pluginConfig['pipeline']) {
-                curl_multi_setopt($mh, CURLMOPT_PIPELINING, true);
-            }
-        }
+        $this->io->write(
+            "    Finished: <comment>success:$this->successCnt,"
+            . " skipped:$this->skippedCnt, failure:$this->failureCnt,"
+            . " total: $this->totalCnt</comment>"
+        );
     }
 
     /**
      * @param Package\PackageInterface[] $packages
      * @param string[] $pluginConfig
-     * @return [{src: Aspects\HttpGetRequest, dest: OutputFile}]
+     * @return array [{src: Aspects\HttpGetRequest, dest: OutputFile}]
      */
     private function filterPackages(array $packages, array $pluginConfig)
     {
         $cachedir = rtrim($this->config->get('cache-files-dir'), '\/');
-        $zips = array();
+        $targets = array();
         foreach ($packages as $p) {
             $url = $p->getDistUrl();
             if (!$url) {
@@ -180,10 +103,9 @@ class ParallelDownloader
             }
             $dest = new OutputFile($filepath);
 
-            $zips[] = compact('src', 'dest');
+            $targets[] = compact('src', 'dest');
         }
-
-        return $zips;
+        return $targets;
     }
 
     /**

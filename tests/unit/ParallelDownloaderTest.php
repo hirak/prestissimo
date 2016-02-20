@@ -80,16 +80,16 @@ class ParallelDownloaderTest extends \PHPUnit_Framework_TestCase
         //success requests
         $packages = array(
             $p1 = $this->createPackage('vendor/package1', 'http://localhost:1337/?wait=1', $ref),
-            $p2 = $this->createPackage('vendor/package2', 'http://localhost:1337/?wait=2', $ref),
-            $p3 = $this->createPackage('vendor/package3', 'http://localhost:1337/?wait=3', $ref),
+            $p2 = $this->createPackage('vendor/package2', 'http://localhost:1337/?wait=1', $ref),
+            $p3 = $this->createPackage('vendor/package3', 'http://localhost:1337/?wait=1', $ref),
         );
         $pluginConfig = new Config(array());
         $this->downloader->download($packages, $pluginConfig->get());
-        self::assertLessThan(6, microtime(true) - $start, '1s + 2s + 3s must be less than < 6s in parallel download.');
+        self::assertLessThan(3, microtime(true) - $start, '1s + 1s + 1s must be less than < 3s in parallel download.');
 
         $cache1 = FileDownloaderDummy::getCacheKeyCompat($p1, 'http://localhost:1337/?wait=1');
-        $cache2 = FileDownloaderDummy::getCacheKeyCompat($p2, 'http://localhost:1337/?wait=2');
-        $cache3 = FileDownloaderDummy::getCacheKeyCompat($p3, 'http://localhost:1337/?wait=3');
+        $cache2 = FileDownloaderDummy::getCacheKeyCompat($p2, 'http://localhost:1337/?wait=1');
+        $cache3 = FileDownloaderDummy::getCacheKeyCompat($p3, 'http://localhost:1337/?wait=1');
         self::assertFileExists("tests/workspace/cache/$cache1");
         self::assertFileExists("tests/workspace/cache/$cache2");
         self::assertFileExists("tests/workspace/cache/$cache3");
