@@ -1,0 +1,4 @@
+# vim: set ft=yaml:
+source: src/
+destination: artifacts/api/
+title: hirak\prestissimo
