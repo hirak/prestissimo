@@ -63,8 +63,8 @@ class ParallelDownloader
 
         $this->io->write(
             "    Finished: <comment>success:$this->successCnt,"
-            . "skipped:$this->skippedCnt, failure:$this->failureCnt,"
-            . "total: $this->totalCnt</comment>"
+            . " skipped:$this->skippedCnt, failure:$this->failureCnt,"
+            . " total: $this->totalCnt</comment>"
         );
     }
 

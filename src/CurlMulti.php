@@ -8,9 +8,6 @@ namespace Hirak\Prestissimo;
 
 class CurlMulti
 {
-    /** @var int */
-    private $maxConnections;
-
     /** @var resource curl_multi */
     private $mh;
 
@@ -32,7 +29,6 @@ class CurlMulti
     public function __construct($maxConnections)
     {
         $this->mh = curl_multi_init();
-        $this->maxConnections = $maxConnections;
 
         for ($i = 0; $i < $maxConnections; ++$i) {
             $this->unused[] = curl_init();
@@ -110,7 +106,7 @@ class CurlMulti
             do {
                 $stat = curl_multi_exec($this->mh, $running);
             } while ($stat === CURLM_CALL_MULTI_PERFORM);
-            if (-1 === curl_multi_select($this->mh, 5)) {
+            if (-1 === curl_multi_select($this->mh, 10)) {
                 // @codeCoverageIgnoreStart
                 if ($retryCnt++ > 10) {
                     throw new \RuntimeException('curl_multi_select failure');
@@ -138,7 +134,6 @@ class CurlMulti
                 curl_setopt($ch, CURLOPT_FILE, STDOUT);
                 $index = (int)$ch;
                 $target = $this->runningTargets[$index];
-                unset($this->using[$index], $this->runningTargets[$index]);
                 if (CURLE_OK === $errno && 200 === $info['http_code']) {
                     ++$successCnt;
                     $target['dest']->setSuccess();
@@ -146,6 +141,7 @@ class CurlMulti
                 } else {
                     ++$failureCnt;
                 }
+                unset($this->using[$index], $this->runningTargets[$index], $target);
                 curl_multi_remove_handle($this->mh, $ch);
                 $this->unused[] = $ch;
             }
@@ -156,6 +152,6 @@ class CurlMulti
 
     public function remain()
     {
-        return count($this->targets) > 0;
+        return count($this->runningTargets) > 0;
     }
 }
