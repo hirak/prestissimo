@@ -1,0 +1,21 @@
+build: false
+environment:
+  global:
+    matrix:
+      - PHP: "C:/PHP"
+init:
+  - SET PATH=C:\php\;%PATH%
+install:
+  - cinst php
+  - cd c:\php
+  - copy php.ini-production php.ini
+  - echo extension_dir=ext >> php.ini
+  - echo extension=php_openssl.dll >> php.ini
+  - echo extension=curl.dll >> php.ini
+  - cd C:\projects\prestissimo
+  - php -r "readfile('https://getcomposer.org/installer');" | php
+  - php composer.phar install
+test_script:
+  - cd C:\projects\prestissimo
+  - php --version"
+  - php composer.phar test
