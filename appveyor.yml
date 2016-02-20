@@ -1,21 +1,33 @@
 build: false
-environment:
-  global:
-    matrix:
-      - PHP: "C:/PHP"
+shallow_clone: true
+platform:
+  - x86
+  - x64
+clone_folder: "c:\projects\prestissimo"
+
 init:
-  - SET PATH=C:\php\;%PATH%
+  - SET PATH=C:\Program Files\OpenSSL;c:\tools\php;%PATH%
+  - SET COMPOSER_NO_INTERACTION=1
+  - SET PHP=1
+  - SET ANSICON=121x90 (121x90)
+
 install:
-  - cinst php
-  - cd c:\php
-  - copy php.ini-production php.ini
-  - echo extension_dir=ext >> php.ini
-  - echo extension=php_openssl.dll >> php.ini
-  - echo extension=curl.dll >> php.ini
-  - cd C:\projects\prestissimo
-  - php -r "readfile('https://getcomposer.org/installer');" | php
-  - php composer.phar install
+  - IF EXIST c:\tools\php (SET PHP=0)
+  - IF %PHP%==1 cinst -y OpenSSL.Light
+  - IF %PHP%==1 cinst -y php
+  - cd c:\tools\php
+  - IF %PHP%==1 copy php.ini-production php.ini /Y
+  - IF %PHP%==1 echo date.timezone="UTC" >> php.ini
+  - IF %PHP%==1 echo extension_dir=ext >> php.ini
+  - IF %PHP%==1 echo extension=php_openssl.dll >> php.ini
+  - IF %PHP%==1 echo extension=php_mbstring.dll >> php.ini
+  - IF %PHP%==1 echo extension=php_fileinfo.dll >> php.ini
+  - IF %PHP%==1 echo @php %%~dp0composer.phar %%* > composer.bat
+  - appveyor DownloadFile https://getcomposer.org/composer.phar
+  - cd "c:\projects\prestissimo"
+  - composer install --no-progress
+
 test_script:
-  - cd C:\projects\prestissimo
-  - php --version"
-  - php composer.phar test
+  - cd "c:\projects\prestissimo"
+  - composer test
+
