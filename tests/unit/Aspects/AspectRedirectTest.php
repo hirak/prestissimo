@@ -12,6 +12,7 @@ class AspectRedirectTest extends \PHPUnit_Framework_TestCase
             'https://api.github.com/repos/exampleorg/examplerepo/zipball/00000',
             new IO\NullIO
         );
+        $req->maybePublic = true;
         $preDownload = new JoinPoint('pre-download', $req);
 
         $redirect = new AspectRedirect;

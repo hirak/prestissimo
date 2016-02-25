@@ -30,7 +30,7 @@ class HttpGetRequest
     public $username = null;
     public $password = null;
 
-    public $maybePublic = true;
+    public $maybePublic = false;
     public $verbose = false;
 
     /** @var CConfig */
