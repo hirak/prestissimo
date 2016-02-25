@@ -43,6 +43,7 @@ class Plugin implements
         'CurlRemoteFilesystem',
         'Factory',
         'OutputFile',
+        'CurlMulti',
         'ParallelDownloader',
         'FileDownloaderDummy',
         'Plugin',
