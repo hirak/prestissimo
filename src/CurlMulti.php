@@ -112,14 +112,9 @@ class CurlMulti
                     throw new \RuntimeException('curl_multi_select failure');
                 }
                 // @codeCoverageIgnoreEnd
-                usleep(200 * 1000);
-                continue;
+                usleep(100000);
             }
         } while ($running > 0 && $running >= $expectRunning);
-
-        do {
-            $stat = curl_multi_exec($this->mh, $running);
-        } while ($stat === CURLM_CALL_MULTI_PERFORM);
     }
 
     public function getFinishedResults()
