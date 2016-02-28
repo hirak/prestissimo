@@ -67,15 +67,8 @@ final class Factory
     {
         if (substr($origin, -10) === 'github.com') {
             $origin = 'github.com';
-            $requestClass = 'GitHub';
-        } elseif (in_array($origin, $config->get('github-domains') ?: array())) {
-            $requestClass = 'GitHub';
-        } elseif (in_array($origin, $config->get('gitlab-domains') ?: array())) {
-            $requestClass = 'GitLab';
-        } else {
-            $requestClass = 'HttpGet';
         }
-        $requestClass = __NAMESPACE__ . '\Aspects\\' . $requestClass . 'Request';
+        $requestClass = __NAMESPACE__ . '\Aspects\\' . self::getRequestClass($origin, $config) . 'Request';
         $request = new $requestClass($origin, $url, $io);
         $request->verbose = $pluginConfig['verbose'];
         if ($pluginConfig['insecure']) {
@@ -88,6 +81,17 @@ final class Factory
             $request->curlOpts[CURLOPT_USERAGENT] = $pluginConfig['userAgent'];
         }
         return $request;
+    }
+
+    private static function getRequestClass($origin, $config)
+    {
+        if (in_array($origin, $config->get('github-domains') ?: array())) {
+            return 'GitHub';
+        }
+        if (in_array($origin, $config->get('gitlab-domains') ?: array())) {
+            return 'GitLab';
+        }
+        return 'HttpGet';
     }
 
     /**
