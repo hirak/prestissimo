@@ -86,7 +86,11 @@ class ParallelDownloader
             if ($p->getDistMirrors()) {
                 $url = current($p->getDistUrls());
             }
-            $host = parse_url($url, PHP_URL_HOST) ?: '';
+            $host = parse_url($url, PHP_URL_HOST);
+            if (!$host) {
+                ++$this->skippedCnt;
+                continue;
+            }
             $src = Factory::getHttpGetRequest($host, $url, $this->io, $this->config, $pluginConfig);
             if (!in_array($p->getName(), $pluginConfig['privatePackages'])) {
                 $src->maybePublic = (bool)preg_match('%^(?:https|git)://github\.com%', $p->getSourceUrl());
