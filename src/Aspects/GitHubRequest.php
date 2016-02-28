@@ -18,6 +18,7 @@ class GitHubRequest extends HttpGetRequest
 
     public function promptAuth(HttpGetResponse $res, IO\IOInterface $io)
     {
-        $this->promptAuthWithUtil(404, 'Composer\Util\GitHub', $res, $io);
+        $util = new \Composer\Util\GitHub($io, $this->config, null);
+        $this->promptAuthWithUtil(404, $util, $res, $io);
     }
 }

@@ -101,7 +101,7 @@ class HttpGetRequest
      * process option for RemortFileSystem
      * @return void
      */
-    public function processRFSOption(array $option)
+    public function processRFSOption(array $options)
     {
         if (isset($options[static::TOKEN_LABEL])) {
             $this->query['access_token'] = $options[static::TOKEN_LABEL];
@@ -185,8 +185,10 @@ class HttpGetRequest
         return true;
     }
 
-    /** @internal */
-    protected function promptAuthWithUtil($privateCode, $utilClass, HttpGetResponse $res, IO\IOInterface $io)
+    /**
+     * @internal
+     */
+    public function promptAuthWithUtil($privateCode, $util, HttpGetResponse $res, IO\IOInterface $io)
     {
         $httpCode = $res->info['http_code'];
         $message = "\nCould not fetch {$this->getURL()}, enter your $this->origin credentials ";
@@ -195,7 +197,6 @@ class HttpGetRequest
         } else {
             $message .= 'to go over the API rate limit';
         }
-        $util = new $utilClass($io, $this->config, null);
         if ($util->authorizeOAuth($this->origin)) {
             return true;
         }

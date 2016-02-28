@@ -16,8 +16,12 @@ class GitLabRequest extends HttpGetRequest
 {
     const TOKEN_LABEL = 'gitlab-token';
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function promptAuth(HttpGetResponse $res, IO\IOInterface $io)
     {
-        $this->promptAuthWithUtil(401, 'Composer\Util\GitLab', $res, $io);
+        $util = new \Composer\Util\GitLab($io, $this->config, null);
+        $this->promptAuthWithUtil(401, $util, $res, $io);
     }
 }
