@@ -78,20 +78,11 @@ class ParallelDownloader
         $cachedir = rtrim($this->config->get('cache-files-dir'), '\/');
         $targets = array();
         foreach ($packages as $p) {
-            $url = $p->getDistUrl();
-            if (!$url) {
-                ++$this->skippedCnt;
+            $urls = $this->getUrlFromPackage($p);
+            if (!$urls) {
                 continue;
             }
-            if ($p->getDistMirrors()) {
-                $url = current($p->getDistUrls());
-            }
-            $host = parse_url($url, PHP_URL_HOST);
-            if (!$host) {
-                ++$this->skippedCnt;
-                continue;
-            }
-            $src = Factory::getHttpGetRequest($host, $url, $this->io, $this->config, $pluginConfig);
+            $src = Factory::getHttpGetRequest($urls['host'], $urls['url'], $this->io, $this->config, $pluginConfig);
             if (!in_array($p->getName(), $pluginConfig['privatePackages'])) {
                 $src->maybePublic = (bool)preg_match('%^(?:https|git)://github\.com%', $p->getSourceUrl());
             }
@@ -108,6 +99,24 @@ class ParallelDownloader
             $targets[] = compact('src', 'dest');
         }
         return $targets;
+    }
+
+    private function getUrlFromPackage(Package\PackageInterface $package)
+    {
+        $url = $package->getDistUrl();
+        if (!$url) {
+            ++$this->skippedCnt;
+            return false;
+        }
+        if ($package->getDistMirrors()) {
+            $url = current($package->getDistUrls());
+        }
+        $host = parse_url($url, PHP_URL_HOST);
+        if (!$host) {
+            ++$this->skippedCnt;
+            return false;
+        }
+        return compact('url', 'host');
     }
 
     /**
