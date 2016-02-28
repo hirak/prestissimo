@@ -3,6 +3,7 @@ namespace Hirak\Prestissimo;
 
 use Composer\Config;
 use Composer\IO;
+use Prophecy\Argument;
 
 class CurlRemoteFilesystemTest extends \PHPUnit_Framework_TestCase
 {
@@ -105,5 +106,37 @@ class CurlRemoteFilesystemTest extends \PHPUnit_Framework_TestCase
         $response = $this->rfs->getContents('localhost', $targetUrl, $progress);
 
         self::assertEquals('0', $response);
+    }
+
+    public function testDebug()
+    {
+        $targetUrl = 'http://localhost:1337/?wait=0';
+        $io = $this->prophesize('Composer\IO\NullIO')
+            ->isDebug()
+            ->willReturn(true)
+        ->getObjectProphecy()
+            ->hasAuthentication('localhost')
+            ->willReturn(false)
+        ->getObjectProphecy()
+            ->write(Argument::any())
+            ->willReturn(false)
+        ->getObjectProphecy()
+        ->reveal();
+        $config = new Config;
+        $rfs = new CurlRemoteFilesystem($io, $config);
+
+        $rfs->setPluginConfig(array(
+            'maxConnections' => 6,
+            'minConnections' => 3,
+            'pipeline' => false,
+            'verbose' => false,
+            'insecure' => false,
+            'capath' => '',
+            'privatePackages' => array(),
+        ));
+
+        $progress = false;
+        $response = $rfs->getContents('localhost', $targetUrl, $progress);
+
     }
 }
