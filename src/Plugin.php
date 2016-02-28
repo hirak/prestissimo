@@ -40,12 +40,12 @@ class Plugin implements
         'Aspects\HttpGetResponse',
         'Aspects\JoinPoint',
         'Config',
+        'CurlMulti',
         'CurlRemoteFilesystem',
         'Factory',
-        'OutputFile',
-        'CurlMulti',
-        'ParallelDownloader',
         'FileDownloaderDummy',
+        'OutputFile',
+        'ParallelDownloader',
         'Plugin',
     );
 
