@@ -88,9 +88,7 @@ class ParallelDownloader
             }
             $host = parse_url($url, PHP_URL_HOST) ?: '';
             $src = Factory::getHttpGetRequest($host, $url, $this->io, $this->config, $pluginConfig);
-            if (in_array($p->getName(), $pluginConfig['privatePackages'])) {
-                $src->maybePublic = false;
-            } else {
+            if (!in_array($p->getName(), $pluginConfig['privatePackages'])) {
                 $src->maybePublic = (bool)preg_match('%^(?:https|git)://github\.com%', $p->getSourceUrl());
             }
             // make file resource
