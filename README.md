@@ -56,7 +56,7 @@ in local `composer.json` or `~/.composer/config.json`
       "pipeline": false,
       "verbose": false,
       "insecure": false,
-      "capath": "/absolute/path/to/cacert.pem",
+      "cainfo": "/absolute/path/to/cacert.pem",
       "userAgent": "Your Awesome User Agent",
       "privatePackages": [
         "myorg/private1", "myorg/private2", ...
@@ -95,10 +95,10 @@ HTTP/1.1 pipelining option. It needs PHP `>=5.5`.
 If insecure is true, this plugin doesn't verify all https certs. (`CURLOPT_SSL_VERIFYPEER` is off)
 You SHOULD NOT change this option.
 
-### capath (string)
+### cainfo (string)
 * default: "" (empty)
 
-Absolute path to cacert.pem
+An absolute path to cacert.pem
 
 ### userAgent (string)
 * default: "" (empty)

@@ -2,6 +2,8 @@
 namespace Hirak\Prestissimo\Aspects;
 
 use Composer\IO;
+use Composer\Config as CConfig;
+use Prophecy\Argument;
 
 class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
 {
@@ -107,5 +109,86 @@ class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
         $curlOpts = $req->getCurlOpts();
         unset($curlOpts[CURLOPT_USERAGENT]);
         self::assertEquals($expects, $curlOpts);
+    }
+
+    public function testSetConfig()
+    {
+        $io = new IO\NullIO;
+        $req = new HttpGetRequest(
+            'packagist.org',
+            'https://packagist.org/packages.json',
+            $io
+        );
+        self::assertNull($req->setConfig(new CConfig));
+    }
+
+    public function testPromptAuth()
+    {
+        $res = new HttpGetResponse(CURLE_OK, '', array('http_code' => 400));
+        $io = $this->prophesize('Composer\IO\NullIO')
+            ->isInteractive()
+            ->willReturn(true)
+        ->getObjectProphecy()
+            ->hasAuthentication('packagist.org')
+            ->willReturn(false)
+        ->getObjectProphecy()
+            ->overwrite(Argument::any())
+            ->willReturn(false)
+        ->getObjectProphecy()
+            ->ask(Argument::any())
+            ->willReturn('user')
+        ->getObjectProphecy()
+            ->askAndHideAnswer(Argument::any())
+            ->willReturn('pass')
+        ->getObjectProphecy()
+            ->setAuthentication('packagist.org', 'user', 'pass')
+            ->willReturn(null)
+        ->getObjectProphecy()
+        ->reveal();
+
+        $req = new HttpGetRequest(
+            'packagist.org',
+            'https://packagist.org/packages.json',
+            $io
+        );
+        $req->promptAuth($res, $io);
+    }
+
+    /**
+     * @expectedException Composer\Downloader\TransportException
+     */
+    public function testPromptAuth403()
+    {
+        $res = new HttpGetResponse(CURLE_OK, '', array('http_code' => 403));
+        $io = $this->prophesize('Composer\IO\NullIO')->reveal();
+
+        $req = new HttpGetRequest('packagist.org', 'https://packagist.org/packages.json', $io);
+        $req->promptAuth($res, $io);
+    }
+
+    /**
+     * @expectedException Composer\Downloader\TransportException
+     */
+    public function testPromptAuthInvalidCred()
+    {
+        $res = new HttpGetResponse(CURLE_OK, '', array('http_code' => 400));
+        $io = $this->prophesize('Composer\IO\NullIO')
+            ->isInteractive()
+            ->willReturn(true)
+        ->getObjectProphecy()
+            ->hasAuthentication('packagist.org')
+            ->willReturn(true)
+        ->getObjectProphecy()
+            ->getAuthentication('packagist.org')
+            ->willReturn(array('username' => 'user', 'password' => 'pass'))
+        ->getObjectProphecy()
+        ->reveal();
+
+        $req = new HttpGetRequest(
+            'packagist.org',
+            'https://packagist.org/packages.json',
+            $io
+        );
+        $req->promptAuth($res, $io);
     }
 }

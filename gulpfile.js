@@ -15,7 +15,7 @@ function test(done) {
     var p = exec('composer test');
     p.stdout.pipe(process.stdout);
     p.stderr.pipe(process.stderr);
-    p.on('end', done);
+    p.on('exit', done);
 }
 
 function inspect(done) {
@@ -28,7 +28,7 @@ function inspect(done) {
     var lint = exec('composer lint'); 
     lint.stdout.pipe(process.stdout);
     lint.stderr.pipe(process.stderr);
-    lint.on('end', wait);
+    lint.on('exit', wait);
 }
 
 gulp.task('test', test);
@@ -38,12 +38,13 @@ gulp.task('start', function(){
     bs.init({
         server: {
             baseDir: "artifacts/"
-        }
+        },
+        ghostMode: false
     });
 
     gulp.watch(['src/**/*.php', 'tests/**/*Test.php'], {}, function(ev){
         inspect(function(){
-            test(browserSync.reload);
+            test(bs.reload);
         });
     });
 });
