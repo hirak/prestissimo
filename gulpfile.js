@@ -42,9 +42,7 @@ gulp.task('start', function(){
     });
 
     gulp.watch(['src/**/*.php', 'tests/**/*Test.php'], {}, function(ev){
-        inspect(function(){
-            test(browserSync.reload);
-        });
+        test(bs.reload);
     });
 });
 
