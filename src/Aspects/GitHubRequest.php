@@ -23,12 +23,6 @@ class GitHubRequest extends HttpGetRequest
         }
     }
 
-    public function getCurlOpts()
-    {
-        $curlOpts = parent::getCurlOpts();
-        return $curlOpts;
-    }
-
     public function promptAuth(HttpGetResponse $res, IO\IOInterface $io)
     {
         $httpCode = $res->info['http_code'];

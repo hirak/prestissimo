@@ -163,15 +163,9 @@ class HttpGetRequest
         }
 
         // fail if the console is not interactive
-        if (!$io->isInteractive()) {
-            switch ($httpCode) {
-                case 401:
-                    $message = "The '{$this->getURL()}' URL required authentication.\nYou must be using the interactive console to authenticate";
-                    throw new Downloader\TransportException($message, $httpCode);
-                case 403:
-                    $message = "The '{$this->getURL()}' URL could not be accessed.";
-                    throw new Downloader\TransportException($message, $httpCode);
-            }
+        if (!$io->isInteractive() && ($httpCode === 401 || $httpCode === 403)) {
+            $message = "The '{$this->getURL()}' URL required authentication.\nYou must be using the interactive console to authenticate";
+            throw new Downloader\TransportException($message, $httpCode);
         }
 
         // fail if we already have auth
