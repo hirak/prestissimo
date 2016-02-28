@@ -7,8 +7,6 @@
 namespace Hirak\Prestissimo\Aspects;
 
 use Composer\IO;
-use Composer\Util;
-use Composer\Downloader;
 
 /**
  * Simple Container for http-get request
@@ -16,34 +14,10 @@ use Composer\Downloader;
  */
 class GitHubRequest extends HttpGetRequest
 {
-    public function processRFSOption(array $options)
-    {
-        if (isset($options['github-token'])) {
-            $this->query['access_token'] = $options['github-token'];
-        }
-    }
+    const TOKEN_LABEL = 'github-token';
 
     public function promptAuth(HttpGetResponse $res, IO\IOInterface $io)
     {
-        $httpCode = $res->info['http_code'];
-        $message = "\nCould not fetch {$this->getURL()}, please create a GitHub OAuth token ";
-        if (404 === $httpCode) {
-            $message .= 'to access private repos';
-        } else {
-            $message .= 'to go over the API rate limit';
-        }
-        $github = new Util\GitHub($io, $this->config, null);
-        if ($github->authorizeOAuth($this->origin)) {
-            return true;
-        }
-        if ($io->isInteractive() &&
-            $github->authorizeOAuthInteractively($this->origin, $message)) {
-            return true;
-        }
-
-        throw new Downloader\TransportException(
-            "Could not authenticate against $this->origin",
-            401
-        );
+        $this->promptAuthWithUtil(404, 'Composer\Util\GitHub', $res, $io);
     }
 }
