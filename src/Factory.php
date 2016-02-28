@@ -81,8 +81,8 @@ final class Factory
         if ($pluginConfig['insecure']) {
             $request->curlOpts[CURLOPT_SSL_VERIFYPEER] = false;
         }
-        if (!empty($pluginConfig['capath'])) {
-            $request->curlOpts[CURLOPT_CAPATH] = $pluginConfig['capath'];
+        if (!empty($pluginConfig['cainfo'])) {
+            $request->curlOpts[CURLOPT_CAINFO] = $pluginConfig['cainfo'];
         }
         if (!empty($pluginConfig['userAgent'])) {
             $request->curlOpts[CURLOPT_USERAGENT] = $pluginConfig['userAgent'];
