@@ -36,6 +36,9 @@ class HttpGetRequest
     /** @var CConfig */
     protected $config;
 
+    /** @internal */
+    const TOKEN_LABEL = 'access_token';
+
     /**
      * normalize url and authentication info
      * @param string $origin domain text
@@ -98,9 +101,11 @@ class HttpGetRequest
      * process option for RemortFileSystem
      * @return void
      */
-    public function processRFSOption(array $option)
+    public function processRFSOption(array $options)
     {
-        // template method
+        if (isset($options[static::TOKEN_LABEL])) {
+            $this->query['access_token'] = $options[static::TOKEN_LABEL];
+        }
     }
 
     public function getCurlOpts()
@@ -178,6 +183,29 @@ class HttpGetRequest
         $password = $io->askAndHideAnswer('      Password: ');
         $io->setAuthentication($this->origin, $username, $password);
         return true;
+    }
+
+    /**
+     * @internal
+     */
+    public function promptAuthWithUtil($privateCode, $util, HttpGetResponse $res, IO\IOInterface $io)
+    {
+        $httpCode = $res->info['http_code'];
+        $message = "\nCould not fetch {$this->getURL()}, enter your $this->origin credentials ";
+        if ($privateCode === $httpCode) {
+            $message .= 'to access private repos';
+        } else {
+            $message .= 'to go over the API rate limit';
+        }
+        if ($util->authorizeOAuth($this->origin)) {
+            return true;
+        }
+        if ($io->isInteractive() &&
+            $util->authorizeOAuthInteractively($this->origin, $message)) {
+            return true;
+        }
+
+        throw new Downloader\TransportException("Could not authenticate against $this->origin", $httpCode);
     }
 
     public static function genUA()

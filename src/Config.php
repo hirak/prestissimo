@@ -12,7 +12,7 @@ final class Config
 {
     protected $config;
 
-    private $default = array(
+    private static $default = array(
         'maxConnections' => 6,
         'minConnections' => 3,
         'pipeline' => false,
@@ -25,7 +25,7 @@ final class Config
 
     public function __construct(array $config)
     {
-        $config += $this->default;
+        $config += self::$default;
         $schema = file_get_contents(__DIR__ . '/../res/config-schema.json');
         $validator = new JsonSchema\Validator;
         $validator->check((object)$config, json_decode($schema));
