@@ -108,7 +108,7 @@ class CurlMulti
             } while ($stat === CURLM_CALL_MULTI_PERFORM);
             if (-1 === curl_multi_select($this->mh)) {
                 // @codeCoverageIgnoreStart
-                if ($retryCnt++ > 10) {
+                if ($retryCnt++ > 100) {
                     throw new \RuntimeException('curl_multi_select failure');
                 }
                 // @codeCoverageIgnoreEnd
