@@ -117,17 +117,15 @@ class HttpGetRequest
             CURLOPT_ENCODING => 'gzip',
             CURLOPT_HTTPHEADER => $this->headers,
             CURLOPT_USERAGENT => $this->genUA(),
+            CURLOPT_VERBOSE => (bool)$this->verbose,
+            CURLOPT_URL => $this->getUrl(),
         );
-
-        $curlOpts[CURLOPT_VERBOSE] = (bool)$this->verbose;
 
         if ($this->username && $this->password) {
             $curlOpts[CURLOPT_USERPWD] = "$this->username:$this->password";
         } else {
             unset($curlOpts[CURLOPT_USERPWD]);
         }
-
-        $curlOpts[CURLOPT_URL] = $this->getUrl();
 
         return $curlOpts;
     }
