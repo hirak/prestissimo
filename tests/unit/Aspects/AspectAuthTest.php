@@ -5,25 +5,6 @@ use Composer\IO;
 
 class AspectAuthTest extends \PHPUnit_Framework_TestCase
 {
-    public function testUpdateOnPreDownload()
-    {
-        $req = new HttpGetRequest('example.com', 'https://example.com/', new IO\NullIO);
-
-        $req->username = 'user';
-
-        $preDownload = new JoinPoint('pre-download', $req);
-        $auth = new AspectAuth;
-        $auth->update($preDownload);
-        self::assertNull($req->username, 'username unset because password is null');
-
-        $req->username = 'user';
-        $req->password = 'pass';
-
-        $auth->update($preDownload);
-        self::assertSame('user', $req->username);
-        self::assertSame('pass', $req->password);
-    }
-
     public function testUpdateGitHub()
     {
         // github auth url-inline pattern
