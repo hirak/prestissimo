@@ -17,7 +17,6 @@ use Composer\Config as CConfig;
 final class Factory
 {
     /**
-     * not need Authorization
      * @var array {
      *  'origin.example.com' => x
      * }
@@ -25,34 +24,17 @@ final class Factory
     private static $connections = array();
 
     /**
-     * need Authorization header
-     * @var array {
-     *  'origin.example.com' => x
-     * }
-     */
-    private static $authConnections = array();
-
-    /**
      * get cached curl handler
      * @param string $origin
-     * @param bool $auth
      * @return resource<curl>
      */
-    public static function getConnection($origin, $auth = false)
+    public static function getConnection($origin)
     {
-        if ($auth) {
-            if (isset(self::$authConnections[$origin])) {
-                return self::$authConnections[$origin];
-            }
-
-            return self::$authConnections[$origin] = curl_init();
-        } else {
-            if (isset(self::$connections[$origin])) {
-                return self::$connections[$origin];
-            }
-
-            return self::$connections[$origin] = curl_init();
+        if (isset(self::$connections[$origin])) {
+            return self::$connections[$origin];
         }
+
+        return self::$connections[$origin] = curl_init();
     }
 
     /**
@@ -83,7 +65,12 @@ final class Factory
         return $request;
     }
 
-    private static function getRequestClass($origin, $config)
+    /**
+     * @param string $origin
+     * @param Composer\Config $config
+     * @return string
+     */
+    private static function getRequestClass($origin, CConfig $config)
     {
         if (in_array($origin, $config->get('github-domains') ?: array())) {
             return 'GitHub';
@@ -95,33 +82,25 @@ final class Factory
     }
 
     /**
+     * @param Aspects\HttpGetRequest $req
      * @return Aspects\JoinPoint
      */
     public static function getPreEvent(Aspects\HttpGetRequest $req)
     {
         $pre = new Aspects\JoinPoint('pre-download', $req);
-        $pre->attach(static::getAspectAuth());
         $pre->attach(new Aspects\AspectRedirect);
         $pre->attach(new Aspects\AspectProxy);
         return $pre;
     }
 
     /**
+     * @param Aspects\HttpGetRequest $req
      * @return Aspects\JoinPoint
      */
     public static function getPostEvent(Aspects\HttpGetRequest $req)
     {
         $post = new Aspects\JoinPoint('post-download', $req);
-        $post->attach(static::getAspectAuth());
+        $post->attach(new Aspects\AspectAuth);
         return $post;
-    }
-
-    /**
-     * @return Aspects\AspectAuth (same instance)
-     */
-    public static function getAspectAuth()
-    {
-        static $auth;
-        return $auth ?: $auth = new Aspects\AspectAuth;
     }
 }

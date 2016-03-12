@@ -140,10 +140,8 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
 
             $this->onPreDownload->notify();
 
-            $opts = $request->getCurlOpts();
-            $ch = Factory::getConnection($origin, isset($opts[CURLOPT_USERPWD]));
-
-            curl_setopt_array($ch, $opts);
+            $ch = Factory::getConnection($origin);
+            curl_setopt_array($ch, $request->getCurlOpts());
 
             list($execStatus,) = $exec($ch, $request);
         } while ($this->_retry);

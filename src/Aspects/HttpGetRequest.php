@@ -85,8 +85,10 @@ class HttpGetRequest
 
 
     /**
+     * @param array $struct
      * @param string $key
      * @param string $default
+     * @return mixed
      */
     private static function setOr(array $struct, $key, $default = null)
     {
@@ -99,6 +101,7 @@ class HttpGetRequest
 
     /**
      * process option for RemortFileSystem
+     * @param array $options
      * @return void
      */
     public function processRFSOption(array $options)
@@ -108,24 +111,32 @@ class HttpGetRequest
         }
     }
 
+    /**
+     * @return array
+     */
     public function getCurlOpts()
     {
+        $headers = $this->headers;
+        if ($this->username && $this->password) {
+            foreach ($headers as $i => $header) {
+                if (0 === strpos($header, 'Authentication:')) {
+                    unset($headers[$i]);
+                }
+            }
+            $headers[] = 'Authentication: Basic ' . base64_encode("$this->username:$this->password");
+        }
+
         $curlOpts = $this->curlOpts + array(
             CURLOPT_HTTPGET => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 20,
             CURLOPT_ENCODING => 'gzip',
-            CURLOPT_HTTPHEADER => $this->headers,
+            CURLOPT_HTTPHEADER => $headers,
             CURLOPT_USERAGENT => $this->genUA(),
             CURLOPT_VERBOSE => (bool)$this->verbose,
             CURLOPT_URL => $this->getUrl(),
         );
-
-        if ($this->username && $this->password) {
-            $curlOpts[CURLOPT_USERPWD] = "$this->username:$this->password";
-        } else {
-            unset($curlOpts[CURLOPT_USERPWD]);
-        }
+        unset($curlOpts[CURLOPT_USERPWD]);
 
         return $curlOpts;
     }
