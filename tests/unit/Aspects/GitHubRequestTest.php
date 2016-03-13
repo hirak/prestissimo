@@ -7,6 +7,18 @@ use Prophecy\Argument;
 
 class GitHubRequestTest extends \PHPUnit_Framework_TestCase
 {
+    public function testConstruct()
+    {
+        $req = new GitHubRequest(
+            'github.com',
+            'https://api.github.com/repos/exampleorg/examplerepo/zipball/00000',
+            new IO\NullIO
+        );
+        $req->maybePublic = true;
+
+        self::assertSame('https://codeload.github.com/exampleorg/examplerepo/legacy.zip/00000', $req->getURL());
+    }
+
     public function testProcessRFSOption()
     {
         $io = new IO\NullIO;

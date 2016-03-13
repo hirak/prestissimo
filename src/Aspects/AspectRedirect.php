@@ -28,13 +28,5 @@ class AspectRedirect implements SplObserver
         }
         $url = $req->getURL();
 
-        if (preg_match('%^https://api\.github\.com/repos(/[^/]+/[^/]+/)zipball/%', $url, $m)) {
-            $url = str_replace(
-                "api.github.com/repos$m[1]zipball",
-                "codeload.github.com$m[1]legacy.zip",
-                $url
-            );
-            $req->importURL($url);
-        }
     }
 }

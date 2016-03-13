@@ -26,6 +26,15 @@ class GitHubRequest extends HttpGetRequest
         }
     }
 
+    public function getURL()
+    {
+        return preg_replace(
+            '%^https://api\.github\.com/repos(/[^/]+/[^/]+/)zipball(.*)%',
+            'https://codeload.github.com$1legacy.zip$2',
+            parent::getURL()
+        );
+    }
+
     public function promptAuth(HttpGetResponse $res, IO\IOInterface $io)
     {
         $util = new \Composer\Util\GitHub($io, $this->config, null);
