@@ -66,27 +66,29 @@ class HttpGetRequest
     {
         $struct = parse_url($url);
         // @codeCoverageIgnoreStart
-        if (! $struct) {
+        if (!$struct) {
             throw new \InvalidArgumentException("$url is not valid URL");
         }
         // @codeCoverageIgnoreEnd
 
-        $this->scheme = self::setOr($struct, 'scheme', $this->scheme);
-        $this->host = self::setOr($struct, 'host', $this->host);
-        $this->port = self::setOr($struct, 'port', null);
-        $this->path = self::setOr($struct, 'path', '');
-        $this->username = self::setOr($struct, 'user', null);
-        $this->password = self::setOr($struct, 'pass', null);
+        $this->scheme = self::setOr($struct, 'scheme');
+        $this->host = self::setOr($struct, 'host');
+        $this->port = self::setOr($struct, 'port');
+        $this->path = self::setOr($struct, 'path');
+        $this->username = self::setOr($struct, 'user');
+        $this->password = self::setOr($struct, 'pass');
 
-        if (! empty($struct['query'])) {
+        if (!empty($struct['query'])) {
             parse_str($struct['query'], $this->query);
         }
     }
 
 
     /**
+     * @param array $struct
      * @param string $key
      * @param string $default
+     * @return mixed
      */
     private static function setOr(array $struct, $key, $default = null)
     {
@@ -99,6 +101,7 @@ class HttpGetRequest
 
     /**
      * process option for RemortFileSystem
+     * @param array $options
      * @return void
      */
     public function processRFSOption(array $options)
@@ -108,36 +111,41 @@ class HttpGetRequest
         }
     }
 
+    /**
+     * @return array
+     */
     public function getCurlOpts()
     {
+        $headers = $this->headers;
+        if ($this->username && $this->password) {
+            foreach ($headers as $i => $header) {
+                if (0 === strpos($header, 'Authentication:')) {
+                    unset($headers[$i]);
+                }
+            }
+            $headers[] = 'Authentication: Basic ' . base64_encode("$this->username:$this->password");
+        }
+
         $curlOpts = $this->curlOpts + array(
             CURLOPT_HTTPGET => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 20,
             CURLOPT_ENCODING => 'gzip',
-            CURLOPT_HTTPHEADER => $this->headers,
+            CURLOPT_HTTPHEADER => $headers,
             CURLOPT_USERAGENT => $this->genUA(),
+            CURLOPT_VERBOSE => (bool)$this->verbose,
+            CURLOPT_URL => $this->getUrl(),
         );
-
-        $curlOpts[CURLOPT_VERBOSE] = (bool)$this->verbose;
-
-        if ($this->username && $this->password) {
-            $curlOpts[CURLOPT_USERPWD] = "$this->username:$this->password";
-        } else {
-            unset($curlOpts[CURLOPT_USERPWD]);
-        }
-
-        $curlOpts[CURLOPT_URL] = $this->getUrl();
+        unset($curlOpts[CURLOPT_USERPWD]);
 
         return $curlOpts;
     }
 
     public function getURL()
     {
+        $url = '';
         if ($this->scheme) {
-            $url = "$this->scheme://";
-        } else {
-            $url = '';
+            $url .= "$this->scheme://";
         }
         $url .= $this->host;
 
@@ -187,6 +195,12 @@ class HttpGetRequest
 
     /**
      * @internal
+     * @param int $privateCode 404|403
+     * @param Composer\Util\GitHub|Composer\Util\GitLab $util
+     * @param HttpGetResponse $res
+     * @param IO\IOInterface $io
+     * @throws Composer\Downloader\TransportException
+     * @return bool
      */
     public function promptAuthWithUtil($privateCode, $util, HttpGetResponse $res, IO\IOInterface $io)
     {
@@ -208,6 +222,9 @@ class HttpGetRequest
         throw new Downloader\TransportException("Could not authenticate against $this->origin", $httpCode);
     }
 
+    /**
+     * @return string
+     */
     public static function genUA()
     {
         static $ua;

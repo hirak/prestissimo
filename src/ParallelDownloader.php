@@ -89,7 +89,7 @@ class ParallelDownloader
             // make file resource
             $filepath = $cachedir
                 . DIRECTORY_SEPARATOR
-                . FileDownloaderDummy::getCacheKeyCompat($p, $src->getURL());
+                . FileDownloaderDummy::getCacheKeyCompat($p, $urls['url']);
             if (file_exists($filepath)) {
                 ++$this->skippedCnt;
                 continue;

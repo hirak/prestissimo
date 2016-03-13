@@ -31,6 +31,13 @@ function inspect(done) {
     lint.on('exit', wait);
 }
 
+function lint(target, done) {
+    var p = exec('composer lint -- ' + target);
+    p.stdout.pipe(process.stdout);
+    p.stderr.pipe(process.stderr);
+    p.on('exit', done);
+}
+
 gulp.task('test', test);
 gulp.task('inspect', inspect);
 
@@ -43,9 +50,18 @@ gulp.task('start', function(){
     });
 
     gulp.watch(['src/**/*.php', 'tests/**/*Test.php'], {}, function(ev){
-        inspect(function(){
-            test(bs.reload);
-        });
+        switch (ev.type) {
+            case "added":
+            case "changed":
+                lint(ev.path, function(){
+                    test(bs.reload);
+                });
+                break;
+            default:
+                inspect(function(){
+                    test(bs.reload);
+                });
+        }
     });
 });
 
