@@ -66,19 +66,19 @@ class HttpGetRequest
     {
         $struct = parse_url($url);
         // @codeCoverageIgnoreStart
-        if (! $struct) {
+        if (!$struct) {
             throw new \InvalidArgumentException("$url is not valid URL");
         }
         // @codeCoverageIgnoreEnd
 
-        $this->scheme = self::setOr($struct, 'scheme', $this->scheme);
-        $this->host = self::setOr($struct, 'host', $this->host);
-        $this->port = self::setOr($struct, 'port', null);
-        $this->path = self::setOr($struct, 'path', '');
-        $this->username = self::setOr($struct, 'user', null);
-        $this->password = self::setOr($struct, 'pass', null);
+        $this->scheme = self::setOr($struct, 'scheme');
+        $this->host = self::setOr($struct, 'host');
+        $this->port = self::setOr($struct, 'port');
+        $this->path = self::setOr($struct, 'path');
+        $this->username = self::setOr($struct, 'user');
+        $this->password = self::setOr($struct, 'pass');
 
-        if (! empty($struct['query'])) {
+        if (!empty($struct['query'])) {
             parse_str($struct['query'], $this->query);
         }
     }
@@ -143,10 +143,9 @@ class HttpGetRequest
 
     public function getURL()
     {
+        $url = '';
         if ($this->scheme) {
-            $url = "$this->scheme://";
-        } else {
-            $url = '';
+            $url .= "$this->scheme://";
         }
         $url .= $this->host;
 
@@ -196,6 +195,12 @@ class HttpGetRequest
 
     /**
      * @internal
+     * @param int $privateCode 404|403
+     * @param Composer\Util\GitHub|Composer\Util\GitLab $util
+     * @param HttpGetResponse $res
+     * @param IO\IOInterface $io
+     * @throws Composer\Downloader\TransportException
+     * @return bool
      */
     public function promptAuthWithUtil($privateCode, $util, HttpGetResponse $res, IO\IOInterface $io)
     {
@@ -217,6 +222,9 @@ class HttpGetRequest
         throw new Downloader\TransportException("Could not authenticate against $this->origin", $httpCode);
     }
 
+    /**
+     * @return string
+     */
     public static function genUA()
     {
         static $ua;
