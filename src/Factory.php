@@ -88,7 +88,6 @@ final class Factory
     public static function getPreEvent(Aspects\HttpGetRequest $req)
     {
         $pre = new Aspects\JoinPoint('pre-download', $req);
-        $pre->attach(new Aspects\AspectRedirect);
         $pre->attach(new Aspects\AspectProxy);
         return $pre;
     }
