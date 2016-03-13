@@ -138,7 +138,34 @@ class HttpGetRequest
         );
         unset($curlOpts[CURLOPT_USERPWD]);
 
+        if ($ciphers = $this->nssCiphers()) {
+            $curlOpts[CURLOPT_SSL_CIPHER_LIST] = $ciphers;
+        }
+
         return $curlOpts;
+    }
+
+    /**
+     * enable ECC cipher suites in cURL/NSS
+     */
+    public function nssCiphers()
+    {
+        static $cache;
+        if (isset($cache)) {
+            return $cache;
+        }
+        $ver = curl_version();
+        if (preg_match('/^NSS.*Basic ECC$/', $ver['ssl_version'])) {
+            $ciphers = array();
+            foreach (new \SplFileObject(__DIR__ . '/../../res/nss_ciphers.txt') as $line) {
+                $line = trim($line);
+                if ($line) {
+                    $ciphers[] = $line;
+                }
+            }
+            return $cache = implode(',', $ciphers);
+        }
+        return $cache = false;
     }
 
     public function getURL()
