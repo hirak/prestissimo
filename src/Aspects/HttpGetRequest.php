@@ -119,11 +119,11 @@ class HttpGetRequest
         $headers = $this->headers;
         if ($this->username && $this->password) {
             foreach ($headers as $i => $header) {
-                if (0 === strpos($header, 'Authentication:')) {
+                if (0 === strpos($header, 'Authorization:')) {
                     unset($headers[$i]);
                 }
             }
-            $headers[] = 'Authentication: Basic ' . base64_encode("$this->username:$this->password");
+            $headers[] = 'Authorization: Basic ' . base64_encode("$this->username:$this->password");
         }
 
         $curlOpts = $this->curlOpts + array(

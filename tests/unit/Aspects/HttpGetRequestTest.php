@@ -105,7 +105,7 @@ class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
 
         $req->username = 'ninja';
         $req->password = 'aieee';
-        $expects[CURLOPT_HTTPHEADER][] = 'Authentication: Basic ' . base64_encode('ninja:aieee');
+        $expects[CURLOPT_HTTPHEADER][] = 'Authorization: Basic ' . base64_encode('ninja:aieee');
         $curlOpts = $req->getCurlOpts();
         unset($curlOpts[CURLOPT_USERAGENT]);
         self::assertEquals($expects, $curlOpts);
