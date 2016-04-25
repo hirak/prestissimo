@@ -71,11 +71,6 @@ in local `composer.json` or `~/.composer/config.json`
 
 Limit connections for parallel downloading.
 
-### minConnections (int)
-* default: 3
-
-If the number of packages is less than(`<=`) `minConnections`, prestissimo try to download by single connection.
-
 
 ### verbose (bool)
 * default: false

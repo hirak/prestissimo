@@ -83,10 +83,8 @@ class Plugin implements
         $ops = $ev->getOperations();
         $packages = $this->filterPackages($ops);
         $pluginConfig = $this->pluginConfig->get();
-        if (count($packages) >= $pluginConfig['minConnections']) {
-            $downloader = new ParallelDownloader($this->io, $this->config);
-            $downloader->download($packages, $pluginConfig);
-        }
+        $downloader = new ParallelDownloader($this->io, $this->config);
+        $downloader->download($packages, $pluginConfig);
     }
 
     /**

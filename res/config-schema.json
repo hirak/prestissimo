@@ -6,10 +6,6 @@
             "type": "integer",
             "minimum": 1
         },
-        "minConnections": {
-            "type": "integer",
-            "minimum": 1
-        },
         "verbose": {
             "type": "boolean"
         },
