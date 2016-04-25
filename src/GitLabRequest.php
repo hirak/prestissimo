@@ -25,13 +25,4 @@ class GitLabRequest extends HttpGetRequest
             $this->username = $this->password = null;
         }
     }
-
-    /**
-     * @codeCoverageIgnore
-     */
-    public function promptAuth(HttpGetResponse $res, IO\IOInterface $io)
-    {
-        $util = new \Composer\Util\GitLab($io, $this->config, null);
-        $this->promptAuthWithUtil(401, $util, $res, $io);
-    }
 }

@@ -234,61 +234,6 @@ class HttpGetRequest
         $this->config = $config;
     }
 
-    public function promptAuth(HttpGetResponse $res, IO\IOInterface $io)
-    {
-        $httpCode = $res->info['http_code'];
-        // 404s are only handled for github
-        if (404 === $httpCode) {
-            return false;
-        }
-
-        // fail if the console is not interactive
-        if (!$io->isInteractive() && ($httpCode === 401 || $httpCode === 403)) {
-            $message = "The '{$this->getURL()}' URL required authentication.\nYou must be using the interactive console to authenticate";
-            throw new Downloader\TransportException($message, $httpCode);
-        }
-
-        // fail if we already have auth
-        if ($io->hasAuthentication($this->origin)) {
-            throw new Downloader\TransportException("Invalid credentials for '{$this->getURL()}', aborting.", $httpCode);
-        }
-
-        $io->overwrite("    Authentication required (<info>$this->host</info>):");
-        $username = $io->ask('      Username: ');
-        $password = $io->askAndHideAnswer('      Password: ');
-        $io->setAuthentication($this->origin, $username, $password);
-        return true;
-    }
-
-    /**
-     * @internal
-     * @param int $privateCode 404|403
-     * @param Composer\Util\GitHub|Composer\Util\GitLab $util
-     * @param HttpGetResponse $res
-     * @param IO\IOInterface $io
-     * @throws Composer\Downloader\TransportException
-     * @return bool
-     */
-    public function promptAuthWithUtil($privateCode, $util, HttpGetResponse $res, IO\IOInterface $io)
-    {
-        $httpCode = $res->info['http_code'];
-        $message = "\nCould not fetch {$this->getURL()}, enter your $this->origin credentials ";
-        if ($privateCode === $httpCode) {
-            $message .= 'to access private repos';
-        } else {
-            $message .= 'to go over the API rate limit';
-        }
-        if ($util->authorizeOAuth($this->origin)) {
-            return true;
-        }
-        if ($io->isInteractive() &&
-            $util->authorizeOAuthInteractively($this->origin, $message)) {
-            return true;
-        }
-
-        throw new Downloader\TransportException("Could not authenticate against $this->origin", $httpCode);
-    }
-
     /**
      * @return string
      */
