@@ -31,9 +31,7 @@ class Plugin implements
     private $disabled = false;
 
     private static $pluginClasses = array(
-        'Aspects\AspectAuth',
         'Aspects\AspectProxy',
-        'Aspects\AspectRedirect',
         'Aspects\GitHubRequest',
         'Aspects\GitLabRequest',
         'Aspects\HttpGetRequest',
