@@ -22,14 +22,14 @@ final class Factory
      * @param IO\IOInterface $io
      * @param CConfig $config
      * @param array $pluginConfig
-     * @return Aspects\HttpGetRequest
+     * @return HttpGetRequest
      */
     public static function getHttpGetRequest($origin, $url, IO\IOInterface $io, CConfig $config, array $pluginConfig)
     {
         if (substr($origin, -10) === 'github.com') {
             $origin = 'github.com';
         }
-        $requestClass = __NAMESPACE__ . '\Aspects\\' . self::getRequestClass($origin, $config) . 'Request';
+        $requestClass = __NAMESPACE__ . '\\' . self::getRequestClass($origin, $config) . 'Request';
         $request = new $requestClass($origin, $url, $io);
         $request->verbose = $pluginConfig['verbose'];
         if ($pluginConfig['insecure']) {

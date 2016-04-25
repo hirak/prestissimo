@@ -31,12 +31,10 @@ class Plugin implements
     private $disabled = false;
 
     private static $pluginClasses = array(
-        'Aspects\AspectProxy',
-        'Aspects\GitHubRequest',
-        'Aspects\GitLabRequest',
-        'Aspects\HttpGetRequest',
-        'Aspects\HttpGetResponse',
-        'Aspects\JoinPoint',
+        'GitHubRequest',
+        'GitLabRequest',
+        'HttpGetRequest',
+        'HttpGetResponse',
         'Config',
         'CurlMulti',
         'Factory',

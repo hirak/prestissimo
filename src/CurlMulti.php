@@ -17,10 +17,10 @@ class CurlMulti
     /** @var resource[] curl */
     private $using = array();
 
-    /** @var array {src: Aspects\HttpGetRequest, dest: OutputFile}*/
+    /** @var array {src: HttpGetRequest, dest: OutputFile}*/
     private $targets;
 
-    /** @var array {src: Aspects\HttpGetRequest, dest: OutputFile}*/
+    /** @var array {src: HttpGetRequest, dest: OutputFile}*/
     private $runningTargets;
 
     /**
@@ -70,7 +70,7 @@ class CurlMulti
     }
 
     /**
-     * @param array $targets {src: Aspects\HttpGetRequest, dest: OutputFile}
+     * @param array $targets {src: HttpGetRequest, dest: OutputFile}
      */
     public function setTargets(array $targets)
     {
