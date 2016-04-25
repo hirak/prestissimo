@@ -38,6 +38,50 @@ class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testHttpProxy()
+    {
+        $_SERVER['http_proxy'] = 'example.com';
+        $io = new IO\NullIO;
+        $req = new HttpGetRequest(
+            'packagist.org',
+            'http://packagist.org/packages.json',
+            $io
+        );
+
+        self::assertArrayHasKey(CURLOPT_PROXY, $req->curlOpts);
+
+        unset($_SERVER['http_proxy']);
+        $_SERVER['HTTP_PROXY'] = 'example.com';
+        $req = new HttpGetRequest(
+            'packagist.org',
+            'http://packagist.org/packages.json',
+            $io
+        );
+        self::assertArrayHasKey(CURLOPT_PROXY, $req->curlOpts);
+    }
+
+    public function testHttpsProxy()
+    {
+        $_SERVER['https_proxy'] = 'example.com';
+        $io = new IO\NullIO;
+        $req = new HttpGetRequest(
+            'packagist.org',
+            'https://packagist.org/packages.json',
+            $io
+        );
+        self::assertArrayHasKey(CURLOPT_PROXY, $req->curlOpts);
+
+        unset($_SERVER['https_proxy']);
+        $_SERVER['HTTPS_PROXY'] = 'example.com';
+
+        $req = new HttpGetRequest(
+            'packagist.org',
+            'https://packagist.org/packages.json',
+            $io
+        );
+        self::assertArrayHasKey(CURLOPT_PROXY, $req->curlOpts);
+    }
+
     public function testRestoreAuth()
     {
         $io = new IO\NullIO;

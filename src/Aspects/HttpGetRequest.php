@@ -10,6 +10,7 @@ use Composer\IO;
 use Composer\Composer;
 use Composer\Config as CConfig;
 use Composer\Downloader;
+use Composer\Util\NoProxyPattern;
 
 /**
  * Simple Container for http-get request
@@ -49,6 +50,7 @@ class HttpGetRequest
     {
         $this->origin = $origin;
         $this->importURL($url);
+        $this->setupProxy();
 
         if ($this->username && $this->password) {
             $io->setAuthentication($origin, $this->username, $this->password);
@@ -57,6 +59,44 @@ class HttpGetRequest
             $this->username = $auth['username'];
             $this->password = $auth['password'];
         }
+    }
+
+    private function setupProxy()
+    {
+        // no_proxy skip
+        if (isset($_SERVER['no_proxy'])) {
+            $pattern = new NoProxyPattern($_SERVER['no_proxy']);
+            if ($pattern->test($this->getURL())) {
+                unset($this->curlOpts[CURLOPT_PROXY]);
+                return;
+            }
+        }
+
+        $httpProxy = self::issetOr($_SERVER, 'http_proxy', 'HTTP_PROXY');
+        if ($httpProxy && $this->scheme === 'http') {
+            $this->curlOpts[CURLOPT_PROXY] = $httpProxy;
+            return;
+        }
+
+        $httpsProxy = self::issetOr($_SERVER, 'https_proxy', 'HTTPS_PROXY');
+        if ($httpsProxy && $this->scheme === 'https') {
+            $this->curlOpts[CURLOPT_PROXY] = $httpsProxy;
+            return;
+        }
+
+        unset($this->curlOpts[CURLOPT_PROXY]);
+        unset($this->curlOpts[CURLOPT_PROXYUSERPWD]);
+    }
+
+    private static function issetOr(array $arr, $key1, $key2)
+    {
+        if (isset($arr[$key1])) {
+            return $arr[$key1];
+        }
+        if (isset($arr[$key2])) {
+            return $arr[$key2];
+        }
+        return null;
     }
 
     /**
