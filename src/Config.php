@@ -15,7 +15,6 @@ final class Config
     private static $default = array(
         'maxConnections' => 6,
         'minConnections' => 3,
-        'pipeline' => false,
         'verbose' => false,
         'insecure' => false,
         'userAgent' => '',

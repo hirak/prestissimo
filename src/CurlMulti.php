@@ -50,10 +50,9 @@ class CurlMulti
     }
 
     /**
-     * @param bool $pipeline
      * @codeCoverageIgnore
      */
-    public function setupShareHandler($pipeline)
+    public function setupShareHandler()
     {
         if (function_exists('curl_share_init')) {
             $sh = curl_share_init();
@@ -62,10 +61,6 @@ class CurlMulti
             foreach ($this->unused as $ch) {
                 curl_setopt($ch, CURLOPT_SHARE, $sh);
             }
-        }
-
-        if ($pipeline && function_exists('curl_multi_setopt')) {
-            curl_multi_setopt($this->mh, CURLMOPT_PIPELINING, true);
         }
     }
 

@@ -41,7 +41,7 @@ class ParallelDownloader
     public function download(array $packages, array $pluginConfig)
     {
         $multi = new CurlMulti($pluginConfig['maxConnections']);
-        $multi->setupShareHandler($pluginConfig['pipeline']);
+        $multi->setupShareHandler();
 
         $this->totalCnt = count($packages);
         $this->successCnt = $this->skippedCnt = $this->failureCnt = 0;

@@ -53,7 +53,6 @@ in local `composer.json` or `~/.composer/config.json`
     "prestissimo": {
       "maxConnections": 6,
       "minConnections": 3,
-      "pipeline": false,
       "verbose": false,
       "insecure": false,
       "cainfo": "/absolute/path/to/cacert.pem",
@@ -77,11 +76,6 @@ Limit connections for parallel downloading.
 
 If the number of packages is less than(`<=`) `minConnections`, prestissimo try to download by single connection.
 
-
-### pipeline (bool)
-* default: false
-
-HTTP/1.1 pipelining option. It needs PHP `>=5.5`.
 
 ### verbose (bool)
 * default: false
