@@ -10,7 +10,7 @@ php:
   - 'hhvm'
 
 before_install:
-  - composer self-update
+  #  - composer self-update
   - composer config -g repositories.packagist path $(pwd)
   - composer global require 'hirak/prestissimo:@dev'
   - composer config -g --unset repositories.packagist
