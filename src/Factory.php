@@ -17,27 +17,6 @@ use Composer\Config as CConfig;
 final class Factory
 {
     /**
-     * @var array {
-     *  'origin.example.com' => x
-     * }
-     */
-    private static $connections = array();
-
-    /**
-     * get cached curl handler
-     * @param string $origin
-     * @return resource<curl>
-     */
-    public static function getConnection($origin)
-    {
-        if (isset(self::$connections[$origin])) {
-            return self::$connections[$origin];
-        }
-
-        return self::$connections[$origin] = curl_init();
-    }
-
-    /**
      * @param string $origin domain text
      * @param string $url
      * @param IO\IOInterface $io
