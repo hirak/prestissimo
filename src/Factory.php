@@ -70,15 +70,4 @@ final class Factory
         $pre->attach(new Aspects\AspectProxy);
         return $pre;
     }
-
-    /**
-     * @param Aspects\HttpGetRequest $req
-     * @return Aspects\JoinPoint
-     */
-    public static function getPostEvent(Aspects\HttpGetRequest $req)
-    {
-        $post = new Aspects\JoinPoint('post-download', $req);
-        $post->attach(new Aspects\AspectAuth);
-        return $post;
-    }
 }

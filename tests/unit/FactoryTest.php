@@ -18,18 +18,6 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
         self::assertInstanceOf('Hirak\Prestissimo\Aspects\JoinPoint', $ev);
     }
 
-    public function testGetPostEvent()
-    {
-        $req = new Aspects\HttpGetRequest(
-            'packagist.org',
-            'https://packagist.org/packages.json',
-            new IO\NullIO
-        );
-        $ev = Factory::getPostEvent($req);
-        self::assertEquals('post-download', (string)$ev);
-        self::assertInstanceOf('Hirak\Prestissimo\Aspects\JoinPoint', $ev);
-    }
-
     public function testGetHttpGetRequest()
     {
         $io = new IO\NullIO;
