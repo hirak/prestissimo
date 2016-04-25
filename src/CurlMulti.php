@@ -86,7 +86,6 @@ class CurlMulti
 
             $this->using[$index] = $ch;
             $this->runningTargets[$index] = $target;
-            Factory::getPreEvent($target['src'])->notify();
 
             $opts = $target['src']->getCurlOpts();
             unset($opts[CURLOPT_ENCODING], $opts[CURLOPT_USERPWD]);

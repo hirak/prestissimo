@@ -59,14 +59,4 @@ final class Factory
         }
         return 'HttpGet';
     }
-
-    /**
-     * @param Aspects\HttpGetRequest $req
-     * @return Aspects\JoinPoint
-     */
-    public static function getPreEvent(Aspects\HttpGetRequest $req)
-    {
-        $pre = new Aspects\JoinPoint('pre-download', $req);
-        return $pre;
-    }
 }
