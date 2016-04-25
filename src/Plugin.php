@@ -41,7 +41,6 @@ class Plugin implements
         'Aspects\JoinPoint',
         'Config',
         'CurlMulti',
-        'CurlRemoteFilesystem',
         'Factory',
         'FileDownloaderDummy',
         'OutputFile',
