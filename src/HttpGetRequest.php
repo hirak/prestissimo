@@ -197,7 +197,7 @@ class HttpGetRequest
         $ver = curl_version();
         if (preg_match('/^NSS.*Basic ECC$/', $ver['ssl_version'])) {
             $ciphers = array();
-            foreach (new \SplFileObject(__DIR__ . '/../../res/nss_ciphers.txt') as $line) {
+            foreach (new \SplFileObject(__DIR__ . '/../res/nss_ciphers.txt') as $line) {
                 $line = trim($line);
                 if ($line) {
                     $ciphers[] = $line;
