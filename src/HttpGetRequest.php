@@ -4,12 +4,13 @@
  * @author Hiraku NAKANO
  * @license MIT https://github.com/hirak/prestissimo
  */
-namespace Hirak\Prestissimo\Aspects;
+namespace Hirak\Prestissimo;
 
 use Composer\IO;
 use Composer\Composer;
 use Composer\Config as CConfig;
 use Composer\Downloader;
+use Composer\Util\NoProxyPattern;
 
 /**
  * Simple Container for http-get request
@@ -49,6 +50,7 @@ class HttpGetRequest
     {
         $this->origin = $origin;
         $this->importURL($url);
+        $this->setupProxy();
 
         if ($this->username && $this->password) {
             $io->setAuthentication($origin, $this->username, $this->password);
@@ -57,6 +59,44 @@ class HttpGetRequest
             $this->username = $auth['username'];
             $this->password = $auth['password'];
         }
+    }
+
+    private function setupProxy()
+    {
+        // no_proxy skip
+        if (isset($_SERVER['no_proxy'])) {
+            $pattern = new NoProxyPattern($_SERVER['no_proxy']);
+            if ($pattern->test($this->getURL())) {
+                unset($this->curlOpts[CURLOPT_PROXY]);
+                return;
+            }
+        }
+
+        $httpProxy = self::issetOr($_SERVER, 'http_proxy', 'HTTP_PROXY');
+        if ($httpProxy && $this->scheme === 'http') {
+            $this->curlOpts[CURLOPT_PROXY] = $httpProxy;
+            return;
+        }
+
+        $httpsProxy = self::issetOr($_SERVER, 'https_proxy', 'HTTPS_PROXY');
+        if ($httpsProxy && $this->scheme === 'https') {
+            $this->curlOpts[CURLOPT_PROXY] = $httpsProxy;
+            return;
+        }
+
+        unset($this->curlOpts[CURLOPT_PROXY]);
+        unset($this->curlOpts[CURLOPT_PROXYUSERPWD]);
+    }
+
+    private static function issetOr(array $arr, $key1, $key2)
+    {
+        if (isset($arr[$key1])) {
+            return $arr[$key1];
+        }
+        if (isset($arr[$key2])) {
+            return $arr[$key2];
+        }
+        return null;
     }
 
     /**
@@ -192,61 +232,6 @@ class HttpGetRequest
     public function setConfig(CConfig $config)
     {
         $this->config = $config;
-    }
-
-    public function promptAuth(HttpGetResponse $res, IO\IOInterface $io)
-    {
-        $httpCode = $res->info['http_code'];
-        // 404s are only handled for github
-        if (404 === $httpCode) {
-            return false;
-        }
-
-        // fail if the console is not interactive
-        if (!$io->isInteractive() && ($httpCode === 401 || $httpCode === 403)) {
-            $message = "The '{$this->getURL()}' URL required authentication.\nYou must be using the interactive console to authenticate";
-            throw new Downloader\TransportException($message, $httpCode);
-        }
-
-        // fail if we already have auth
-        if ($io->hasAuthentication($this->origin)) {
-            throw new Downloader\TransportException("Invalid credentials for '{$this->getURL()}', aborting.", $httpCode);
-        }
-
-        $io->overwrite("    Authentication required (<info>$this->host</info>):");
-        $username = $io->ask('      Username: ');
-        $password = $io->askAndHideAnswer('      Password: ');
-        $io->setAuthentication($this->origin, $username, $password);
-        return true;
-    }
-
-    /**
-     * @internal
-     * @param int $privateCode 404|403
-     * @param Composer\Util\GitHub|Composer\Util\GitLab $util
-     * @param HttpGetResponse $res
-     * @param IO\IOInterface $io
-     * @throws Composer\Downloader\TransportException
-     * @return bool
-     */
-    public function promptAuthWithUtil($privateCode, $util, HttpGetResponse $res, IO\IOInterface $io)
-    {
-        $httpCode = $res->info['http_code'];
-        $message = "\nCould not fetch {$this->getURL()}, enter your $this->origin credentials ";
-        if ($privateCode === $httpCode) {
-            $message .= 'to access private repos';
-        } else {
-            $message .= 'to go over the API rate limit';
-        }
-        if ($util->authorizeOAuth($this->origin)) {
-            return true;
-        }
-        if ($io->isInteractive() &&
-            $util->authorizeOAuthInteractively($this->origin, $message)) {
-            return true;
-        }
-
-        throw new Downloader\TransportException("Could not authenticate against $this->origin", $httpCode);
     }
 
     /**

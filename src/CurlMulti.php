@@ -17,10 +17,10 @@ class CurlMulti
     /** @var resource[] curl */
     private $using = array();
 
-    /** @var array {src: Aspects\HttpGetRequest, dest: OutputFile}*/
+    /** @var array {src: HttpGetRequest, dest: OutputFile}*/
     private $targets;
 
-    /** @var array {src: Aspects\HttpGetRequest, dest: OutputFile}*/
+    /** @var array {src: HttpGetRequest, dest: OutputFile}*/
     private $runningTargets;
 
     /**
@@ -50,10 +50,9 @@ class CurlMulti
     }
 
     /**
-     * @param bool $pipeline
      * @codeCoverageIgnore
      */
-    public function setupShareHandler($pipeline)
+    public function setupShareHandler()
     {
         if (function_exists('curl_share_init')) {
             $sh = curl_share_init();
@@ -63,14 +62,10 @@ class CurlMulti
                 curl_setopt($ch, CURLOPT_SHARE, $sh);
             }
         }
-
-        if ($pipeline && function_exists('curl_multi_setopt')) {
-            curl_multi_setopt($this->mh, CURLMOPT_PIPELINING, true);
-        }
     }
 
     /**
-     * @param array $targets {src: Aspects\HttpGetRequest, dest: OutputFile}
+     * @param array $targets {src: HttpGetRequest, dest: OutputFile}
      */
     public function setTargets(array $targets)
     {
@@ -86,7 +81,6 @@ class CurlMulti
 
             $this->using[$index] = $ch;
             $this->runningTargets[$index] = $target;
-            Factory::getPreEvent($target['src'])->notify();
 
             $opts = $target['src']->getCurlOpts();
             unset($opts[CURLOPT_ENCODING], $opts[CURLOPT_USERPWD]);

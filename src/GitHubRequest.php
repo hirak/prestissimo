@@ -4,7 +4,7 @@
  * @author Hiraku NAKANO
  * @license MIT https://github.com/hirak/prestissimo
  */
-namespace Hirak\Prestissimo\Aspects;
+namespace Hirak\Prestissimo;
 
 use Composer\IO;
 
@@ -33,11 +33,5 @@ class GitHubRequest extends HttpGetRequest
             'https://codeload.github.com$1legacy.zip$2',
             parent::getURL()
         );
-    }
-
-    public function promptAuth(HttpGetResponse $res, IO\IOInterface $io)
-    {
-        $util = new \Composer\Util\GitHub($io, $this->config, null);
-        $this->promptAuthWithUtil(404, $util, $res, $io);
     }
 }

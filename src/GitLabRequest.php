@@ -4,7 +4,7 @@
  * @author Hiraku NAKANO
  * @license MIT https://github.com/hirak/prestissimo
  */
-namespace Hirak\Prestissimo\Aspects;
+namespace Hirak\Prestissimo;
 
 use Composer\IO;
 
@@ -24,14 +24,5 @@ class GitLabRequest extends HttpGetRequest
             // forbid basic-auth
             $this->username = $this->password = null;
         }
-    }
-
-    /**
-     * @codeCoverageIgnore
-     */
-    public function promptAuth(HttpGetResponse $res, IO\IOInterface $io)
-    {
-        $util = new \Composer\Util\GitLab($io, $this->config, null);
-        $this->promptAuthWithUtil(401, $util, $res, $io);
     }
 }

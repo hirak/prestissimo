@@ -1,5 +1,5 @@
 <?php
-namespace Hirak\Prestissimo\Aspects;
+namespace Hirak\Prestissimo;
 
 class HttpGetResponseTest extends \PHPUnit_Framework_TestCase
 {

@@ -12,8 +12,6 @@ class ParallelDownloaderTest extends \PHPUnit_Framework_TestCase
 
     protected $pluginConfig = array(
         'maxConnections' => 6,
-        'minConnections' => 3,
-        'pipeline' => false,
         'verbose' => false,
         'insecure' => false,
         'capath' => '',

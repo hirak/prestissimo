@@ -26,12 +26,12 @@ class FileDownloaderDummy extends \Composer\Downloader\FileDownloader
             $my = new self;
             $params = count($rgetCacheKey->getParameters());
         }
+        // @codeCoverageIgnoreStart
         if ($params === 1) {
             return $rgetCacheKey->invoke($my, $p);
         }
-
-        // @codeCoverageIgnoreStart
-        return $rgetCacheKey->invoke($my, $p, $processedUrl);
         // @codeCoverageIgnoreEnd
+
+        return $rgetCacheKey->invoke($my, $p, $processedUrl);
     }
 }

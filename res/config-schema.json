@@ -6,13 +6,6 @@
             "type": "integer",
             "minimum": 1
         },
-        "minConnections": {
-            "type": "integer",
-            "minimum": 1
-        },
-        "pipeline": {
-            "type": "boolean"
-        },
         "verbose": {
             "type": "boolean"
         },

@@ -1,5 +1,5 @@
 <?php
-namespace Hirak\Prestissimo\Aspects;
+namespace Hirak\Prestissimo;
 
 use Composer\IO;
 use Composer\Config as CConfig;

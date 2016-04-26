@@ -6,47 +6,6 @@ use Composer\IO;
 
 class FactoryTest extends \PHPUnit_Framework_TestCase
 {
-    public function testGetConnection()
-    {
-        $conn = Factory::getConnection('example.com');
-        self::assertNotNull($conn);
-        self::assertInternalType('resource', $conn);
-
-        $conn2 = Factory::getConnection('example.com');
-        self::assertSame($conn, $conn2);
-
-        $conn3 = Factory::getConnection('example.com', true);
-        self::assertNotNull($conn3);
-        self::assertInternalType('resource', $conn3);
-
-        $conn4 = Factory::getConnection('example.com', true);
-        self::assertSame($conn3, $conn4);
-    }
-
-    public function testGetPreEvent()
-    {
-        $req = new Aspects\HttpGetRequest(
-            'packagist.org',
-            'https://packagist.org/packages.json',
-            new IO\NullIO
-        );
-        $ev = Factory::getPreEvent($req);
-        self::assertEquals('pre-download', (string)$ev);
-        self::assertInstanceOf('Hirak\Prestissimo\Aspects\JoinPoint', $ev);
-    }
-
-    public function testGetPostEvent()
-    {
-        $req = new Aspects\HttpGetRequest(
-            'packagist.org',
-            'https://packagist.org/packages.json',
-            new IO\NullIO
-        );
-        $ev = Factory::getPostEvent($req);
-        self::assertEquals('post-download', (string)$ev);
-        self::assertInstanceOf('Hirak\Prestissimo\Aspects\JoinPoint', $ev);
-    }
-
     public function testGetHttpGetRequest()
     {
         $io = new IO\NullIO;
@@ -59,7 +18,7 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
             $config,
             $pluginConfig->get()
         );
-        self::assertInstanceOf('Hirak\Prestissimo\Aspects\GitHubRequest', $req);
+        self::assertInstanceOf('Hirak\Prestissimo\GitHubRequest', $req);
 
         $configProphet = $this->prophesize('Composer\Config')
             ->get('github-domains')
@@ -72,7 +31,7 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
             $configProphet->reveal(),
             $pluginConfig->get()
         );
-        self::assertInstanceOf('Hirak\Prestissimo\Aspects\GitHubRequest', $req);
+        self::assertInstanceOf('Hirak\Prestissimo\GitHubRequest', $req);
 
         $configProphet
             ->get('gitlab-domains')
@@ -85,7 +44,7 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
             $configProphet->reveal(),
             $pluginConfig->get()
         );
-        self::assertInstanceOf('Hirak\Prestissimo\Aspects\GitLabRequest', $req);
+        self::assertInstanceOf('Hirak\Prestissimo\GitLabRequest', $req);
 
         $req = Factory::getHttpGetRequest(
             'gitlab.example.com',

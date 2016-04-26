@@ -66,38 +66,6 @@ class PluginTest extends \PHPUnit_Framework_TestCase
         self::assertInternalType('array', Plugin::getSubscribedEvents());
     }
 
-    public function testOnPreFileDownload()
-    {
-        $plugin = new Plugin;
-        $plugin->activate($this->composer, $this->io);
-
-        // on enabled
-        $plugin->onPreFileDownload(
-            // mock of PreFileDownloadEvent
-            $this->prophesize('Composer\Plugin\PreFileDownloadEvent')
-                ->getRemoteFilesystem()
-                ->willReturn(new CUtil\RemoteFilesystem($this->io))
-            ->getObjectProphecy()
-                ->getProcessedUrl()
-                ->willReturn('http://example.com')
-            ->getObjectProphecy()
-                ->setRemoteFilesystem(Argument::type('Hirak\Prestissimo\CurlRemoteFilesystem'))
-                ->shouldBeCalled()
-            ->getObjectProphecy()
-            ->reveal()
-        );
-
-        // on disabled
-        $plugin->disable();
-        $plugin->onPreFileDownload(
-            $this->prophesize('Composer\Plugin\PreFileDownloadEvent')
-                ->setRemoteFilesystem()
-                ->shouldNotBeCalled()
-            ->getObjectProphecy()
-            ->reveal()
-        );
-    }
-
     public function testOnPostDependenciesSolving()
     {
         $plugin = new Plugin;

@@ -41,7 +41,7 @@ class ParallelDownloader
     public function download(array $packages, array $pluginConfig)
     {
         $multi = new CurlMulti($pluginConfig['maxConnections']);
-        $multi->setupShareHandler($pluginConfig['pipeline']);
+        $multi->setupShareHandler();
 
         $this->totalCnt = count($packages);
         $this->successCnt = $this->skippedCnt = $this->failureCnt = 0;
@@ -71,7 +71,7 @@ class ParallelDownloader
     /**
      * @param Package\PackageInterface[] $packages
      * @param string[] $pluginConfig
-     * @return array [{src: Aspects\HttpGetRequest, dest: OutputFile}]
+     * @return array [{src: HttpGetRequest, dest: OutputFile}]
      */
     private function filterPackages(array $packages, array $pluginConfig)
     {
@@ -125,7 +125,7 @@ class ParallelDownloader
      */
     private function makeDownloadingText($url)
     {
-        $request = new Aspects\HttpGetRequest('example.com', $url, $this->io);
+        $request = new HttpGetRequest('example.com', $url, $this->io);
         $request->query = array();
         return "    <comment>$this->successCnt/$this->totalCnt</comment>:    {$request->getURL()}";
     }
