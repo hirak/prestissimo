@@ -83,8 +83,11 @@ class Plugin implements
         $ops = $ev->getOperations();
         $packages = $this->filterPackages($ops);
         $pluginConfig = $this->pluginConfig->get();
-        $downloader = new ParallelDownloader($this->io, $this->config);
-        $downloader->download($packages, $pluginConfig);
+
+        if ($packages) {
+            $downloader = new ParallelDownloader($this->io, $this->config);
+            $downloader->download($packages, $pluginConfig);
+        }
     }
 
     /**
