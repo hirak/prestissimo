@@ -9,8 +9,6 @@ use Composer\IO;
 use Composer\DependencyResolver\Operation;
 use Composer\Package;
 
-use Prophecy\Argument;
-
 class PluginTest extends \PHPUnit_Framework_TestCase
 {
     // dummy objects

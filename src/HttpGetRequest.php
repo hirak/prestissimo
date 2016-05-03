@@ -8,7 +8,6 @@ namespace Hirak\Prestissimo;
 
 use Composer\IO;
 use Composer\Composer;
-use Composer\Config as CConfig;
 use Composer\Downloader;
 use Composer\Util\NoProxyPattern;
 
@@ -33,9 +32,6 @@ class HttpGetRequest
 
     public $maybePublic = false;
     public $verbose = false;
-
-    /** @var CConfig */
-    protected $config;
 
     /** @internal */
     const TOKEN_LABEL = 'access_token';
@@ -221,11 +217,6 @@ class HttpGetRequest
         }
 
         return $url;
-    }
-
-    public function setConfig(CConfig $config)
-    {
-        $this->config = $config;
     }
 
     /**

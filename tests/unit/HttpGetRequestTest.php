@@ -2,8 +2,6 @@
 namespace Hirak\Prestissimo;
 
 use Composer\IO;
-use Composer\Config as CConfig;
-use Prophecy\Argument;
 
 class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
 {
@@ -153,16 +151,5 @@ class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
         $curlOpts = $req->getCurlOpts();
         unset($curlOpts[CURLOPT_USERAGENT]);
         self::assertEquals($expects, $curlOpts);
-    }
-
-    public function testSetConfig()
-    {
-        $io = new IO\NullIO;
-        $req = new HttpGetRequest(
-            'packagist.org',
-            'https://packagist.org/packages.json',
-            $io
-        );
-        self::assertNull($req->setConfig(new CConfig));
     }
 }
