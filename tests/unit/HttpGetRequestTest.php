@@ -2,8 +2,6 @@
 namespace Hirak\Prestissimo;
 
 use Composer\IO;
-use Composer\Config as CConfig;
-use Prophecy\Argument;
 
 class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
 {
@@ -52,6 +50,22 @@ class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
 
         unset($_SERVER['http_proxy']);
         $_SERVER['HTTP_PROXY'] = 'example.com';
+        $req = new HttpGetRequest(
+            'packagist.org',
+            'http://packagist.org/packages.json',
+            $io
+        );
+        self::assertArrayHasKey(CURLOPT_PROXY, $req->curlOpts);
+
+        $_SERVER['no_proxy'] = 'packagist.org';
+        $req = new HttpGetRequest(
+            'packagist.org',
+            'http://packagist.org/packages.json',
+            $io
+        );
+        self::assertArrayNotHasKey(CURLOPT_PROXY, $req->curlOpts);
+
+        $_SERVER['no_proxy'] = 'example.com';
         $req = new HttpGetRequest(
             'packagist.org',
             'http://packagist.org/packages.json',
@@ -153,16 +167,5 @@ class HttpGetRequestTest extends \PHPUnit_Framework_TestCase
         $curlOpts = $req->getCurlOpts();
         unset($curlOpts[CURLOPT_USERAGENT]);
         self::assertEquals($expects, $curlOpts);
-    }
-
-    public function testSetConfig()
-    {
-        $io = new IO\NullIO;
-        $req = new HttpGetRequest(
-            'packagist.org',
-            'https://packagist.org/packages.json',
-            $io
-        );
-        self::assertNull($req->setConfig(new CConfig));
     }
 }

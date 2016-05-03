@@ -3,8 +3,6 @@ namespace Hirak\Prestissimo;
 
 use Composer\IO;
 use Composer\Config as CConfig;
-use Prophecy\Argument;
-
 class GitLabRequestTest extends \PHPUnit_Framework_TestCase
 {
     public function testConstruct()

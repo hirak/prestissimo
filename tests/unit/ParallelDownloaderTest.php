@@ -21,20 +21,16 @@ class ParallelDownloaderTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $io = new IO\NullIO;
-        $config = $this->prophesize('Composer\Config')
-                ->get('prestissimo')
-                ->willReturn(null)
-            ->getObjectProphecy()
-                ->get('cache-files-dir')
-                ->willReturn('tests/workspace/cache')
-            ->getObjectProphecy()
-                ->get('github-domains')
-                ->willReturn(array())
-            ->getObjectProphecy()
-                ->get('gitlab-domains')
-                ->willReturn(array())
-            ->getObjectProphecy()
-            ->reveal();
+        $configp = $this->prophesize('Composer\Config');
+        $configp->get('prestissimo')
+                ->willReturn(null);
+        $configp->get('cache-files-dir')
+                ->willReturn('tests/workspace/cache');
+        $configp->get('github-domains')
+                ->willReturn(array());
+        $configp->get('gitlab-domains')
+                ->willReturn(array());
+        $config = $configp->reveal();
         $this->downloader = new ParallelDownloader($io, $config);
     }
 

@@ -9,39 +9,41 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
     public function testGetHttpGetRequest()
     {
         $io = new IO\NullIO;
-        $config = new CConfig;
+        $configp = $this->prophesize('Composer\Config');
+        $configp->get('github-domains')
+            ->willReturn(array('github.com'))
+            ->shouldBeCalled();
         $pluginConfig = new Config(array());
         $req = Factory::getHttpGetRequest(
             'codeload.github.com',
             'https://codeload.github.com',
             $io,
-            $config,
+            $configp->reveal(),
             $pluginConfig->get()
         );
         self::assertInstanceOf('Hirak\Prestissimo\GitHubRequest', $req);
 
-        $configProphet = $this->prophesize('Composer\Config')
-            ->get('github-domains')
+        $configp->get('github-domains')
             ->willReturn(array('github.example.com'))
-        ->getObjectProphecy();
+            ->shouldBeCalled();
         $req = Factory::getHttpGetRequest(
             'github.example.com',
             'https://github.example.com',
             $io,
-            $configProphet->reveal(),
+            $configp->reveal(),
             $pluginConfig->get()
         );
         self::assertInstanceOf('Hirak\Prestissimo\GitHubRequest', $req);
 
-        $configProphet
+        $configp
             ->get('gitlab-domains')
             ->willReturn(array('gitlab.example.com'))
-            ;
+            ->shouldBeCalled();
         $req = Factory::getHttpGetRequest(
             'gitlab.example.com',
             'https://gitlab.example.com',
             $io,
-            $configProphet->reveal(),
+            $configp->reveal(),
             $pluginConfig->get()
         );
         self::assertInstanceOf('Hirak\Prestissimo\GitLabRequest', $req);
@@ -50,7 +52,7 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
             'gitlab.example.com',
             'https://gitlab.example.com',
             $io,
-            $configProphet->reveal(),
+            $configp->reveal(),
             array(
                 'insecure' => true,
                 'cainfo' => '/opt/ca/cacert.pem',
