@@ -23,6 +23,8 @@ class CurlMulti
     /** @var array {src: HttpGetRequest, dest: OutputFile}*/
     private $runningTargets;
 
+    private $blackhole;
+
     /**
      * @param int $maxConnections
      */
@@ -33,6 +35,8 @@ class CurlMulti
         for ($i = 0; $i < $maxConnections; ++$i) {
             $this->unused[] = curl_init();
         }
+
+        $this->blackhole = fopen('php://memory', 'wb');
     }
 
     public function __destruct()
@@ -120,7 +124,7 @@ class CurlMulti
                 $ch = $raised['handle'];
                 $errno = curl_errno($ch);
                 $info = curl_getinfo($ch);
-                curl_setopt($ch, CURLOPT_FILE, STDOUT);
+                curl_setopt($ch, CURLOPT_FILE, $this->blackhole);
                 $index = (int)$ch;
                 $target = $this->runningTargets[$index];
                 if (CURLE_OK === $errno && 200 === $info['http_code']) {
