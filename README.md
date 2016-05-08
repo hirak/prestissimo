@@ -13,9 +13,9 @@ prestissimo (composer plugin)
 [composer](https://getcomposer.org) parallel install plugin.
 
 
-## Depends
+## Requirements
 
-- composer `>=1.0.0-alpha10` (includes dev-master)
+- composer `>=1.0.0` (includes dev-master)
 - PHP `>=5.3`, (suggest `>=5.5`, because `curl_share_init`)
 - ext-curl
 
