@@ -28,10 +28,14 @@ class GitHubRequest extends HttpGetRequest
 
     public function getURL()
     {
-        return preg_replace(
-            '%^https://api\.github\.com/repos(/[^/]+/[^/]+/)zipball(.*)%',
-            'https://codeload.github.com$1legacy.zip$2',
-            parent::getURL()
-        );
+        if ($this->maybePublic) {
+            return preg_replace(
+                '%^https://api\.github\.com/repos(/[^/]+/[^/]+/)zipball(.*)%',
+                'https://codeload.github.com$1legacy.zip$2',
+                parent::getURL()
+            );
+        } else {
+            return parent::getURL();
+        }
     }
 }
