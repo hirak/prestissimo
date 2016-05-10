@@ -36,7 +36,7 @@ class CurlMulti
             $this->unused[] = curl_init();
         }
 
-        $this->blackhole = fopen('php://memory', 'wb');
+        $this->blackhole = fopen('php://temp', 'wb');
     }
 
     public function __destruct()
