@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit
   colors="true"
-  bootstrap="tests/bootstrap.php">
+  bootstrap="vendor/autoload.php">
   <filter>
     <whitelist>
       <directory suffix=".php">src/</directory>
