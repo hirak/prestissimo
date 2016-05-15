@@ -8,42 +8,78 @@ namespace Hirak\Prestissimo;
 
 class CurlMulti
 {
-    /** @var resource curl_multi */
+    const MAX_CONNECTIONS = 6;
+
+    /** @var resource<curl_multi> */
     private $mh;
 
-    /** @var resource[] curl */
+    /** @var resource<curl_share> */
+    private $sh;
+
+    /** @var resource<curl>[] */
     private $unused = array();
 
-    /** @var resource[] curl */
+    /** @var resource<curl>[] */
     private $using = array();
 
-    /** @var array {src: HttpGetRequest, dest: OutputFile}*/
-    private $targets;
+    /** @var CopyRequest[] */
+    private $requests;
 
-    /** @var array {src: HttpGetRequest, dest: OutputFile}*/
-    private $runningTargets;
+    /** @var CopyRequest[] */
+    private $runningRequests;
+
+    /** @var bool */
+    private $permanent = true;
 
     private $blackhole;
 
     /**
-     * @param int $maxConnections
+     * @param bool $permanent
      */
-    public function __construct($maxConnections)
+    public function __construct($permanent = true)
     {
-        $this->mh = curl_multi_init();
+        static $mh_cache, $sh_cache, $ch_cache;
 
-        for ($i = 0; $i < $maxConnections; ++$i) {
-            $this->unused[] = curl_init();
+        if (!$permanent || !$mh_cache) {
+            $mh_cache = curl_multi_init();
+
+            $ch_cache = array();
+            for ($i = 0; $i < self::MAX_CONNECTIONS; ++$i) {
+                $ch_cache[] = curl_init();
+            }
+            // @codeCoverageIgnoreStart
+            if (function_exists('curl_share_init')) {
+                $sh_cache = curl_share_init();
+                curl_share_setopt($sh_cache, CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION);
+
+                foreach ($ch_cache as $ch) {
+                    curl_setopt($ch, CURLOPT_SHARE, $sh_cache);
+                }
+            }
+            // @codeCoverageIgnoreEnd
         }
 
+        $this->mh = $mh_cache;
+        $this->sh = $sh_cache;
+        $this->unused = $ch_cache;
+        $this->permanent = $permanent;
+
+        // for PHP<5.5 @see getFinishedResults()
         $this->blackhole = fopen('php://temp', 'wb');
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function __destruct()
     {
         foreach ($this->using as $ch) {
             curl_multi_remove_handle($this->mh, $ch);
-            curl_close($ch);
+            $this->unused[] = $ch;
+        }
+
+        if ($this->permanent) {
+            return; //don't close connection
         }
 
         foreach ($this->unused as $ch) {
@@ -54,42 +90,24 @@ class CurlMulti
     }
 
     /**
-     * @codeCoverageIgnore
+     * @param CopyRequest[] $requests
      */
-    public function setupShareHandler()
+    public function setRequests(array $requests)
     {
-        if (function_exists('curl_share_init')) {
-            $sh = curl_share_init();
-            curl_share_setopt($sh, CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION);
-
-            foreach ($this->unused as $ch) {
-                curl_setopt($ch, CURLOPT_SHARE, $sh);
-            }
-        }
-    }
-
-    /**
-     * @param array $targets {src: HttpGetRequest, dest: OutputFile}
-     */
-    public function setTargets(array $targets)
-    {
-        $this->targets = $targets;
+        $this->requests = $requests;
     }
 
     public function setupEventLoop()
     {
-        while (count($this->unused) > 0 && count($this->targets) > 0) {
-            $target = array_pop($this->targets);
+        while (count($this->unused) > 0 && count($this->requests) > 0) {
+            $request = array_pop($this->requests);
             $ch = array_pop($this->unused);
             $index = (int)$ch;
 
             $this->using[$index] = $ch;
-            $this->runningTargets[$index] = $target;
+            $this->runningRequests[$index] = $request;
 
-            $opts = $target['src']->getCurlOpts();
-            unset($opts[CURLOPT_ENCODING], $opts[CURLOPT_USERPWD]);
-            curl_setopt_array($ch, $opts);
-            curl_setopt($ch, CURLOPT_FILE, $target['dest']->getPointer());
+            curl_setopt_array($ch, $request->getCurlOptions());
             curl_multi_add_handle($this->mh, $ch);
         }
     }
@@ -107,7 +125,7 @@ class CurlMulti
             if (-1 === curl_multi_select($this->mh)) {
                 // @codeCoverageIgnoreStart
                 if ($retryCnt++ > 100) {
-                    throw new \RuntimeException('curl_multi_select failure');
+                    throw new FetchException('curl_multi_select failure');
                 }
                 // @codeCoverageIgnoreEnd
                 usleep(100000);
@@ -117,34 +135,35 @@ class CurlMulti
 
     public function getFinishedResults()
     {
-        $results = array();
+        $urls = array();
         $successCnt = $failureCnt = 0;
         do {
             if ($raised = curl_multi_info_read($this->mh, $remains)) {
                 $ch = $raised['handle'];
                 $errno = curl_errno($ch);
+                $error = curl_error($ch);
                 $info = curl_getinfo($ch);
-                curl_setopt($ch, CURLOPT_FILE, $this->blackhole);
+                curl_setopt($ch, CURLOPT_FILE, $this->blackhole); //release file pointer
                 $index = (int)$ch;
-                $target = $this->runningTargets[$index];
-                if (CURLE_OK === $errno && 200 === $info['http_code']) {
+                $request = $this->runningRequests[$index];
+                if (CURLE_OK === $errno && !$error && ('http' !== substr($info['url'], 0, 4) || 200 === $info['http_code'])) {
                     ++$successCnt;
-                    $target['dest']->setSuccess();
-                    $results[] = $info['url'];
+                    $request->makeSuccess();
+                    $urls[] = $request->getMaskedURL();
                 } else {
                     ++$failureCnt;
                 }
-                unset($this->using[$index], $this->runningTargets[$index], $target);
+                unset($this->using[$index], $this->runningRequests[$index], $request);
                 curl_multi_remove_handle($this->mh, $ch);
                 $this->unused[] = $ch;
             }
         } while ($remains > 0);
 
-        return compact('successCnt', 'failureCnt', 'results');
+        return compact('successCnt', 'failureCnt', 'urls');
     }
 
     public function remain()
     {
-        return count($this->runningTargets) > 0;
+        return count($this->runningRequests) > 0;
     }
 }
