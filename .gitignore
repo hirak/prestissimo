@@ -6,3 +6,4 @@ phpcs.xml
 phpdox.xml
 artifacts
 !artifacts/index.html
+tags
