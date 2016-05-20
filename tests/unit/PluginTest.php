@@ -56,7 +56,7 @@ class PluginTest extends \PHPUnit_Framework_TestCase
         $plugin = new Plugin;
         $plugin->activate($this->composer, $this->io);
 
-        self::assertTrue(class_exists('Hirak\Prestissimo\OutputFile', false));
+        self::assertTrue(class_exists('Hirak\Prestissimo\CopyRequest', false));
     }
 
     public function testGetSubscribedEvent()

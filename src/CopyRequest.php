@@ -194,7 +194,7 @@ class CopyRequest
         $curlOpts = array(
             CURLOPT_URL => $url,
             CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_USERAGENT => Util\StreamContextFactory::generateUserAgent(),
+            CURLOPT_USERAGENT => ConfigFacade::getUserAgent(),
             CURLOPT_FILE => $this->fp,
             //CURLOPT_VERBOSE => true, //for debug
         );

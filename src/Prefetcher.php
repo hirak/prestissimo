@@ -6,7 +6,6 @@
  */
 namespace Hirak\Prestissimo;
 
-use Composer\Downloader\FileDownloader;
 use Composer\IO;
 use Composer\Config;
 use Composer\Package;
@@ -71,7 +70,7 @@ class Prefetcher
                 continue;
             }
 
-            $destination = $cachedir . DIRECTORY_SEPARATOR . FileDownloader::getCacheKey($p, $url);
+            $destination = $cachedir . DIRECTORY_SEPARATOR . FileDownloaderDummy::getCacheKeyCompat($p, $url);
             if (file_exists($destination)) {
                 continue;
             }
