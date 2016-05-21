@@ -41,7 +41,7 @@ class Prefetcher
         }
 
         $skippedCnt = $totalCnt - $successCnt - $failureCnt;
-        $io->writeError("    Finished: <comment>success:$successCnt, skipped:$skippedCnt, failure:$failureCnt, total: $totalCnt</comment>");
+        $io->writeError("    Finished: <comment>success: $successCnt, skipped: $skippedCnt, failure: $failureCnt, total: $totalCnt</comment>");
     }
 
     /**
