@@ -18,7 +18,9 @@ register_shutdown_function(function(){
     $it = new AppendIterator;
     $it->append(new ArrayIterator(get_declared_classes()));
     $it->append(new ArrayIterator(get_declared_interfaces()));
-    $it->append(new ArrayIterator(get_declared_traits()));
+    if (function_exists('get_declared_traits')) {
+        $it->append(new ArrayIterator(get_declared_traits()));
+    }
 
     foreach ($it as $class) {
         $pathes = explode('\\', $class);
@@ -39,8 +41,12 @@ register_shutdown_function(function(){
          */
         if ($rc->isInterface()) {
             $kind = 'i';
-        } elseif ($rc->isTrait()) {
-            $kind = 't';
+        } elseif (method_exists($rc, 'isTrait')) {
+            if ($rc->isTrait()) {
+                $kind = 't';
+            } else {
+                $kind = 'c';
+            }
         } else {
             $kind = 'c';
         }
@@ -57,17 +63,22 @@ register_shutdown_function(function(){
             $params = array();
             foreach ($construct->getParameters() as $rp) {
                 $class = $rp->getClass();
+                $param = '';
                 if ($class) {
-                    $params[] = $class->getName() . ' ' . $rp->getName();
+                    $param .= $class->getName() . ' ';
                 } elseif ($rp->isArray()) {
-                    $params[] = 'array ' . $rp->getName();
-                } elseif ($rp->isCallable()) {
-                    $params[] = 'callable ' . $rp->getName();
+                    $param .= 'array ';
                 }
+                $param .= '$' . $rp->getName();
+                $params[] = $param;
             }
             $info['constructor'] = '(' . implode(', ', $params) . ')';
         }
-        $filename = str_replace($base, '', $rc->getFileName());
+        if ($rc->isInternal()) {
+            $filename = '(ext-' . $rc->getExtensionName() . ')';
+        } else {
+            $filename = str_replace($base, '', $rc->getFileName());
+        }
         fwrite($fp, implode("\t", array(
             $rc->getShortName(),
             $filename,
@@ -119,15 +130,16 @@ register_shutdown_function(function(){
                 //'prototype' => .
             );
             $params = array();
+            $class = null;
             foreach ($rm->getParameters() as $rp) {
-                $class = $rp->getClass();
+                if (PHP_VERSION > 50300) {
+                    $class = $rp->getClass();
+                }
                 $param = '';
                 if ($class) {
                     $param = $class->getName() . ' ';
                 } elseif ($rp->isArray()) {
                     $param = 'array ';
-                } elseif ($rp->isCallable()) {
-                    $param = 'callable ';
                 }
                 $param .= '$' . $rp->getName();
                 if ($rp->isOptional() && $rm->isUserDefined()) {
@@ -163,8 +175,6 @@ register_shutdown_function(function(){
                 $param = $class->getName() . ' ';
             } elseif ($rp->isArray()) {
                 $param = 'array ';
-            } elseif ($rp->isCallable()) {
-                $param = 'callable ';
             }
             $param .= '$' . $rp->getName();
             if ($rp->isOptional() && $rf->isUserDefined()) {
@@ -173,9 +183,14 @@ register_shutdown_function(function(){
             $params[] = $param;
         }
         $info['type'] = '(' . implode(', ', $params) . ')';
+        if ($rf->isInternal()) {
+            $filename = '(ext-' . $rf->getExtensionName() . ')';
+        } else {
+            $filename = str_replace($base, '', $rf->getFileName());
+        }
         fwrite($fp, implode("\t", array(
             $rf->getName(),
-            str_replace($base, '', $rf->getFileName()),
+            $filename,
             $rf->getStartLine() . ';"',
             '',
         )) . $build($info) . PHP_EOL);

@@ -24,7 +24,7 @@ class PrefetcherTest extends \PHPUnit_Framework_TestCase
             CURLOPT_URL => 'file://uso800.txt',
             CURLOPT_FILE => tmpfile(),
         ));
-        $this->iop->writeError("    Finished: <comment>success:0, skipped:0, failure:1, total: 1</comment>")->shouldBeCalledTimes(1);
+        $this->iop->writeError("    Finished: <comment>success: 0, skipped: 0, failure: 1, total: 1</comment>")->shouldBeCalledTimes(1);
 
         $fetcher = new Prefetcher;
         $fetcher->fetchAll($this->iop->reveal(), array($reqp->reveal()));
