@@ -130,8 +130,8 @@ register_shutdown_function(function(){
                 //'prototype' => .
             );
             $params = array();
-            $class = null;
             foreach ($rm->getParameters() as $rp) {
+                $class = '';
                 if (PHP_VERSION > 50300) {
                     $class = $rp->getClass();
                 }
@@ -169,7 +169,10 @@ register_shutdown_function(function(){
         );
         $params = array();
         foreach ($rf->getParameters() as $rp) {
-            $class = $rp->getClass();
+            $class = '';
+            if (!defined('HHVM_VERSION')) {
+                $class = $rp->getClass();
+            }
             $param = '';
             if ($class) {
                 $param = $class->getName() . ' ';
