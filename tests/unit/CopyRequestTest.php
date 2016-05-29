@@ -22,7 +22,7 @@ class CopyRequestTest extends \PHPUnit_Framework_TestCase
         $example = 'http://user:pass@example.com:80/p/a/t/h?a=b';
 
         $this->iop->setAuthentication('example.com', 'user', 'pass')
-            ->will(function($args, $iop){
+            ->will(function ($args, $iop) {
                 $iop->getAuthentication($args[0])
                     ->willReturn(array('username' => $args[1], 'password' => $args[2]));
             })

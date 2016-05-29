@@ -285,6 +285,7 @@ class CopyRequest
 
     /**
      * enable ECC cipher suites in cURL/NSS
+     * @codeCoverageIgnore
      */
     public static function nssCiphers()
     {

@@ -6,25 +6,19 @@ use Composer\Config;
 
 class ConfigFacade
 {
-    /** @var Config */
-    private $config;
-
-    public function __construct(Config $config)
-    {
-        $this->config = $config;
-    }
-
     public static function getUserAgent()
     {
         static $ua;
         if ($ua) {
             return $ua;
         }
+        /** @codeCoverageIgnoreStart */
         if (defined('HHVM_VERSION')) {
             $phpVersion = 'HHVM ' . HHVM_VERSION;
         } else {
             $phpVersion = 'PHP ' . PHP_VERSION;
         }
+        /** @codeCoverageIgnoreEnd */
 
         return $ua = sprintf(
             'Composer/%s (%s; %s; %s)',
@@ -38,6 +32,7 @@ class ConfigFacade
     public function __debugInfo()
     {
         return array(
+            'user-agent' => $this->getUserAgent(),
         );
     }
 }

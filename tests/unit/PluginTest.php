@@ -12,23 +12,18 @@ use Composer\Package;
 class PluginTest extends \PHPUnit_Framework_TestCase
 {
     // dummy objects
-    private $io;
-    private $config;
+    private $iop;
+    private $configp;
     private $composer;
 
     protected function setUp()
     {
-        $this->io = new IO\NullIO;
-        $this->config = $this->prophesize('Composer\Config')
-                ->get('cache-files-dir')
-                ->willReturn('tests/workspace/')
-            ->getObjectProphecy()
-                ->get('prestissimo')
-                ->willReturn(null)
-            ->getObjectProphecy()
-            ->reveal();
-        $this->composer = new Composer($this->io);
-        $this->composer->setConfig($this->config);
+        $this->iop = $this->prophesize('Composer\IO\IOInterface');
+        $this->configp = $configp = $this->prophesize('Composer\Config');
+        $configp->get('cache-files-dir')
+                ->willReturn('tests/workspace/');
+        $this->composer = new Composer($this->iop->reveal());
+        $this->composer->setConfig($this->configp->reveal());
     }
 
     public function testConstruct()
@@ -47,14 +42,14 @@ class PluginTest extends \PHPUnit_Framework_TestCase
         $class = 'Hirak\\Prestissimo\\Plugin_composer_tmp1';
 
         $plugin = new $class;
-        $plugin->activate($this->composer, $this->io);
+        $plugin->activate($this->composer, $this->iop->reveal());
         self::assertTrue($plugin->isDisabled());
     }
 
     public function testActivate()
     {
         $plugin = new Plugin;
-        $plugin->activate($this->composer, $this->io);
+        $plugin->activate($this->composer, $this->iop->reveal());
 
         self::assertTrue(class_exists('Hirak\Prestissimo\CopyRequest', false));
     }
@@ -67,26 +62,20 @@ class PluginTest extends \PHPUnit_Framework_TestCase
     public function testOnPostDependenciesSolving()
     {
         $plugin = new Plugin;
-        $plugin->activate($this->composer, $this->io);
+        $plugin->activate($this->composer, $this->iop->reveal());
 
+        $evp = $this->prophesize('Composer\Installer\InstallerEvent');
+        $evp->getOperations()
+            ->willReturn($this->createDummyOperations());
         // on enabled
-        $plugin->onPostDependenciesSolving(
-            $this->prophesize('Composer\Installer\InstallerEvent')
-                ->getOperations()
-                ->willReturn($this->createDummyOperations())
-            ->getObjectProphecy()
-            ->reveal()
-        );
+        $plugin->onPostDependenciesSolving($evp->reveal());
 
         // on disabled
         $plugin->disable();
-        $plugin->onPostDependenciesSolving(
-            $this->prophesize('Composer\Installer\InstallerEvent')
-                ->getOperations()
-                ->shouldNotBeCalled()
-            ->getObjectProphecy()
-            ->reveal()
-        );
+        $evp = $this->prophesize('Composer\Installer\InstallerEvent');
+        $evp->getOperations()
+            ->shouldNotBeCalled();
+        $plugin->onPostDependenciesSolving($evp->reveal());
     }
 
     private function createDummyOperations()

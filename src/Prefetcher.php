@@ -102,5 +102,4 @@ class Prefetcher
         }
         return $url;
     }
-
 }
