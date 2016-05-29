@@ -1,10 +1,10 @@
 <?php
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
-register_shutdown_function(function(){
+register_shutdown_function(function () {
     $fp = fopen('tags', 'wb');
 
-    $build = function(array $arr){
+    $build = function (array $arr) {
         $b = array();
         foreach ($arr as $key => $val) {
             if ($val) {
@@ -34,11 +34,9 @@ register_shutdown_function(function(){
             continue;
         }
         $rc = new ReflectionClass($class);
-        /*
         if ($rc->isInternal()) {
             continue;
         }
-         */
         if ($rc->isInterface()) {
             $kind = 'i';
         } elseif (method_exists($rc, 'isTrait')) {
@@ -120,6 +118,9 @@ register_shutdown_function(function(){
         // methods
         foreach ($rc->getMethods(ReflectionMethod::IS_PUBLIC|ReflectionMethod::IS_PROTECTED) as $rm) {
             if ('__' === substr($rm->getName(), 0, 2)) {
+                continue;
+            }
+            if (false === $rm->getStartLine()) {
                 continue;
             }
             $info = array(
