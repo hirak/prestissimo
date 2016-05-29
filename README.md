@@ -22,7 +22,7 @@ prestissimo (composer plugin)
 ## Install
 
 ```bash
-$ composer global require hirak/prestissimo
+$ composer global require "hirak/prestissimo:^0.2"
 ```
 
 
@@ -42,7 +42,16 @@ $ composer create-project laravel/laravel laravel1 --no-progress --profile --pre
 
 ![laravel](https://cloud.githubusercontent.com/assets/835251/12534815/55071302-c2ad-11e5-96a4-72e2c8744d5f.gif)
 
-## Config (optional)
+## Config
+
+### `prestissimo ^0.3.x`
+
+Recognize composer's options. You don't need to set any special configuration.
+
+- [config.capath](https://getcomposer.org/doc/06-config.md#capath)
+- [config.cafile](https://getcomposer.org/doc/06-config.md#cafile)
+
+### `prestissimo ^0.2.x`
 
 in local `composer.json` or `~/.composer/config.json`
 

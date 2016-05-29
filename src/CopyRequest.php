@@ -41,6 +41,9 @@ class CopyRequest
     private $githubDomains = array();
     private $gitlabDomains = array();
 
+    private $capath;
+    private $cafile;
+
     private static $NSS_CIPHERS = array(
         'rsa_3des_sha',
         'rsa_des_sha',
@@ -95,6 +98,8 @@ class CopyRequest
         $this->setDestination($destination);
         $this->githubDomains = $config->get('github-domains');
         $this->gitlabDomains = $config->get('gitlab-domains');
+        $this->capath = $config->get('capath');
+        $this->cafile = $config->get('cafile');
         $this->setupAuthentication($io, $useRedirector);
     }
 
@@ -205,6 +210,12 @@ class CopyRequest
         }
         if ($proxy = $this->getProxy($url)) {
             $curlOpts[CURLOPT_PROXY] = $proxy;
+        }
+        if ($this->capath) {
+            $curlOpts[CURLOPT_CAPATH] = $this->capath;
+        }
+        if ($this->cafile) {
+            $curlOpts[CURLOPT_CAINFO] = $this->cafile;
         }
 
         return $curlOpts;
