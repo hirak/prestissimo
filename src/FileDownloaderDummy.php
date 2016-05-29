@@ -19,18 +19,12 @@ class FileDownloaderDummy extends \Composer\Downloader\FileDownloader
 
     public static function getCacheKeyCompat(Package\PackageInterface $p, $processedUrl)
     {
-        static $rgetCacheKey, $my, $params;
+        static $rgetCacheKey, $my;
         if (!$rgetCacheKey) {
             $rgetCacheKey = new \ReflectionMethod('Composer\Downloader\FileDownloader', 'getCacheKey');
             $rgetCacheKey->setAccessible(true);
             $my = new self;
-            $params = count($rgetCacheKey->getParameters());
         }
-        // @codeCoverageIgnoreStart
-        if ($params === 1) {
-            return $rgetCacheKey->invoke($my, $p);
-        }
-        // @codeCoverageIgnoreEnd
 
         return $rgetCacheKey->invoke($my, $p, $processedUrl);
     }

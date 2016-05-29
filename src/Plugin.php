@@ -24,24 +24,17 @@ class Plugin implements
     /** @var Composer\Config */
     private $config;
 
-    /** @var Config */
-    private $pluginConfig;
-
     /** @var boolean */
     private $disabled = false;
 
     private static $pluginClasses = array(
-        'GitHubRequest',
-        'GitLabRequest',
-        'HttpGetRequest',
-        'HttpGetResponse',
-        'Config',
+        'CopyRequest',
         'CurlMulti',
-        'Factory',
+        'ConfigFacade',
+        'FetchException',
         'FileDownloaderDummy',
-        'OutputFile',
-        'ParallelDownloader',
         'Plugin',
+        'Prefetcher',
     );
 
     public function activate(Composer $composer, IO\IOInterface $io)
@@ -58,9 +51,8 @@ class Plugin implements
             class_exists(__NAMESPACE__ . '\\' . $class);
         }
 
-        $this->config = $composer->getConfig();
         $this->io = $io;
-        $this->pluginConfig = $this->setPluginConfig();
+        $this->config = $composer->getConfig();
     }
 
     public static function getSubscribedEvents()
@@ -80,45 +72,12 @@ class Plugin implements
         if ($this->disabled) {
             return;
         }
-        $ops = $ev->getOperations();
-        $packages = $this->filterPackages($ops);
-        $pluginConfig = $this->pluginConfig->get();
-
-        if ($packages) {
-            $downloader = new ParallelDownloader($this->io, $this->config);
-            $downloader->download($packages, $pluginConfig);
-        }
-    }
-
-    /**
-     * @param DependencyResolver\Operation\OperationInterface[]
-     * @return Package\PackageInterface[]
-     */
-    private static function filterPackages(array $operations)
-    {
-        $packs = array();
-        foreach ($operations as $op) {
-            $type = $op->getJobType();
-            if ('install' === $type) {
-                $packs[] = $op->getPackage();
-                continue;
-            }
-
-            if ('update' === $type) {
-                $packs[] = $op->getTargetPackage();
-                continue;
-            }
-        }
-        return $packs;
-    }
-
-    private function setPluginConfig()
-    {
-        $config = $this->config->get('prestissimo');
-        if (!is_array($config)) {
-            $config = array();
-        }
-        return new Config($config);
+        $prefetcher = new Prefetcher;
+        $prefetcher->fetchAllFromOperations(
+            $this->io,
+            $this->config,
+            $ev->getOperations()
+        );
     }
 
     public function disable()
