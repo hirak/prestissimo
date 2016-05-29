@@ -12,6 +12,8 @@ class CopyRequestTest extends \PHPUnit_Framework_TestCase
     {
         $this->iop = $this->prophesize('Composer\IO\IOInterface');
         $this->configp = $configp = $this->prophesize('Composer\Config');
+        $configp->get('capath')->willReturn(null);
+        $configp->get('cafile')->willReturn(null);
         $configp->get('github-domains')->willReturn(array('github.com'));
         $configp->get('gitlab-domains')->willReturn(array('gitlab.com'));
     }
