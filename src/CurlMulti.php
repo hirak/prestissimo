@@ -8,13 +8,10 @@ namespace Hirak\Prestissimo;
 
 class CurlMulti
 {
-    const MAX_CONNECTIONS = 6;
+    const MAX_CONNECTIONS = 10;
 
     /** @var resource<curl_multi> */
     private $mh;
-
-    /** @var resource<curl_share> */
-    private $sh;
 
     /** @var resource<curl>[] */
     private $unused = array();
@@ -38,29 +35,20 @@ class CurlMulti
      */
     public function __construct($permanent = true)
     {
-        static $mh_cache, $sh_cache, $ch_cache;
+        static $mh_cache, $ch_cache;
 
         if (!$permanent || !$mh_cache) {
             $mh_cache = curl_multi_init();
 
             $ch_cache = array();
             for ($i = 0; $i < self::MAX_CONNECTIONS; ++$i) {
-                $ch_cache[] = curl_init();
+                $ch = curl_init();
+                Share::setup($ch);
+                $ch_cache[] = $ch;
             }
-            // @codeCoverageIgnoreStart
-            if (function_exists('curl_share_init')) {
-                $sh_cache = curl_share_init();
-                curl_share_setopt($sh_cache, CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION);
-
-                foreach ($ch_cache as $ch) {
-                    curl_setopt($ch, CURLOPT_SHARE, $sh_cache);
-                }
-            }
-            // @codeCoverageIgnoreEnd
         }
 
         $this->mh = $mh_cache;
-        $this->sh = $sh_cache;
         $this->unused = $ch_cache;
         $this->permanent = $permanent;
 

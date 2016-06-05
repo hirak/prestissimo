@@ -12,27 +12,24 @@ class ConfigFacade
         if ($ua) {
             return $ua;
         }
-        /** @codeCoverageIgnoreStart */
-        if (defined('HHVM_VERSION')) {
-            $phpVersion = 'HHVM ' . HHVM_VERSION;
-        } else {
-            $phpVersion = 'PHP ' . PHP_VERSION;
-        }
-        /** @codeCoverageIgnoreEnd */
 
         return $ua = sprintf(
             'Composer/%s (%s; %s; %s)',
             Composer::VERSION === '@package_version@' ? 'source' : Composer::VERSION,
             php_uname('s'),
             php_uname('r'),
-            $phpVersion
+            self::getPHPVersion()
         );
     }
 
-    public function __debugInfo()
+    /**
+     * @codeCoverageIgnore
+     */
+    private static function getPHPVersion()
     {
-        return array(
-            'user-agent' => $this->getUserAgent(),
-        );
+        if (defined('HHVM_VERSION')) {
+            return 'HHVM ' . HHVM_VERSION;
+        }
+        return 'PHP ' . PHP_VERSION;
     }
 }
