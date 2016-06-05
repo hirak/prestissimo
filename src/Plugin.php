@@ -24,6 +24,10 @@ class Plugin implements
     /** @var Composer\Config */
     private $config;
 
+    /** @var array */
+    private $package;
+    private $cached = false;
+
     /** @var boolean */
     private $disabled = false;
 
@@ -58,12 +62,15 @@ class Plugin implements
 
         $this->io = $io;
         $this->config = $composer->getConfig();
+
+        $this->package = $composer->getPackage();
     }
 
     public static function getSubscribedEvents()
     {
         return array(
             CPlugin\PluginEvents::PRE_FILE_DOWNLOAD => 'onPreFileDownload',
+            Installer\InstallerEvents::PRE_DEPENDENCIES_SOLVING => 'onPreDependenciesSolving',
             Installer\InstallerEvents::POST_DEPENDENCIES_SOLVING => array(
                 array('onPostDependenciesSolving', PHP_INT_MAX),
             ),
@@ -85,6 +92,22 @@ class Plugin implements
             $rfs->getOptions()
         );
         $ev->setRemoteFilesystem($curlrfs);
+    }
+
+    public function onPreDependenciesSolving(Installer\InstallerEvent $ev)
+    {
+        if ($this->disabled) {
+            return;
+        }
+        if ($this->cached) {
+            return;
+        }
+        $repos = $this->package->getRepositories();
+        if (isset($repos['packagist']['type']) && $repos['packagist']['type'] === 'composer') {
+            $repo = new ParallelizedComposerRepository($repos['packagist'], $this->io, $this->config);
+            $repo->prefetch();
+            $this->cached = true;
+        }
     }
 
     /**
