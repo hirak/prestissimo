@@ -8,7 +8,6 @@ class ConfigFacadeTest extends \PHPUnit_Framework_TestCase
     public function testConstruct()
     {
         $config = new ConfigFacade();
-        $dump = $config->__debugInfo();
-        self::assertArrayHasKey('user-agent', $dump);
+        self::assertInternalType('string', $config->getUserAgent());
     }
 }
