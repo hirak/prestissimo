@@ -44,7 +44,7 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
         if ($res) {
             return $res;
         } else {
-            return parent::getContents($originUrl, $fileUrl, $options, $progress);
+            return parent::getContents($originUrl, $fileUrl, $progress, $options);
         }
     }
 
