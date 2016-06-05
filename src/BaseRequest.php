@@ -2,6 +2,7 @@
 namespace Hirak\Prestissimo;
 
 use Composer\Util;
+use Composer\IO;
 
 class BaseRequest
 {

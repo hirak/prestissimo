@@ -32,10 +32,11 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
     /**
      * @inheritDoc
      */
-    public function getContents($fileUrl, $progress = true, $options = array())
+    public function getContents($originUrl, $fileUrl, $progress = true, $options = array())
     {
+        $res = null;
         try {
-            $this->req = new FetchRequest($fileUrl, $progress, $options);
+            $this->req = new FetchRequest($fileUrl, $this->io, $this->config);
             $res = $this->req->fetch();
         } catch (\Exception $e) {
             $this->io->writeError((string)$e);

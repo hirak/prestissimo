@@ -1,6 +1,9 @@
 <?php
 namespace Hirak\Prestissimo;
 
+use Composer\IO;
+use Composer\Config;
+
 class FetchRequest extends BaseRequest
 {
     protected static $defaultCurlOptions = array(

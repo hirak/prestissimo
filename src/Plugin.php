@@ -28,13 +28,18 @@ class Plugin implements
     private $disabled = false;
 
     private static $pluginClasses = array(
+        'BaseRequest',
+        'ConfigFacade',
         'CopyRequest',
         'CurlMulti',
-        'ConfigFacade',
+        'CurlRemoteFilesystem',
         'FetchException',
+        'FetchRequest',
         'FileDownloaderDummy',
+        'ParallelizedComposerRepository',
         'Plugin',
         'Prefetcher',
+        'Share',
     );
 
     public function activate(Composer $composer, IO\IOInterface $io)
@@ -58,10 +63,28 @@ class Plugin implements
     public static function getSubscribedEvents()
     {
         return array(
+            CPlugin\PluginEvents::PRE_FILE_DOWNLOAD => 'onPreFileDownload',
             Installer\InstallerEvents::POST_DEPENDENCIES_SOLVING => array(
                 array('onPostDependenciesSolving', PHP_INT_MAX),
             ),
         );
+    }
+
+    /**
+     * Keep-Alived file downloader
+     */
+    public function onPreFileDownload(CPlugin\PreFileDownloadEvent $ev)
+    {
+        if ($this->disabled) {
+            return;
+        }
+        $rfs = $ev->getRemoteFilesystem();
+        $curlrfs = new CurlRemoteFilesystem(
+            $this->io,
+            $this->config,
+            $rfs->getOptions()
+        );
+        $ev->setRemoteFilesystem($curlrfs);
     }
 
     /**

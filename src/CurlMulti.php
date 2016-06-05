@@ -8,7 +8,7 @@ namespace Hirak\Prestissimo;
 
 class CurlMulti
 {
-    const MAX_CONNECTIONS = 6;
+    const MAX_CONNECTIONS = 10;
 
     /** @var resource<curl_multi> */
     private $mh;
