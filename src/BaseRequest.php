@@ -173,9 +173,11 @@ class BaseRequest
         );
         $curlOpts += static::$defaultCurlOptions;
 
+        // @codeCoverageIgnoreStart
         if ($ciphers = $this->nssCiphers()) {
             $curlOpts[CURLOPT_SSL_CIPHER_LIST] = $ciphers;
         }
+        // @codeCoverageIgnoreEnd
         if ($proxy = $this->getProxy($url)) {
             $curlOpts[CURLOPT_PROXY] = $proxy;
         }
