@@ -79,15 +79,6 @@ class CopyRequestTest extends \PHPUnit_Framework_TestCase
         $this->assertFileNotExists($tmpfile);
     }
 
-    public function testGetMaskedURL()
-    {
-        $tmpfile = tempnam(sys_get_temp_dir(), 'composer_unit_test_');
-
-        $req = new CopyRequest('http://user:pass@example.com/p/a/t/h?token=opensesame', $tmpfile, false, $this->iop->reveal(), $this->configp->reveal());
-        // user/pass/query masked
-        $this->assertEquals('http://example.com/p/a/t/h', $req->getMaskedURL());
-    }
-
     public function testGitHubRedirector()
     {
         $tmpfile = tempnam(sys_get_temp_dir(), 'composer_unit_test_');

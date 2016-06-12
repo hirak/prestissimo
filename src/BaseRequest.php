@@ -1,4 +1,9 @@
 <?php
+/*
+ * hirak/prestissimo
+ * @author Hiraku NAKANO
+ * @license MIT https://github.com/hirak/prestissimo
+ */
 namespace Hirak\Prestissimo;
 
 use Composer\Util;
@@ -89,21 +94,14 @@ class BaseRequest
             }
         }
 
-        if ($this->scheme === 'https') {
-            if (isset($_SERVER['HTTPS_PROXY'])) {
-                return $_SERVER['HTTPS_PROXY'];
-            }
-            if (isset($_SERVER['https_proxy'])) {
-                return $_SERVER['https_proxy'];
-            }
-        }
-
-        if ($this->scheme === 'http') {
-            if (isset($_SERVER['HTTP_PROXY'])) {
-                return $_SERVER['HTTP_PROXY'];
-            }
-            if (isset($_SERVER['http_proxy'])) {
-                return $_SERVER['http_proxy'];
+        foreach (array('https', 'http') as $scheme) {
+            if ($this->scheme === $scheme) {
+                $label = $scheme . '_proxy';
+                foreach (array(strtoupper($label), $label) as $l) {
+                    if (isset($_SERVER[$l])) {
+                        return $_SERVER[$l];
+                    }
+                }
             }
         }
         return null;
@@ -175,9 +173,11 @@ class BaseRequest
         );
         $curlOpts += static::$defaultCurlOptions;
 
+        // @codeCoverageIgnoreStart
         if ($ciphers = $this->nssCiphers()) {
             $curlOpts[CURLOPT_SSL_CIPHER_LIST] = $ciphers;
         }
+        // @codeCoverageIgnoreEnd
         if ($proxy = $this->getProxy($url)) {
             $curlOpts[CURLOPT_PROXY] = $proxy;
         }
