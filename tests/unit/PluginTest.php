@@ -2,10 +2,6 @@
 namespace Hirak\Prestissimo;
 
 use Composer\Composer;
-use Composer\Config as CConfig;
-use Composer\Plugin as CPlugin;
-use Composer\Util as CUtil;
-use Composer\IO;
 use Composer\DependencyResolver\Operation;
 use Composer\Package;
 
@@ -14,16 +10,28 @@ class PluginTest extends \PHPUnit_Framework_TestCase
     // dummy objects
     private $iop;
     private $configp;
-    private $composer;
+    private $composerp;
 
     protected function setUp()
     {
         $this->iop = $this->prophesize('Composer\IO\IOInterface');
+
         $this->configp = $configp = $this->prophesize('Composer\Config');
         $configp->get('cache-files-dir')
                 ->willReturn('tests/workspace/');
-        $this->composer = new Composer($this->iop->reveal());
-        $this->composer->setConfig($this->configp->reveal());
+
+        $this->composerp = $composerp = $this->prophesize('Composer\Composer');
+
+        $packagep = $this->prophesize('Composer\Package\CompletePackageInterface');
+        $packagep->getRepositories()
+            ->willReturn(array());
+
+        $composerp->getPackage()
+            ->willReturn($packagep->reveal());
+        $composerp->getConfig()
+            ->willReturn($this->configp->reveal());
+        $composerp->getPackage()
+            ->willReturn($packagep->reveal());
     }
 
     public function testConstruct()
@@ -42,14 +50,14 @@ class PluginTest extends \PHPUnit_Framework_TestCase
         $class = 'Hirak\\Prestissimo\\Plugin_composer_tmp1';
 
         $plugin = new $class;
-        $plugin->activate($this->composer, $this->iop->reveal());
+        $plugin->activate($this->composerp->reveal(), $this->iop->reveal());
         self::assertTrue($plugin->isDisabled());
     }
 
     public function testActivate()
     {
         $plugin = new Plugin;
-        $plugin->activate($this->composer, $this->iop->reveal());
+        $plugin->activate($this->composerp->reveal(), $this->iop->reveal());
 
         self::assertTrue(class_exists('Hirak\Prestissimo\CopyRequest', false));
     }
@@ -59,10 +67,27 @@ class PluginTest extends \PHPUnit_Framework_TestCase
         self::assertInternalType('array', Plugin::getSubscribedEvents());
     }
 
+    public function testOnPreDependenciesSolving()
+    {
+        $plugin = new Plugin;
+        $plugin->activate($this->composerp->reveal(), $this->iop->reveal());
+
+        $evp = $this->prophesize('Composer\Installer\InstallerEvent');
+        // on enabled
+        $plugin->prefetchComposerRepositories($evp->reveal());
+
+        // on disabled
+        $plugin->disable();
+        $evp = $this->prophesize('Composer\Installer\InstallerEvent');
+        $evp->getOperations()
+            ->shouldNotBeCalled();
+        $plugin->prefetchComposerRepositories($evp->reveal());
+    }
+
     public function testOnPostDependenciesSolving()
     {
         $plugin = new Plugin;
-        $plugin->activate($this->composer, $this->iop->reveal());
+        $plugin->activate($this->composerp->reveal(), $this->iop->reveal());
 
         $evp = $this->prophesize('Composer\Installer\InstallerEvent');
         $evp->getOperations()

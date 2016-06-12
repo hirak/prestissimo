@@ -11,6 +11,7 @@ use Composer\IO;
 use Composer\Plugin as CPlugin;
 use Composer\EventDispatcher;
 use Composer\Package;
+use Composer\Script;
 use Composer\Installer;
 use Composer\DependencyResolver;
 
@@ -62,15 +63,31 @@ class Plugin implements
 
         $this->io = $io;
         $this->config = $composer->getConfig();
-
         $this->package = $composer->getPackage();
+
+        foreach ($GLOBALS['argv'] as $arg) {
+            switch ($arg) {
+                case 'create-project':
+                case 'update':
+                case 'outdated':
+                case 'require':
+                    $this->prefetchComposerRepositories();
+                    break 2;
+                case 'install':
+                    if (file_exists('composer.json') && !file_exists('composer.lock')) {
+                        $this->prefetchComposerRepositories();
+                    }
+                    break 2;
+            }
+        }
     }
 
     public static function getSubscribedEvents()
     {
         return array(
             CPlugin\PluginEvents::PRE_FILE_DOWNLOAD => 'onPreFileDownload',
-            Installer\InstallerEvents::PRE_DEPENDENCIES_SOLVING => 'onPreDependenciesSolving',
+//            Script\ScriptEvents::POST_ROOT_PACKAGE_INSTALL => 'prefetchComposerRepositories',
+//            Installer\InstallerEvents::PRE_DEPENDENCIES_SOLVING => 'prefetchComposerRepositories',
             Installer\InstallerEvents::POST_DEPENDENCIES_SOLVING => array(
                 array('onPostDependenciesSolving', PHP_INT_MAX),
             ),
@@ -94,7 +111,7 @@ class Plugin implements
         $ev->setRemoteFilesystem($curlrfs);
     }
 
-    public function onPreDependenciesSolving(Installer\InstallerEvent $ev)
+    public function prefetchComposerRepositories()
     {
         if ($this->disabled) {
             return;
@@ -103,11 +120,13 @@ class Plugin implements
             return;
         }
         $repos = $this->package->getRepositories();
-        if (isset($repos['packagist']['type']) && $repos['packagist']['type'] === 'composer') {
-            $repo = new ParallelizedComposerRepository($repos['packagist'], $this->io, $this->config);
-            $repo->prefetch();
-            $this->cached = true;
+        foreach ($repos as $label => $repo) {
+            if (isset($repo['type']) && $repo['type'] === 'composer') {
+                $r = new ParallelizedComposerRepository($repo, $this->io, $this->config);
+                $r->prefetch();
+            }
         }
+        $this->cached = true;
     }
 
     /**

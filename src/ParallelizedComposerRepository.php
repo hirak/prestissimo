@@ -17,7 +17,7 @@ class ParallelizedComposerRepository extends ComposerRepository
 
             $requests = array();
             $cachedir = $this->config->get('cache-repo-dir');
-            $cacheBase = $cachedir . DIRECTORY_SEPARATOR . str_replace('://', '---', $this->baseUrl);
+            $cacheBase = $cachedir . DIRECTORY_SEPARATOR . strtr($this->baseUrl, ':/', '--');
             foreach ($includes as $include => $metadata) {
                 $url = $this->baseUrl . '/' . str_replace('%hash%', $metadata['sha256'], $include);
                 $cacheKey = str_replace(array('%hash%','$'), '', $include);
