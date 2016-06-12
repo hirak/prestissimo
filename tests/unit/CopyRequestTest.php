@@ -88,6 +88,15 @@ class CopyRequestTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('http://example.com/p/a/t/h', $req->getMaskedURL());
     }
 
+    public function testGetOriginURL()
+    {
+        $tmpfile = tempnam(sys_get_temp_dir(), 'composer_unit_test_');
+
+        $req = new CopyRequest('http://user:pass@example.com:1337/p/a/t/h?token=opensesame', $tmpfile, false, $this->iop->reveal(), $this->configp->reveal());
+        // user/pass/query masked
+        $this->assertEquals('http://example.com:1337', $req->getOriginURL());
+    }
+
     public function testGitHubRedirector()
     {
         $tmpfile = tempnam(sys_get_temp_dir(), 'composer_unit_test_');
