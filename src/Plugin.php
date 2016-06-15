@@ -122,6 +122,12 @@ class Plugin implements
         $repos = $this->package->getRepositories();
         foreach ($repos as $label => $repo) {
             if (isset($repo['type']) && $repo['type'] === 'composer') {
+                if ('http?://' === substr($repo['url'], 0, 8) && isset($repo['allow_ssl_downgrade']) && $repo['allow_ssl_downgrade']) {
+                    $repo = array(
+                        'type' => $repo['type'],
+                        'url' => str_replace('https?://', 'https://', $repo['url']),
+                    );
+                }
                 $r = new ParallelizedComposerRepository($repo, $this->io, $this->config);
                 $r->prefetch();
             }
