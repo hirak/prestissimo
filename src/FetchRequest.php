@@ -20,7 +20,8 @@ class FetchRequest extends BaseRequest
     );
 
     private $headers = array();
-    private $errno, $error, $info;
+    private $errno;
+    private $error;
 
     /**
      * @param string $url
@@ -68,7 +69,7 @@ class FetchRequest extends BaseRequest
 
         $this->errno = $errno = curl_errno($ch);
         $this->error = curl_error($ch);
-        $this->info = $info = curl_getinfo($ch);
+        $info = curl_getinfo($ch);
 
         if ($errno === CURLE_OK && $info['http_code'] === 200) {
             return $result;

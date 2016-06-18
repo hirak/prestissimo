@@ -10,10 +10,7 @@ use Composer\Composer;
 use Composer\IO;
 use Composer\Plugin as CPlugin;
 use Composer\EventDispatcher;
-use Composer\Package;
-use Composer\Script;
 use Composer\Installer;
-use Composer\DependencyResolver;
 
 class Plugin implements
     CPlugin\PluginInterface,
@@ -86,8 +83,6 @@ class Plugin implements
     {
         return array(
             CPlugin\PluginEvents::PRE_FILE_DOWNLOAD => 'onPreFileDownload',
-//            Script\ScriptEvents::POST_ROOT_PACKAGE_INSTALL => 'prefetchComposerRepositories',
-//            Installer\InstallerEvents::PRE_DEPENDENCIES_SOLVING => 'prefetchComposerRepositories',
             Installer\InstallerEvents::POST_DEPENDENCIES_SOLVING => array(
                 array('onPostDependenciesSolving', PHP_INT_MAX),
             ),
