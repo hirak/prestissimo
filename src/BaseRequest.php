@@ -113,7 +113,7 @@ class BaseRequest
      * @param $githubDomains
      * @param $gitlabDomains
      */
-    protected function setupAuthentication(IO\IOInterface $io, $useRedirector, array $githubDomains, array $gitlabDomains)
+    protected function setupAuthentication(IO\IOInterface $io, $useRedirector, array $githubDomains = array(), array $gitlabDomains = array())
     {
         if (preg_match('/\.github\.com$/', $this->host)) {
             $authKey = 'github.com';
