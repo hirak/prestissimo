@@ -12,7 +12,10 @@ use Composer\Util;
 
 class CurlRemoteFilesystem extends Util\RemoteFilesystem
 {
-    protected $io, $config, $options, $disableTls;
+    protected $io;
+    protected $config;
+    protected $options;
+    protected $disableTls;
 
     private $req;
 
