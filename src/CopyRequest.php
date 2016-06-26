@@ -38,7 +38,12 @@ class CopyRequest extends BaseRequest
         $this->setURL($url);
         $this->setDestination($destination);
         $this->setCA($config->get('capath'), $config->get('cafile'));
-        $this->setupAuthentication($io, $useRedirector, $config->get('github-domains'), $config->get('gitlab-domains'));
+        $this->setupAuthentication(
+            $io,
+            $useRedirector,
+            $config->get('github-domains') ?: array(),
+            $config->get('gitlab-domains') ?: array()
+        );
     }
 
     public function __destruct()
