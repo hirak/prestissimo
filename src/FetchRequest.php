@@ -32,7 +32,12 @@ class FetchRequest extends BaseRequest
     {
         $this->setURL($url);
         $this->setCA($config->get('capath'), $config->get('cafile'));
-        $this->setupAuthentication($io, false, $config->get('github-domains'), $config->get('gitlab-domains'));
+        $this->setupAuthentication(
+            $io,
+            false,
+            $config->get('github-domains') ?: array(),
+            $config->get('gitlab-domains') ?: array()
+        );
     }
 
     public function getCurlOptions()
@@ -71,7 +76,9 @@ class FetchRequest extends BaseRequest
         $this->error = curl_error($ch);
         $info = curl_getinfo($ch);
 
-        if ($errno === CURLE_OK && $info['http_code'] === 200) {
+        if (!$this->isHTTP()) {
+            return $result;
+        } elseif ($errno === CURLE_OK && $info['http_code'] === 200) {
             return $result;
         } else {
             return false;

@@ -113,7 +113,7 @@ class BaseRequest
      * @param $githubDomains
      * @param $gitlabDomains
      */
-    protected function setupAuthentication(IO\IOInterface $io, $useRedirector, array $githubDomains = array(), array $gitlabDomains = array())
+    protected function setupAuthentication(IO\IOInterface $io, $useRedirector, array $githubDomains, array $gitlabDomains)
     {
         if (preg_match('/\.github\.com$/', $this->host)) {
             $authKey = 'github.com';
@@ -269,5 +269,10 @@ class BaseRequest
     {
         $this->capath = $path;
         $this->cafile = $file;
+    }
+
+    public function isHTTP()
+    {
+        return $this->scheme === 'http' || $this->scheme === 'https';
     }
 }
