@@ -78,7 +78,7 @@ class FetchRequest extends BaseRequest
 
         if (!$this->isHTTP()) {
             return $result;
-        } elseif ($errno === CURLE_OK && $info['http_code'] === 200) {
+        } elseif ($errno === CURLE_OK && in_array($info['http_code'], array(200, 304))) {
             return $result;
         } else {
             return false;

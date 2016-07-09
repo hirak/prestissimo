@@ -37,16 +37,27 @@ class CurlRemoteFilesystem extends Util\RemoteFilesystem
     public function getContents($originUrl, $fileUrl, $progress = true, $options = array())
     {
         $res = null;
+        if (isset($options['http']['header'])) {
+            $headers = $options['http']['header'];
+        } elseif (isset($options['https']['header'])) {
+            $headers = $options['https']['header'];
+        } else {
+            $headers = array();
+        }
         try {
             $this->req = new FetchRequest($fileUrl, $this->io, $this->config);
+            foreach ($headers as $header) {
+                list($key, $val) = explode(':', $header, 2);
+                $this->req->addHeader($key, $val);
+            }
             $res = $this->req->fetch();
         } catch (\Exception $e) {
             $this->io->writeError((string)$e);
         }
-        if ($res) {
-            return $res;
-        } else {
+        if (false === $res) {
             return parent::getContents($originUrl, $fileUrl, $progress, $options);
+        } else {
+            return $res;
         }
     }
 
