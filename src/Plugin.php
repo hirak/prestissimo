@@ -117,6 +117,9 @@ class Plugin implements
         $repos = $this->package->getRepositories();
         foreach ($repos as $label => $repo) {
             if (isset($repo['type']) && $repo['type'] === 'composer') {
+                if (isset($repo['force-lazy-providers']) && $repo['force-lazy-providers']) {
+                    continue;
+                }
                 if ('http?://' === substr($repo['url'], 0, 8) && isset($repo['allow_ssl_downgrade']) && $repo['allow_ssl_downgrade']) {
                     $repo = array(
                         'type' => $repo['type'],
