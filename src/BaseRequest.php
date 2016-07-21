@@ -94,6 +94,11 @@ class BaseRequest
             }
         }
 
+        // @see https://httpoxy.org/
+        if (!defined('PHP_SAPI') || PHP_SAPI !== 'cli') {
+            return null;
+        }
+
         foreach (array('https', 'http') as $scheme) {
             if ($this->scheme === $scheme) {
                 $label = $scheme . '_proxy';
