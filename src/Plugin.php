@@ -62,19 +62,21 @@ class Plugin implements
         $this->config = $composer->getConfig();
         $this->package = $composer->getPackage();
 
-        foreach ($GLOBALS['argv'] as $arg) {
-            switch ($arg) {
-                case 'create-project':
-                case 'update':
-                case 'outdated':
-                case 'require':
-                    $this->prefetchComposerRepositories();
-                    break 2;
-                case 'install':
-                    if (file_exists('composer.json') && !file_exists('composer.lock')) {
+        if (array_key_exists('argv', $GLOBALS)) {
+            foreach ($GLOBALS['argv'] as $arg) {
+                switch ($arg) {
+                    case 'create-project':
+                    case 'update':
+                    case 'outdated':
+                    case 'require':
                         $this->prefetchComposerRepositories();
-                    }
-                    break 2;
+                        break 2;
+                    case 'install':
+                        if (file_exists('composer.json') && !file_exists('composer.lock')) {
+                            $this->prefetchComposerRepositories();
+                        }
+                        break 2;
+                }
             }
         }
     }
