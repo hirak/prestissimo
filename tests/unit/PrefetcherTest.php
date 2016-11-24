@@ -1,6 +1,7 @@
 <?php
 namespace Hirak\Prestissimo;
 
+use Composer\IO\IOInterface;
 use Prophecy\Argument as arg;
 
 class PrefetcherTest extends \PHPUnit_Framework_TestCase
@@ -24,7 +25,7 @@ class PrefetcherTest extends \PHPUnit_Framework_TestCase
             CURLOPT_URL => 'file://uso800.txt',
             CURLOPT_FILE => tmpfile(),
         ));
-        $this->iop->writeError("    Finished: <comment>success: 0, skipped: 0, failure: 1, total: 1</comment>")->shouldBeCalledTimes(1);
+        $this->iop->writeError("    Finished: <comment>success: 0, skipped: 0, failure: 1, total: 1</comment>", true, IOInterface::VERBOSE)->shouldBeCalledTimes(1);
 
         $fetcher = new Prefetcher;
         $fetcher->fetchAll($this->iop->reveal(), array($reqp->reveal()));
@@ -39,7 +40,7 @@ class PrefetcherTest extends \PHPUnit_Framework_TestCase
         ));
         $reqp->makeSuccess()->willReturn(null);
         $reqp->getMaskedURL()->willReturn('file://' . __DIR__ . '/test.txt');
-        $this->iop->writeError(arg::type('string'))->shouldBeCalled();
+        $this->iop->writeError(arg::type('string'), true, IOInterface::VERBOSE)->shouldBeCalled();
 
         $fetcher = new Prefetcher;
         $fetcher->fetchAll($this->iop->reveal(), array($reqp->reveal()));
