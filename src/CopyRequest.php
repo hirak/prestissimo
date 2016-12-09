@@ -100,7 +100,7 @@ class CopyRequest extends BaseRequest
     {
         $targetdir = dirname($fileName);
         if (!file_exists($targetdir)) {
-            if (!mkdir($targetdir, 0766, true)) {
+            if (!mkdir($targetdir, 0775, true)) {
                 throw new FetchException(
                     'The file could not be written to ' . $fileName
                 );
