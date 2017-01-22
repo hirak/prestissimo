@@ -25,10 +25,10 @@ seld/cli-prompt                    1.0.2    MIT
 seld/jsonlint                      1.5.0    MIT           
 seld/phar-utils                    1.0.1    MIT           
 squizlabs/php_codesniffer          2.7.1    BSD-3-Clause  
-symfony/console                    v2.8.14  MIT           
-symfony/debug                      v2.8.14  MIT           
-symfony/filesystem                 v2.8.14  MIT           
-symfony/finder                     v2.8.14  MIT           
+symfony/console                    v2.8.16  MIT           
+symfony/debug                      v2.8.16  MIT           
+symfony/filesystem                 v2.8.16  MIT           
+symfony/finder                     v2.8.16  MIT           
 symfony/polyfill-mbstring          v1.3.0   MIT           
-symfony/process                    v2.8.14  MIT           
-symfony/yaml                       v2.8.14  MIT           
+symfony/process                    v2.8.16  MIT           
+symfony/yaml                       v2.8.16  MIT           
