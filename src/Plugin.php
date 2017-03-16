@@ -44,6 +44,11 @@ class Plugin implements
         'Share',
     );
 
+    private static $supportedSchemes = array(
+        'http',
+        'https'
+    );
+
     public function activate(Composer $composer, IO\IOInterface $io)
     {
         // @codeCoverageIgnoreStart
@@ -99,6 +104,12 @@ class Plugin implements
         if ($this->disabled) {
             return;
         }
+
+        $scheme = parse_url($ev->getProcessedUrl(), PHP_URL_SCHEME);
+        if (!in_array($scheme, self::$supportedSchemes, true)) {
+            return;
+        }
+
         $rfs = $ev->getRemoteFilesystem();
         $curlrfs = new CurlRemoteFilesystem(
             $this->io,
@@ -119,15 +130,17 @@ class Plugin implements
         $repos = $this->package->getRepositories();
         foreach ($repos as $label => $repo) {
             if (isset($repo['type']) && $repo['type'] === 'composer') {
-                if (isset($repo['force-lazy-providers']) && $repo['force-lazy-providers']) {
+                if (!empty($repo['force-lazy-providers'])) {
                     continue;
                 }
-                if ('http?://' === substr($repo['url'], 0, 8) && isset($repo['allow_ssl_downgrade']) && $repo['allow_ssl_downgrade']) {
-                    $repo = array(
-                        'type' => $repo['type'],
-                        'url' => str_replace('https?://', 'https://', $repo['url']),
-                    );
+
+                if (substr($repo['url'], 0, 6) !== 'https?') {
+                    $scheme = parse_url($repo['url'], PHP_URL_SCHEME);
+                    if (!in_array($scheme, self::$supportedSchemes, true)) {
+                        continue;
+                    }
                 }
+
                 $r = new ParallelizedComposerRepository($repo, $this->io, $this->config);
                 $r->prefetch();
             }
