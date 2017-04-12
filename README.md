@@ -22,7 +22,7 @@ prestissimo (composer plugin)
 ## Install
 
 ```bash
-$ composer global require "hirak/prestissimo:^0.3"
+$ composer global require hirak/prestissimo
 ```
 
 
@@ -51,63 +51,6 @@ Recognize composer's options. You don't need to set any special configuration.
 - [config.capath](https://getcomposer.org/doc/06-config.md#capath)
 - [config.cafile](https://getcomposer.org/doc/06-config.md#cafile)
 
-### `prestissimo ^0.2.x`
-
-in local `composer.json` or `~/.composer/config.json`
-
-```json
-{
-  ...
-  "config": {
-    "prestissimo": {
-      "maxConnections": 6,
-      "minConnections": 3,
-      "verbose": false,
-      "insecure": false,
-      "cainfo": "/absolute/path/to/cacert.pem",
-      "userAgent": "Your Awesome User Agent",
-      "privatePackages": [
-        "myorg/private1", "myorg/private2", ...
-      ]
-    }
-  }
-  ...
-}
-```
-
-### maxConnections (int)
-* default: 6
-
-Limit connections for parallel downloading.
-
-
-### verbose (bool)
-* default: false
-
-`CURLOPT_VERBOSE` option.
-
-
-### insecure (bool)
-* default: false
-
-If insecure is true, this plugin doesn't verify all https certs. (`CURLOPT_SSL_VERIFYPEER` is off)
-You SHOULD NOT change this option.
-
-### cainfo (string)
-* default: "" (empty)
-
-An absolute path to cacert.pem
-
-### userAgent (string)
-* default: "" (empty)
-
-User Agent for downloading. `CURLOPT_USERAGENT` option.
-If userAgent is empty, composer user agent is used.
-
-### privatePackages (string[])
-* default: empty
-
-If you list packages in this option, the local redirector(api.github.com -> codeload.github.com) will be off.
 
 ## Composer authentication
 
