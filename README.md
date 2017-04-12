@@ -22,7 +22,7 @@ prestissimo (composer plugin)
 ## Install
 
 ```bash
-$ composer global require "hirak/prestissimo:^0.3"
+$ composer global require "hirak/prestissimo:^0.3.5"
 ```
 
 
