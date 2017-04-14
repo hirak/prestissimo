@@ -59,7 +59,6 @@ class BaseRequest
         'ecdh_rsa_3des_sha',
         'ecdh_rsa_aes_128_sha',
         'ecdh_rsa_aes_256_sha',
-        'echde_rsa_null',
         'ecdhe_rsa_rc4_128_sha',
         'ecdhe_rsa_3des_sha',
         'ecdhe_rsa_aes_128_sha',
