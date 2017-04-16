@@ -147,11 +147,19 @@ class BaseRequest
             return;
         }
         // is gitlab
-        if (in_array($authKey, $gitlabDomains) && 'oauth2' === $auth['password']) {
-            $this->addHeader('authorization', 'Bearer ' . $auth['username']);
-            $this->user = $this->pass = null;
-            return;
+        if (in_array($authKey, $gitlabDomains)) {
+            if ('oauth2' === $auth['password']) {
+                $this->addHeader('authorization', 'Bearer ' . $auth['username']);
+                $this->user = $this->pass = null;
+                return;
+            }
+            if ('private-token' === $auth['password']) {
+                $this->addHeader('PRIVATE-TOKEN', $auth['username']);
+                $this->user = $this->pass = null;
+                return;
+            }
         }
+
         // others, includes bitbucket
         $this->user = $auth['username'];
         $this->pass = $auth['password'];
