@@ -16,7 +16,7 @@
         "composer-plugin-api": "^1.0.0"
     },
     "require-dev": {
-        "composer/composer": "1.0.0",
+        "composer/composer": "^1.0.0",
         "phpunit/phpunit": "^4.8",
         "squizlabs/php_codesniffer": "^2.5"
     },
