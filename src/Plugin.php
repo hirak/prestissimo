@@ -56,6 +56,11 @@ class Plugin implements
         if (__CLASS__ !== 'Hirak\Prestissimo\Plugin') {
             return $this->disable();
         }
+        // guard for missing curl extension problem
+        if (!extension_loaded('curl')) {
+            $io->writeError('<error>Error: "curl" PHP extension not loaded; Prestissmo Composer plugin disabled.</error>');
+            return $this->disable();
+        }
         // @codeCoverageIgnoreEnd
 
         // load all classes
