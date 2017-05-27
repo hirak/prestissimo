@@ -123,7 +123,7 @@ class CurlMulti
 
     public function getFinishedResults()
     {
-        $urls = array();
+        $urls = $errors = array();
         $successCnt = $failureCnt = 0;
         do {
             if ($raised = curl_multi_info_read($this->mh, $remains)) {
@@ -140,6 +140,7 @@ class CurlMulti
                     $urls[] = $request->getMaskedURL();
                 } else {
                     ++$failureCnt;
+                    $errors[$request->getMaskedURL()] = "$errno: $error";
                 }
                 unset($this->using[$index], $this->runningRequests[$index], $request);
                 curl_multi_remove_handle($this->mh, $ch);
@@ -147,7 +148,7 @@ class CurlMulti
             }
         } while ($remains > 0);
 
-        return compact('successCnt', 'failureCnt', 'urls');
+        return compact('successCnt', 'failureCnt', 'urls', 'errors');
     }
 
     public function remain()

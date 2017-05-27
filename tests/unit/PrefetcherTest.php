@@ -21,11 +21,12 @@ class PrefetcherTest extends \PHPUnit_Framework_TestCase
     public function testFetchAllOnFailure()
     {
         $reqp = $this->prophesize('Hirak\Prestissimo\CopyRequest');
+        $reqp->getMaskedURL()->willReturn('file://' . __DIR__ . '/test.txt');
         $reqp->getCurlOptions()->willReturn(array(
             CURLOPT_URL => 'file://uso800.txt',
             CURLOPT_FILE => tmpfile(),
         ));
-        $this->iop->writeError("    Finished: <comment>success: 0, skipped: 0, failure: 1, total: 1</comment>", true, IOInterface::VERBOSE)->shouldBeCalledTimes(1);
+        $this->iop->writeError("    Finished: <comment>success: 0, skipped: 0, failure: 1, total: 1</comment>", true, IOInterface::NORMAL)->shouldBeCalledTimes(1);
 
         $fetcher = new Prefetcher;
         $fetcher->fetchAll($this->iop->reveal(), array($reqp->reveal()));
@@ -40,7 +41,7 @@ class PrefetcherTest extends \PHPUnit_Framework_TestCase
         ));
         $reqp->makeSuccess()->willReturn(null);
         $reqp->getMaskedURL()->willReturn('file://' . __DIR__ . '/test.txt');
-        $this->iop->writeError(arg::type('string'), true, IOInterface::VERBOSE)->shouldBeCalled();
+        $this->iop->writeError(arg::type('string'), true, IOInterface::NORMAL)->shouldBeCalled();
 
         $fetcher = new Prefetcher;
         $fetcher->fetchAll($this->iop->reveal(), array($reqp->reveal()));
