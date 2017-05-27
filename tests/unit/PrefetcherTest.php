@@ -21,6 +21,7 @@ class PrefetcherTest extends \PHPUnit_Framework_TestCase
     public function testFetchAllOnFailure()
     {
         $reqp = $this->prophesize('Hirak\Prestissimo\CopyRequest');
+        $reqp->getMaskedURL()->willReturn('file://' . __DIR__ . '/test.txt');
         $reqp->getCurlOptions()->willReturn(array(
             CURLOPT_URL => 'file://uso800.txt',
             CURLOPT_FILE => tmpfile(),

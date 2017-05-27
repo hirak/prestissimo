@@ -33,7 +33,11 @@ class Prefetcher
                 $successCnt += $result['successCnt'];
                 $failureCnt += $result['failureCnt'];
                 foreach ($result['urls'] as $url) {
-                    $io->writeError("    <comment>$successCnt/$totalCnt</comment>:\t$url", true, IO\IOInterface::NORMAL);
+                    if (isset($result['errors'][$url])) {
+                        $io->writeError("    <warning>{$result['errors'][$url]}</warning>:\t$url", true, IO\IOInterface::NORMAL);
+                    } else {
+                        $io->writeError("    <comment>$successCnt/$totalCnt</comment>:\t$url", true, IO\IOInterface::NORMAL);
+                    }
                 }
             } while ($multi->remain());
         } catch (FetchException $e) {
