@@ -1,5 +1,5 @@
 language: php
-sudo: false
+dist: trusty
 
 cache: vendor
 
