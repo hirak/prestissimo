@@ -4,8 +4,9 @@ namespace Hirak\Prestissimo;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation;
 use Composer\Package;
+use PHPUnit\Framework\TestCase;
 
-class PluginTest extends \PHPUnit_Framework_TestCase
+class PluginTest extends TestCase
 {
     // dummy objects
     private $iop;

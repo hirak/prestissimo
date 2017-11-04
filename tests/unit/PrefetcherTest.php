@@ -2,9 +2,10 @@
 namespace Hirak\Prestissimo;
 
 use Composer\IO\IOInterface;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument as arg;
 
-class PrefetcherTest extends \PHPUnit_Framework_TestCase
+class PrefetcherTest extends TestCase
 {
     private $iop;
     private $configp;

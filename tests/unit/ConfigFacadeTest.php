@@ -2,8 +2,9 @@
 namespace Hirak\Prestissimo;
 
 use Composer\Config;
+use PHPUnit\Framework\TestCase;
 
-class ConfigFacadeTest extends \PHPUnit_Framework_TestCase
+class ConfigFacadeTest extends TestCase
 {
     public function testConstruct()
     {

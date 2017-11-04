@@ -1,7 +1,9 @@
 <?php
 namespace Hirak\Prestissimo;
 
-class CurlMultiTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class CurlMultiTest extends TestCase
 {
     private $iop;
     private $configp;
