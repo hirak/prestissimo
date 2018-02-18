@@ -1,9 +1,10 @@
 <?php
 namespace Hirak\Prestissimo;
 
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument as arg;
 
-class CopyRequestTest extends \PHPUnit_Framework_TestCase
+class CopyRequestTest extends TestCase
 {
     private $iop;
     private $configp;

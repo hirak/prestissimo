@@ -1,7 +1,9 @@
 <?php
 namespace Hirak\Prestissimo;
 
-class BaseRequestTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class BaseRequestTest extends TestCase
 {
     public function testSetURL()
     {
