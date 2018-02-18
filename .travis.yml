@@ -24,5 +24,5 @@ script:
   - composer test
 
 after_success:
-  - php bin/ocular.phar code-coverage:upload --format=php-clover artifacts/clover.xml
-  - php bin/coveralls.phar -v
+  #  - php bin/ocular.phar code-coverage:upload --format=php-clover artifacts/clover.xml
+  #  - php bin/coveralls.phar -v
