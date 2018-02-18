@@ -2,4 +2,3 @@ bin/ export-ignore
 artifacts/ export-ignore
 package.json export-ignore
 gulpfile.js export-ignore
-*.phar filter=lfs diff=lfs merge=lfs -text
