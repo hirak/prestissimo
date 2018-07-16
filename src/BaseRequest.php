@@ -200,6 +200,12 @@ class BaseRequest
             $curlOpts[CURLOPT_CAINFO] = $this->cafile;
         }
 
+        // feature detect http2 support in the php client/curl version.
+        // codeload.github.com does not yet support http2 though :-/
+        if (curl_version()["features"] & CURL_VERSION_HTTP2 !== 0) {
+            $curlOpts[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_2_0;
+        }
+
         return $curlOpts;
     }
 
