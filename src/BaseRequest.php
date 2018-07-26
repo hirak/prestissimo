@@ -200,9 +200,24 @@ class BaseRequest
             $curlOpts[CURLOPT_CAINFO] = $this->cafile;
         }
 
+        $h2ServerSupported = false;
+        $hostsWhichSupportHttp2 = array(
+            "packagist.org",
+            "repo.packagist.org"
+        );
+        foreach($hostsWhichSupportHttp2 as $http2Host) {
+            // http2 requires https
+            if (preg_match('{^https://'. preg_quote($http2Host) .'}i', $url)) {
+                $h2ServerSupported = true;
+                break;
+            }
+        }
+
         // feature detect http2 support in the php client/curl version.
-        // codeload.github.com does not yet support http2 though :-/
-        if (curl_version()["features"] & CURL_VERSION_HTTP2 !== 0) {
+        // e.g. codeload.github.com does not yet support http2 though :-/
+        $h2ClientSupported = curl_version()["features"] & CURL_VERSION_HTTP2 !== 0;
+
+        if ($h2ServerSupported && $h2ClientSupported) {
             $curlOpts[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_2_0;
         }
 
