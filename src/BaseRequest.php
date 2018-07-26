@@ -200,8 +200,10 @@ class BaseRequest
             $curlOpts[CURLOPT_CAINFO] = $this->cafile;
         }
 
+        // TODO replace with a proper http2 server side feature detect
         $h2ServerSupported = false;
         $hostsWhichSupportHttp2 = array(
+            "gitlab.com",
             "packagist.org",
             "repo.packagist.org"
         );
