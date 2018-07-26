@@ -201,7 +201,6 @@ class BaseRequest
         }
 
         // feature detect http2 support in the php client/curl version.
-        $h2ClientSupported = false;
         if (defined('CURL_VERSION_HTTP2') && defined('CURL_HTTP_VERSION_2_0')) {
             $curlVersion = curl_version();
             if ($curlVersion["features"] & CURL_VERSION_HTTP2 !== 0) {
