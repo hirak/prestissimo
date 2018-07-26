@@ -217,21 +217,12 @@ class BaseRequest
 
         // feature detect http2 support in the php client/curl version.
         // e.g. codeload.github.com does not yet support http2 though :-/
-        $h2ClientSupported = curl_version()["features"] & CURL_VERSION_HTTP2 !== 0;
-
-        var_dump("checking url..". $url);
-        if ($h2ClientSupported) {
-            var_dump("client supports http2\n");
-        }
-        if ($h2ServerSupported) {
-            var_dump("server supports http2\n");
-        }
+        $curlVersion = curl_version();
+        $h2ClientSupported = $curlVersion["features"] & CURL_VERSION_HTTP2 !== 0;
 
         if ($h2ServerSupported && $h2ClientSupported) {
             $curlOpts[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_2_0;
-            var_dump("using http2\n");
         }
-
 
         return $curlOpts;
     }
