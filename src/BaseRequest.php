@@ -201,6 +201,7 @@ class BaseRequest
         }
 
         // TODO replace with a proper http2 server side feature detect
+        // e.g. codeload.github.com does not yet support http2 though :-/
         $h2ServerSupported = false;
         $hostsWhichSupportHttp2 = array(
             "gitlab.com",
@@ -215,7 +216,6 @@ class BaseRequest
         }
 
         // feature detect http2 support in the php client/curl version.
-        // e.g. codeload.github.com does not yet support http2 though :-/
         $h2ClientSupported = false;
         if (defined('CURL_VERSION_HTTP2')) {
             $curlVersion = curl_version();
