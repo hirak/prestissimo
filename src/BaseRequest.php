@@ -204,7 +204,6 @@ class BaseRequest
         $h2ServerSupported = false;
         $hostsWhichSupportHttp2 = array(
             "gitlab.com",
-            "packagist.org",
             "repo.packagist.org"
         );
         foreach($hostsWhichSupportHttp2 as $http2Host) {
