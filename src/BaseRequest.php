@@ -200,14 +200,6 @@ class BaseRequest
             $curlOpts[CURLOPT_CAINFO] = $this->cafile;
         }
 
-        // feature detect http2 support in the php client/curl version.
-        if (0 === stripos($url, 'https://') && defined('CURL_VERSION_HTTP2') && defined('CURL_HTTP_VERSION_2_0')) {
-            $curlVersion = curl_version();
-            if ($curlVersion["features"] & CURL_VERSION_HTTP2 !== 0) {
-                $curlOpts[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_2_0;
-            }
-        }
-
         return $curlOpts;
     }
 
