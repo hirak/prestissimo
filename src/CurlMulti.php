@@ -39,6 +39,9 @@ class CurlMulti
 
         if (!$permanent || !$mh_cache) {
             $mh_cache = curl_multi_init();
+            if (defined('CURLMOPT_MAX_HOST_CONNECTIONS')) {
+                curl_multi_setopt($mh_cache, CURLMOPT_MAX_HOST_CONNECTIONS, 8);
+            }
 
             $ch_cache = array();
             for ($i = 0; $i < self::MAX_CONNECTIONS; ++$i) {
