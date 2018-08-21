@@ -20,10 +20,10 @@ class CurlMulti
     private $using = array();
 
     /** @var CopyRequest[] */
-    private $requests;
+    private $requests = array();
 
     /** @var CopyRequest[] */
-    private $runningRequests;
+    private $runningRequests = array();
 
     /** @var bool */
     private $permanent = true;

@@ -71,4 +71,13 @@ class CurlMultiTest extends \PHPUnit_Framework_TestCase
         $content = stream_get_contents($tmpfile);
         $this->assertEmpty($content);
     }
+
+    public function testCountable() {
+        $multi = new CurlMulti;
+        // Both of the methods are using the class properties that are defined as "null" initially and if we'll
+        // pass that state to "count()" the "Parameter must be an array or an object that implements Countable"
+        // error will be thrown.
+        $multi->setupEventLoop();
+        $multi->remain();
+    }
 }
