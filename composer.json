@@ -17,7 +17,7 @@
     },
     "require-dev": {
         "composer/composer": "1.0.0",
-        "phpunit/phpunit": "^4.8",
+        "phpunit/phpunit": "4.8.* || 5.7.* || ^6.3",
         "squizlabs/php_codesniffer": "^2.5"
     },
     "scripts": {
@@ -33,10 +33,5 @@
     },
     "extra": {
         "class": "Hirak\\Prestissimo\\Plugin"
-    },
-    "config": {
-        "platform": {
-            "php": "5.3.29"
-        }
     }
 }
