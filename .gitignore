@@ -1,5 +1,6 @@
 vendor/
 node_modules/
+composer.lock
 npm-debug.log
 phpunit.xml
 phpcs.xml
