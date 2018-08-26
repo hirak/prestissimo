@@ -3,7 +3,7 @@ namespace Hirak\Prestissimo;
 
 use Composer\Config;
 
-class ConfigFacadeTest extends \PHPUnit_Framework_TestCase
+class ConfigFacadeTest extends \PHPUnit\Framework\TestCase
 {
     public function testConstruct()
     {

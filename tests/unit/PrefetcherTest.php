@@ -4,7 +4,7 @@ namespace Hirak\Prestissimo;
 use Composer\IO\IOInterface;
 use Prophecy\Argument as arg;
 
-class PrefetcherTest extends \PHPUnit_Framework_TestCase
+class PrefetcherTest extends \PHPUnit\Framework\TestCase
 {
     private $iop;
     private $configp;

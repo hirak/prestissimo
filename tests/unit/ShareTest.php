@@ -1,7 +1,7 @@
 <?php
 namespace Hirak\Prestissimo;
 
-class ShareTest extends \PHPUnit_Framework_TestCase
+class ShareTest extends \PHPUnit\Framework\TestCase
 {
     public function testSetup()
     {

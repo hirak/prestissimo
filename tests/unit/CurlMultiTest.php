@@ -1,7 +1,7 @@
 <?php
 namespace Hirak\Prestissimo;
 
-class CurlMultiTest extends \PHPUnit_Framework_TestCase
+class CurlMultiTest extends \PHPUnit\Framework\TestCase
 {
     private $iop;
     private $configp;
@@ -79,5 +79,6 @@ class CurlMultiTest extends \PHPUnit_Framework_TestCase
         // error will be thrown.
         $multi->setupEventLoop();
         $multi->remain();
+        $this->assertTrue(true);
     }
 }

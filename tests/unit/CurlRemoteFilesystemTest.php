@@ -1,7 +1,7 @@
 <?php
 namespace Hirak\Prestissimo;
 
-class CurlRemoteFilesystemTest extends \PHPUnit_Framework_TestCase
+class CurlRemoteFilesystemTest extends \PHPUnit\Framework\TestCase
 {
     // dummy objects
     private $iop;
