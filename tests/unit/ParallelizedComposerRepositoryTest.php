@@ -1,7 +1,7 @@
 <?php
 namespace Hirak\Prestissimo;
 
-class ParallelizedComposerRepositoryTest extends \PHPUnit_Framework_TestCase
+class ParallelizedComposerRepositoryTest extends \PHPUnit\Framework\TestCase
 {
     public function testPrefetch()
     {

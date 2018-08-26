@@ -3,7 +3,7 @@ namespace Hirak\Prestissimo;
 
 use Prophecy\Argument as arg;
 
-class CopyRequestTest extends \PHPUnit_Framework_TestCase
+class CopyRequestTest extends \PHPUnit\Framework\TestCase
 {
     private $iop;
     private $configp;
