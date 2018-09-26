@@ -54,10 +54,9 @@ Recognize composer's options. You don't need to set any special configuration.
 
 ## Composer authentication
 
-It is also recommended to use [composer's authentication](https://getcomposer.org/doc/articles/troubleshooting.md#api-rate-limit-and-oauth-tokens)
-as you may run into access errors otherwise due to request restriction for anonymous user for external services like github.
+To avoid Composer asking for authentication it is recommended to follow the procedure on [composer's authentication](https://getcomposer.org/doc/articles/troubleshooting.md#api-rate-limit-and-oauth-tokens).
 
-For github.com you can use an `auth.json` with an [oauth access token](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) placed on your on the same level as your `composer.json`:
+For github.com you could also use an `auth.json` file with an [oauth access token](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) placed on the the same level as your `composer.json` file:
 
 ```json
 {
