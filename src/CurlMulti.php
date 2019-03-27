@@ -129,6 +129,8 @@ class CurlMulti
             if ($raised = curl_multi_info_read($this->mh, $remains)) {
                 $ch = $raised['handle'];
                 $errno = curl_errno($ch);
+                if($errno == CURLE_OK && $raised['result'] != CURLE_OK)
+                    $errno = $raised['result'];
                 $error = curl_error($ch);
                 $info = curl_getinfo($ch);
                 curl_setopt($ch, CURLOPT_FILE, $this->blackhole); //release file pointer
