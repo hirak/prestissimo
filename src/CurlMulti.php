@@ -129,12 +129,14 @@ class CurlMulti
             if ($raised = curl_multi_info_read($this->mh, $remains)) {
                 $ch = $raised['handle'];
                 $errno = curl_errno($ch);
+                if($errno == CURLE_OK && $raised['result'] != CURLE_OK)
+                    $errno = $raised['result'];
                 $error = curl_error($ch);
                 $info = curl_getinfo($ch);
                 curl_setopt($ch, CURLOPT_FILE, $this->blackhole); //release file pointer
                 $index = (int)$ch;
                 $request = $this->runningRequests[$index];
-                if (CURLE_OK === $errno && !$error && ('http' !== substr($info['url'], 0, 4) || 200 === $info['http_code'])) {
+                if (CURLE_OK === $errno && ('http' !== substr($info['url'], 0, 4) || 200 === $info['http_code'])) {
                     ++$successCnt;
                     $request->makeSuccess();
                     $urls[] = $request->getMaskedURL();
