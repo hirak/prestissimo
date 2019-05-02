@@ -10,7 +10,7 @@ prestissimo (composer plugin)
 [![License](https://poser.pugx.org/hirak/prestissimo/license)](https://packagist.org/packages/hirak/prestissimo)  
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/56ca0f9e-63a2-4e89-b5f8-e0cc39d0c38f/big.png)](https://insight.sensiolabs.com/projects/56ca0f9e-63a2-4e89-b5f8-e0cc39d0c38f)
 
-[composer](https://getcomposer.org) parallel install plugin.
+This is a [composer](https://getcomposer.org) plugin that downloads packages in parallel to speed up the installation process. 
 
 
 ## Requirements
@@ -18,6 +18,7 @@ prestissimo (composer plugin)
 - composer `>=1.0.0` (includes dev-master)
 - PHP `>=5.3`, (suggest `>=5.5`, because `curl_share_init`)
 - ext-curl
+
 
 ## Install
 
@@ -32,6 +33,7 @@ $ composer global require hirak/prestissimo
 $ composer global remove hirak/prestissimo
 ```
 
+
 ## Benchmark Example
 
 288s -> 26s
@@ -41,6 +43,7 @@ $ composer create-project laravel/laravel laravel1 --no-progress --profile --pre
 ```
 
 ![laravel](https://cloud.githubusercontent.com/assets/835251/12534815/55071302-c2ad-11e5-96a4-72e2c8744d5f.gif)
+
 
 ## Config
 
