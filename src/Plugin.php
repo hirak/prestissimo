@@ -73,6 +73,10 @@ class Plugin implements
         $this->package = $composer->getPackage();
 
         if (array_key_exists('argv', $GLOBALS)) {
+            if (in_array('help', $GLOBALS['argv'])) {
+                return $this->disable();
+            }
+
             foreach ($GLOBALS['argv'] as $arg) {
                 switch ($arg) {
                     case 'create-project':
