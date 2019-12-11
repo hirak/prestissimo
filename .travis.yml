@@ -34,3 +34,7 @@ matrix:
       sudo: required
       dist: precise
       php: 5.3
+    - php: 5.4
+      dist: precise
+    - php: 5.5
+      dist: precise
