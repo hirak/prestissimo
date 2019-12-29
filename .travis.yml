@@ -1,16 +1,21 @@
+dist: xenial
+
 language: php
 sudo: false
 
 cache: vendor
 
-php:
-  - '5.4'
-  - '5.5'
-  - '5.6'
-  - '7.0'
-  - '7.1'
-  - '7.2'
-  - '7.3'
+jobs:
+  include:
+    - php: '5.4'
+      dist: trusty
+    - php: '5.5'
+      dist: trusty
+    - php: '5.6'
+    - php: '7.0'
+    - php: '7.1'
+    - php: '7.2'
+    - php: '7.3'
 
 before_install:
   - composer config -g repositories.packagist path $(pwd)
