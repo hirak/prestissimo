@@ -18,6 +18,10 @@ jobs:
     - php: '7.1'
     - php: '7.2'
     - php: '7.3'
+    - php: '7.4'
+      after_success:
+        - php bin/ocular.phar code-coverage:upload --format=php-clover artifacts/clover.xml
+        - php bin/coveralls.phar -v
 
 before_install:
   - composer config -g repositories.packagist path $(pwd)
@@ -29,7 +33,3 @@ install:
 
 script:
   - composer test
-
-after_success:
-  - php bin/ocular.phar code-coverage:upload --format=php-clover artifacts/clover.xml
-  - php bin/coveralls.phar -v
