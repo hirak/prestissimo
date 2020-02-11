@@ -142,7 +142,7 @@ class BaseRequest
 
         // is github
         if (in_array($authKey, $githubDomains) && 'x-oauth-basic' === $auth['password']) {
-            $this->addParam('access_token', $auth['username']);
+            $this->addHeader('authorization', 'token ' . $auth['username']);
             $this->user = $this->pass = null;
             return;
         }
