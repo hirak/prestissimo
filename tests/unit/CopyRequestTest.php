@@ -89,11 +89,13 @@ class CopyRequestTest extends \PHPUnit\Framework\TestCase
 
         // user:pass -> query
         $req = new CopyRequest($example, $tmpfile, false, $this->iop->reveal(), $this->configp->reveal());
-        $this->assertEquals("$example&access_token=at", $req->getURL());
+        $opts = $req->getCurlOptions();
+        $this->assertContains('Authorization: token at', $opts[CURLOPT_HTTPHEADER]);
 
         // api.github.com -> codeload.github.com
         $req = new CopyRequest($example, $tmpfile, true, $this->iop->reveal(), $this->configp->reveal());
-        $this->assertEquals('https://codeload.github.com/vendor/name/legacy.zip/aaaa?a=b&access_token=at', $req->getURL());
+        $opts = $req->getCurlOptions();
+        $this->assertContains('Authorization: token at', $opts[CURLOPT_HTTPHEADER]);
     }
 
     public function testGitLab()
