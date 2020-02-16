@@ -1,17 +1,27 @@
+dist: xenial
+
 language: php
 sudo: false
 
 cache: vendor
 
-php:
-  - '5.4'
-  - '5.5'
-  - '5.6'
-  - '7.0'
-  - '7.1'
-  - '7.2'
-  - '7.3'
-  - '7.4'
+jobs:
+  include:
+    - php: '5.3'
+      dist: precise
+    - php: '5.4'
+      dist: trusty
+    - php: '5.5'
+      dist: trusty
+    - php: '5.6'
+    - php: '7.0'
+    - php: '7.1'
+    - php: '7.2'
+    - php: '7.3'
+    - php: '7.4'
+      after_success:
+        - php bin/ocular.phar code-coverage:upload --format=php-clover artifacts/clover.xml
+        - php bin/coveralls.phar -v
 
 before_install:
   - composer config -g repositories.packagist path $(pwd)
@@ -23,18 +33,3 @@ install:
 
 script:
   - composer test
-
-after_success:
-  - php bin/ocular.phar code-coverage:upload --format=php-clover artifacts/clover.xml
-  - php bin/coveralls.phar -v
-
-matrix:
-  include:
-    - os: linux
-      sudo: required
-      dist: precise
-      php: 5.3
-    - php: 5.4
-      dist: precise
-    - php: 5.5
-      dist: precise
