@@ -5,7 +5,7 @@
     "start": "gulp start"
   },
   "devDependencies": {
-    "browser-sync": "^2.26.5",
+    "browser-sync": "^2.26.7",
     "gulp": "^4.0.1"
   }
 }
