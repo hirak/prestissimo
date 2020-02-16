@@ -26,6 +26,8 @@ class PrefetcherTest extends \PHPUnit\Framework\TestCase
             CURLOPT_URL => 'file://uso800.txt',
             CURLOPT_FILE => tmpfile(),
         ));
+     
+        $this->iop->writeError(arg::containingString("<warning>37: Couldn't open file /uso800.txt</warning>"), true, IOInterface::NORMAL)->shouldBeCalledTimes(1);
         $this->iop->writeError("    Finished: <comment>success: 0, skipped: 0, failure: 1, total: 1</comment>", true, IOInterface::NORMAL)->shouldBeCalledTimes(1);
 
         $fetcher = new Prefetcher;

@@ -137,10 +137,10 @@ class CurlMulti
                 curl_setopt($ch, CURLOPT_FILE, $this->blackhole); //release file pointer
                 $index = (int)$ch;
                 $request = $this->runningRequests[$index];
+                $urls[] = $request->getMaskedURL();
                 if (CURLE_OK === $errno && ('http' !== substr($info['url'], 0, 4) || 200 === $info['http_code'])) {
                     ++$successCnt;
                     $request->makeSuccess();
-                    $urls[] = $request->getMaskedURL();
                 } else {
                     ++$failureCnt;
                     $errors[$request->getMaskedURL()] = "$errno: $error";
