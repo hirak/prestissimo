@@ -72,6 +72,12 @@ class Plugin implements
         $this->config = $composer->getConfig();
         $this->package = $composer->getPackage();
 
+        $cacheDir = rtrim($this->config->get('cache-files-dir'), '\/');
+
+        if (preg_match('{(^|[\\\\/])(\$null|nul|NUL|/dev/null)([\\\\/]|$)}', $cacheDir)) {
+            return $this->disable();
+        }
+
         if (array_key_exists('argv', $GLOBALS)) {
             if (in_array('help', $GLOBALS['argv'])) {
                 return $this->disable();
