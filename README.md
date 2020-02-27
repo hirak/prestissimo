@@ -25,6 +25,13 @@ $ composer global require hirak/prestissimo
 ```
 
 
+## Update
+
+```bash
+$ composer global update hirak/prestissimo --with-dependencie
+```
+
+
 ## Uninstall
 
 ```bash
