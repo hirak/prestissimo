@@ -18,17 +18,10 @@ This is a [composer](https://getcomposer.org) plugin that downloads packages in 
 - ext-curl
 
 
-## Install
+## Install, Updating & Upgrading
 
 ```bash
 $ composer global require hirak/prestissimo
-```
-
-
-## Update
-
-```bash
-$ composer global update hirak/prestissimo --with-dependencie
 ```
 
 
