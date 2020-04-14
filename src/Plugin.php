@@ -63,6 +63,10 @@ class Plugin implements
         }
         // @codeCoverageIgnoreEnd
 
+        if (!defined('\Composer\Installer\InstallerEvents::POST_DEPENDENCIES_SOLVING')) {
+            return $this->disable();
+        }
+
         // load all classes
         foreach (self::$pluginClasses as $class) {
             class_exists(__NAMESPACE__ . '\\' . $class);
@@ -97,6 +101,9 @@ class Plugin implements
 
     public static function getSubscribedEvents()
     {
+        if (!defined('\Composer\Installer\InstallerEvents::POST_DEPENDENCIES_SOLVING')) {
+            return array();
+        }
         return array(
             CPlugin\PluginEvents::PRE_FILE_DOWNLOAD => 'onPreFileDownload',
             Installer\InstallerEvents::POST_DEPENDENCIES_SOLVING => array(
@@ -181,5 +188,13 @@ class Plugin implements
     public function isDisabled()
     {
         return $this->disabled;
+    }
+
+    public function deactivate(Composer $composer, IO\IOInterface $io)
+    {
+    }
+
+    public function uninstall(Composer $composer, IO\IOInterface $io)
+    {
     }
 }
