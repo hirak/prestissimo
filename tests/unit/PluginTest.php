@@ -62,6 +62,22 @@ class PluginTest extends \PHPUnit\Framework\TestCase
         self::assertTrue(class_exists('Hirak\Prestissimo\CopyRequest', false));
     }
 
+    public function testDeactivate()
+    {
+        $plugin = new Plugin;
+        self::assertFalse($plugin->isDisabled());
+        $plugin->deactivate($this->composerp->reveal(), $this->iop->reveal());
+        self::assertTrue($plugin->isDisabled());
+    }
+
+    public function testUninstall()
+    {
+        $plugin = new Plugin;
+        self::assertFalse($plugin->isDisabled());
+        $plugin->uninstall($this->composerp->reveal(), $this->iop->reveal());
+        self::assertTrue($plugin->isDisabled());
+    }
+
     public function testGetSubscribedEvent()
     {
         self::assertInternalType('array', Plugin::getSubscribedEvents());

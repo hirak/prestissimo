@@ -51,6 +51,11 @@ class Plugin implements
 
     public function activate(Composer $composer, IO\IOInterface $io)
     {
+        // Composer 2 comes with parallel downloads built-in
+        if (strcmp(self::PLUGIN_API_VERSION, '2.0.0') >= 0) {
+            return $this->disable();
+        }
+
         // @codeCoverageIgnoreStart
         // guard for self-update problem
         if (__CLASS__ !== 'Hirak\Prestissimo\Plugin') {
@@ -93,6 +98,16 @@ class Plugin implements
                 }
             }
         }
+    }
+
+    public function deactivate(Composer $composer, IO\IOInterface $io)
+    {
+        $this->disable();
+    }
+
+    public function uninstall(Composer $composer, IO\IOInterface $io)
+    {
+        $this->disable();
     }
 
     public static function getSubscribedEvents()
