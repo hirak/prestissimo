@@ -74,6 +74,7 @@ class Plugin implements
 
         $cacheDir = rtrim($this->config->get('cache-files-dir'), '\/');
 
+        // disable when cache is not usable
         if (preg_match('{(^|[\\\\/])(\$null|nul|NUL|/dev/null)([\\\\/]|$)}', $cacheDir)) {
             return $this->disable();
         }
