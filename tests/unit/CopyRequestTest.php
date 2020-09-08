@@ -60,10 +60,11 @@ class CopyRequestTest extends \PHPUnit\Framework\TestCase
         $tmpfile = tempnam(sys_get_temp_dir(), 'composer_unit_test_');
 
         $req = new CopyRequest('http://example.com/', $tmpfile, false, $this->iop->reveal(), $this->configp->reveal());
+        $req->getCurlOptions();
+        $req->makeSuccess();
         $this->assertFileExists($tmpfile);
 
-        // if $req->success === true ...
-        $req->makeSuccess();
+        // if $req->success === true (default, or on success) ...
         unset($req);
 
         // then tmpfile remain
@@ -71,8 +72,8 @@ class CopyRequestTest extends \PHPUnit\Framework\TestCase
         unlink($tmpfile);
 
         $req = new CopyRequest('http://example.com/', $tmpfile, false, $this->iop->reveal(), $this->configp->reveal());
-        // if $req->success === false (default) ...
-        // $req->makeSuccess();
+        // if $req->success === false (flagged when download starts) ...
+        $req->getCurlOptions();
         unset($req);
 
         // then cleaned tmpfile automatically
