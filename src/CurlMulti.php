@@ -88,7 +88,10 @@ class CurlMulti
     public function setupEventLoop()
     {
         while (count($this->unused) > 0 && count($this->requests) > 0) {
-            $request = array_pop($this->requests);
+            // Process request using a clone to ensure any memory we cause it to allocate is freed after we unset
+            // Otherwise, memory is still held for all requests due to it existing on the callstack
+            // Callers should not need to know this though
+            $request = clone array_pop($this->requests);
             $ch = array_pop($this->unused);
             $index = (int)$ch;
 
