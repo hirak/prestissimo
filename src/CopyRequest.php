@@ -17,7 +17,7 @@ class CopyRequest extends BaseRequest
     /** @var resource<stream<plainfile>> */
     private $fp;
 
-    private $success = false;
+    private $success = true;
 
     protected static $defaultCurlOptions = array(
         CURLOPT_HTTPGET => true,
@@ -72,6 +72,7 @@ class CopyRequest extends BaseRequest
         if ($this->fp) {
             fclose($this->fp);
         }
+        $this->success = false;
         $this->fp = fopen($this->destination, 'wb');
         if (!$this->fp) {
             throw new FetchException(
