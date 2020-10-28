@@ -1,6 +1,6 @@
 {
     "name": "hirak/prestissimo",
-    "description": "composer parallel install plugin",
+    "description": "composer parallel install plugin for Composer 1.x",
     "type": "composer-plugin",
     "keywords": ["parallel", "install", "speedup"],
     "authors": [

@@ -8,7 +8,11 @@ prestissimo (composer plugin)
 [![Total Downloads](https://poser.pugx.org/hirak/prestissimo/downloads)](https://packagist.org/packages/hirak/prestissimo)
 [![License](https://poser.pugx.org/hirak/prestissimo/license)](https://packagist.org/packages/hirak/prestissimo)  
 
-This is a [composer](https://getcomposer.org) plugin that downloads packages in parallel to speed up the installation process. 
+This is a [composer 1.x](https://getcomposer.org) plugin that downloads packages in parallel to speed up the installation process. 
+
+## Announcement: [Composer 2 is now available!](https://blog.packagist.com/composer-2-0-is-now-available/)
+
+**This plugin is for Composer1; Composer2 is very fast on its own. Uninstall this plugin and update the Composer itself.**
 
 
 ## Requirements
