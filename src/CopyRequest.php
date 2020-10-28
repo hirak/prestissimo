@@ -17,7 +17,7 @@ class CopyRequest extends BaseRequest
     /** @var resource<stream<plainfile>> */
     private $fp;
 
-    private $success = false;
+    private $success = true;
 
     protected static $defaultCurlOptions = array(
         CURLOPT_HTTPGET => true,
@@ -69,6 +69,17 @@ class CopyRequest extends BaseRequest
      */
     public function getCurlOptions()
     {
+        if ($this->fp) {
+            fclose($this->fp);
+        }
+        $this->success = false;
+        $this->fp = fopen($this->destination, 'wb');
+        if (!$this->fp) {
+            throw new FetchException(
+                'The file could not be written to ' . $this->destination
+            );
+        }
+
         $curlOpts = parent::getCurlOptions();
         $curlOpts[CURLOPT_FILE] = $this->fp;
         return $curlOpts;
@@ -87,13 +98,6 @@ class CopyRequest extends BaseRequest
         }
 
         $this->createDir($destination);
-
-        $this->fp = fopen($destination, 'wb');
-        if (!$this->fp) {
-            throw new FetchException(
-                'The file could not be written to ' . $destination
-            );
-        }
     }
 
     private function createDir($fileName)
