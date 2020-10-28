@@ -103,6 +103,30 @@ class PluginTest extends \PHPUnit\Framework\TestCase
         $plugin->onPostDependenciesSolving($evp->reveal());
     }
 
+    /**
+     * @dataProvider nullCacheDataProvider
+     */
+    public function testDisabledWhenCacheIsOff($cacheDir)
+    {
+        $plugin = new Plugin;
+        $this->configp->get('cache-files-dir')
+            ->willReturn($cacheDir);
+
+        $plugin->activate($this->composerp->reveal(), $this->iop->reveal());
+
+        $this->assertTrue($plugin->isDisabled());
+    }
+
+    public function nullCacheDataProvider()
+    {
+        return array(
+            array('$null'),
+            array('nul'),
+            array('NUL'),
+            array('/dev/null'),
+        );
+    }
+
     private function createDummyOperations()
     {
         return array(
