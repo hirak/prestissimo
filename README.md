@@ -13,7 +13,7 @@ This is a [composer](https://getcomposer.org) plugin that downloads packages in 
 
 ## Requirements
 
-- composer `>=1.0.0` (includes dev-master)
+- composer `>=1.0.0 <2.0`
 - PHP `>=5.3`, (suggest `>=5.5`, because `curl_share_init`)
 - ext-curl
 
