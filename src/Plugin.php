@@ -7,16 +7,18 @@
 namespace Hirak\Prestissimo;
 
 use Composer\Composer;
-use Composer\IO;
+use Composer\IO\IOInterface;
 use Composer\Plugin as CPlugin;
 use Composer\EventDispatcher;
 use Composer\Installer;
+use Composer\Plugin\PluginInterface;
+use Composer\Semver\Comparator;
 
 class Plugin implements
     CPlugin\PluginInterface,
     EventDispatcher\EventSubscriberInterface
 {
-    /** @var IO\IOInterface */
+    /** @var IOInterface */
     private $io;
 
     /** @var Composer\Config */
@@ -49,8 +51,12 @@ class Plugin implements
         'https'
     );
 
-    public function activate(Composer $composer, IO\IOInterface $io)
+    public function activate(Composer $composer, IOInterface $io)
     {
+        if (self::isApiVersion2OrHigher()) {
+            return $this->disable();
+        }
+
         // @codeCoverageIgnoreStart
         // guard for self-update problem
         if (__CLASS__ !== 'Hirak\Prestissimo\Plugin') {
@@ -104,6 +110,10 @@ class Plugin implements
 
     public static function getSubscribedEvents()
     {
+        if (self::isApiVersion2OrHigher()) {
+            return array();
+        }
+
         return array(
             CPlugin\PluginEvents::PRE_FILE_DOWNLOAD => 'onPreFileDownload',
             Installer\InstallerEvents::POST_DEPENDENCIES_SOLVING => array(
@@ -188,5 +198,18 @@ class Plugin implements
     public function isDisabled()
     {
         return $this->disabled;
+    }
+
+    public function deactivate(Composer $composer, IOInterface $io)
+    {
+    }
+
+    public function uninstall(Composer $composer, IOInterface $io)
+    {
+    }
+
+    protected static function isApiVersion2OrHigher()
+    {
+        return Comparator::greaterThanOrEqualTo(PluginInterface::PLUGIN_API_VERSION, '2.0.0');
     }
 }
